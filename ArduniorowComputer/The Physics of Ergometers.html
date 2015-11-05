@@ -1,0 +1,1219 @@
+
+<!-- saved from url=(0053)http://www.atm.ox.ac.uk/rowing/physics/ergometer.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title> The Physics of Ergometers </title>
+<link type="text/css" rel="stylesheet" href="./The Physics of Ergometers_files/plain.css">
+</head>
+<body>
+<h1> The Physics of Ergometers </h1>
+<h2>(Part of <a href="http://www.atm.ox.ac.uk/rowing/physics/index.html">Physics of Rowing</a>)</h2>
+<h5>
+Recent Modifications
+  <dl>
+  <dt> 19FEB08: Tidied up and reformatted
+  </dt></dl>
+</h5>
+<div class="box">
+<h3>Contents</h3>
+<a name="contents">
+</a><ol><a name="contents">
+</a><li><a name="contents"> </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section1">Introduction</a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section2">Mechanics of Rotating Bodies</a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section3">Power Dissipation</a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section4">Power Supplied</a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section5">Changing the Cog </a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section6">Changing the Damping</a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7">Measuring the Damping </a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section8">Measuring the Power Supplied </a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section9">Indicated Speed (Splits) and Distance</a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section10">Indicated Power v. Indicated Speed (Splits) </a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section11">Power v. Indicated Calories</a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section12">Dynamic v. Static Ergs</a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section13">Effect of Rating</a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section14">Effect of Altitude</a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section15">Glossary of terms used in Rotational Mechanics</a>
+</li><li> <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section16">Notes</a>
+</li></ol>
+</div>
+<p>
+<b>Disclaimer</b>: unlike rowing boats, ergs differ fundamentally from one
+manufacturer to another. Any useful discussion of the physics of ergometers
+will inevitably have a bias towards the model most commonly used (i.e.
+Concept), which also happens to be the one that I am most familiar with. 
+</p><hr>
+<a name="section1">
+<h2> 1. Introduction </h2>
+
+The basic components of a rowing simulator are
+<ul>
+<li>a flywheel, to store the energy between strokes (simulating the boat 
+momentum)
+</li><li>a handle, attached to the flywheel via a chain and sprocket, or
+cable and pulley
+(simulating the oar)
+</li><li>a damping mechanism on the flywheel (to simulate water friction on the hull)
+</li><li>a return mechanism (to simulate motion of boat to front-stops)
+</li></ul>
+Stick some kind of power/speed monitor on it and it's called an ergometer.
+
+Some of the different models are:
+</a><dl><a name="section1">
+</a><dt><a name="section1"><b></b></a><b><a href="http://rowing.concept2.com/">Concept</a></b>
+(also, <a href="http://www.concept2.co.uk/rower/">Concept UK</a>)
+
+</dt><dd> An American model, and by far the most commonly used ergometer. 
+     Resistance provided by air-damping. Models C, D and E are all
+     pretty similar from a physics point-of-view.
+     These can also be mounted on 'slides' - turing them from a 'static' erg
+     to a 'dynamic' erg (<a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section12">Section 12</a>).
+
+<!--
+	<dl>
+	<dt> Model A (1981). 
+        <dd> These just have an open bicycle
+             wheel fitted with blades and load selected by putting the chain
+             around one of several gears. The monitor is essentially just a 
+             speedometer.
+	<dt> Model B (1986). 
+        <dd> Solid aluminium flywheel, load 
+             controlled by choice of 2 gears and a damper setting.
+             The monitor is much more sophisticated and calculates
+             resistance dynamically by measuring deceleration of flywheel.
+	<dt> Model C (1993). 
+        <dd> Lighter (and quieter) version than 
+             model B. Load controlled by a lever position 1-10 (essentially
+             a damper setting). Monitor works to higher precision.
+        <dt> Slides (1999) 
+        <dd> Accessory for Model C, which turn it from a 'static'
+             erg to a 'dynamic' erg (better boat simulator - see
+             <A href=#section11>Section 11</a>).
+        </DL>
+-->
+<p>
+</p></dd><dt><b><a href="http://www.rowperfect.com/">Rowperfect</a></b> (also
+<a href="http://www.rowperfect.com.au/">Australian Web-site</a>)
+</dt><dd> A Dutch model similar to the Concept with one important difference:
+not only does the seat move back and forwards but so does the flywheel
+(a 'dynamic' erg). This is generally considered to be the best boat simulator
+since the mass of the flywheel is very similar to the mass of a boat.
+This also means that you get higher
+power scores and (probably) rate higher too 
+(see <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section12">section 12</a>).
+Monitor works on the same general principle as the Concept.
+<p>
+</p></dd><dt><b><a href="http://www.waterrower.co.uk/">WaterRower</a></b> 
+</dt><dd> A British model using a horizontal water-damped paddle (the mass of
+rotating water constituting the 'flywheel' rather than the paddle itself).
+See <a href="http://freespace.virgin.net/neil.wallace2/waterrowergate.htm">Neil Wallace's page</a> for a description of how the monitor works.
+
+</dd></dl>
+
+<div class="box" style="background-color:eeeeff">
+<b>Some useful links</b>
+<ul>
+<li><a href="http://freespace.virgin.net/neil.wallace2/waterrowergate.htm">The
+Truth About WaterRower</a> (<i>Neil Wallace</i>) 
+</li><li><a href="http://www.rowperfect.com.au/physics.html%3C/a">Physics of the 
+Rowperfect</a>
+</li><li><a href="http://home.hccnet.nl/m.holst/ErgoDisp.html">Behind the Ergometer
+Display</a> (<i>Marinus van Holst</i>)
+</li></ul>
+</div>
+
+
+<ul>
+<li><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+
+<hr>
+
+
+<a name="section2">
+
+<h2>2. Mechanics of Rotating Bodies </h2>
+
+</a><a href="http://www.atm.ox.ac.uk/rowing/physics/basics.html#newton">
+Newton's Laws of Motion</a> are applicable to <i>translational</i> systems (i.e.
+forces and motions acting in straight lines). 
+
+A problem with applying Newton's Laws to <i>rotational</i> systems such as 
+flywheels is that the linear velocity 
+<i>v</i> at any
+point depends on the distance <i>r</i> from the rotation axis, 
+and it is generally
+more convenient to use an analogous set of laws expressed in terms of 
+<b><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#w">angular velocity</a></b> &#969; (=Greek letter <i>omega</i>), 
+which is the same for any point on the rotating body.
+The two velocities are related by:
+<p>
+<a name="eq21">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td width="20" align="RIGHT">(2.1)
+    </td><td align="CENTER">        &#969; = <i>v</i> / <i>r</i>
+</td></tr></tbody></table><a name="eq21">
+</a></p><p><a name="eq21">
+Where mass <i>m</i> occurs in equations for translational systems,
+in rotational systems this is replaced by the 
+<b></b></a><b><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#I">moment of inertia</a></b>, <i>I</i>:
+</p><p>
+<a name="eq22">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td width="20" align="RIGHT">(2.2)
+    </td><td align="CENTER">    <i>I</i> = &#8721; <i>r</i> <sup>2</sup> &#948;<i>m</i>
+</td></tr></tbody></table><a name="eq22">
+</a></p><p><a name="eq22">
+which is the summation of each component &#948;<i>m</i> of the overall
+mass at each radius  <i>r</i>.
+</a></p><p><a name="eq22">
+Linear momentum (<i>m</i> x <i>v</i>) is replaced by
+<b></b></a><b><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#J">angular momentum</a></b> <i>J</i>:
+</p><p>
+<a name="eq23">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td width="20" align="RIGHT">(2.3)
+      </td><td align="CENTER">   <i>J</i> = <i>I</i> &#969;
+</td></tr></tbody></table><a name="eq23">
+</a></p><p><a name="eq23">
+In a translational system, </a><a href="http://www.atm.ox.ac.uk/rowing/physics/basics.html#newton2">
+Newton's 2nd Law</a> equates force <i>F</i>
+to a rate of change of momentum d(<i>m v</i>) / d<i>t</i>, or a constant
+mass <i>m</i> multiplied by a linear acceleration 
+<i>a</i> = d<i>v</i> / d<i>t</i>.
+In a rotational system, force is replaced by <b><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#T">torque</a></b>,
+<i>T</i>, and Newton's 2nd Law becomes:
+</p><p>
+<a name="eq24">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td width="20" align="RIGHT">(2.4)
+    </td><td align="CENTER">
+ <i>T</i> = d(<i>I</i> &#969;) / d<i>t</i> = <i>I</i> ( d&#969; / d<i>t</i> ) 
+   = <i>I</i> <i>b</i>
+</td></tr></tbody></table><a name="eq24">
+</a></p><p><a name="eq24">
+where a constant moment of inertia <i>I</i> 
+has been assumed (i.e. a rigid body)
+and <i>b</i> is the <b></b></a><b><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#b">angular acceleration</a></b>.
+</p><p>
+Work <i>W</i> and Power <i>P</i> (=rate of doing work) are the same in
+both translational and rotational systems, but derived
+from different expressions:
+</p><p>
+<a name="eq25">               
+  </a><a name="eq26">
+  </a><table class="eq" align="CENTER">
+<tbody><tr><th></th><th> Linear </th><th>        Rotational
+</th></tr><tr><td align="RIGHT" width="20">(2.5)
+  </td><td align="CENTER">  <i>W</i>  = <i>F x</i> 
+  </td><td align="CENTER">    <i>W</i>    = <i>T </i> &#952;
+</td></tr><tr><td align="RIGHT" width="20">(2.6)
+  </td><td align="CENTER">  <i>P</i>  = <i>F v</i> 
+  </td><td align="CENTER">      <i>P</i>   = <i>T</i> &#969;
+</td></tr></tbody></table><a name="eq26">
+</a></p><p><a name="eq26">
+where <i>x</i> is the linear distance moved, and &#952; (=Greek letter
+<i>theta</i>) is the 
+<b></b></a><b><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#y">rotation angle</a></b>.
+Eq. (2.5) assumes that force and torque remain constant during the work -
+strictly these should be integrations: &#8747;d<i>W</i> = &#8747;<i>F</i>d<i>x</i> 
+= &#8747;<i>T</i>d&#952;
+</p><p>
+</p><ul>
+<li><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+<hr>
+<a name="section3">
+<h2>3. Power Dissipation </h2>
+
+An ergometer flywheel loses speed primarily due to the energy required to
+'pump' air (also due to friction on the bearings and air viscosity, but these
+are probably minor losses). 
+Air is drawn into the system at a rate <i>m</i>/<i>t</i> [kg/sec]
+proportional to the flywheel speed &#969;:
+<p>
+<a name="eq31">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td width="20" align="RIGHT">(3.1)
+    </td><td align="CENTER">            <i>m</i> / <i>t</i> = <i>a</i> &#969;
+</td></tr></tbody></table><a name="eq31">
+</a></p></a><p><a name="eq31">
+where <i>a</i> is some constant dependent on the vent-settings
+(e.g. open vents = increased air flow for given rpm = 
+larger value of <i>a</i>).
+This same air leaves the system with an outward velocity also proportional to
+the flywheel speed, so acquiring a kinetic energy proportional to the 
+<i>square</i>
+of the flywheel speed. A mass <i>m</i> of air passing through the system
+therefore gains energy:
+</a></p><p><a name="eq31">
+<a name="eq32">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(3.2)
+    </td><td align="CENTER">    <i>E</i> = ½<i> d m</i> &#969;<sup>2</sup>
+</td></tr></tbody></table></a><a name="eq32">
+</a></p><p><a name="eq32">
+where <i>d</i> is some constant for a given flywheel design.
+Putting together Eqs. </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq31">(3.1)</a> and <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq32">(3.2)</a>, this
+implies that the flywheel is losing energy to the air at a rate 
+(=power dissipation) proportional to the cube of the angular velocity:
+</p><p>
+<a name="eq33">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(3.3)
+    </td><td align="CENTER"> <i>P</i> = <i>E</i> / <i>t</i> = 
+ ( <i>E</i> / <i>m</i> ) ( <i>m</i> / <i>t</i> ) 
+       = <i> k</i> &#969;<sup>3</sup>
+</td></tr></tbody></table><a name="eq33">
+</a></p><p><a name="eq33">
+where <i>k</i> (=½<i>d a</i>)
+comprises the constants 
+from the previous two equations.
+This power dissipation appears as a 'drag torque' <i>D</i>,
+proportional to the square of the angular 
+velocity &#969; (from Eq. </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq26">2.6</a>, 
+but see <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#note1">Note 1</a>):
+</p><p>
+<a name="eq34">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(3.4)
+    </td><td align="CENTER">       <i>D</i> = <i>k</i> &#969;<sup>2</sup>
+</td></tr></tbody></table><a name="eq34">
+</a></p><ul><a name="eq34">
+</a><li><a name="eq34"></a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+
+<hr>
+<a name="section4">
+<h2>4. Power Supplied</h2>
+
+The rower works in a <i>translational</i> system: applying a force <i>F</i>
+and moving the handle with linear velocity <i>v</i>, hence
+producing power <i>P</i>
+<p>
+<a name="eq41">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(4.1)
+    </td><td align="CENTER">              <i>P</i> = <i>F</i> <i>v</i>
+</td></tr></tbody></table><a name="eq41">
+</a></p></a><p><a name="eq41">
+The handle <i>linear</i> velocity is 
+related to the flywheel <i>angular</i> velocity (Eq. </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq21">2.1</a>) 
+by the radius of the cog (or pulley) r:
+</p><p>
+<a name="eq42">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(4.2)    
+    </td><td align="CENTER">            <i>v</i> = &#969; <i>r</i>
+</td></tr></tbody></table><a name="eq42">
+</a></p><p><a name="eq42">  
+The cog-size also determines the relationship between the 
+applied force <i>F</i> and the resulting torque <i>T</i>
+on the flywheel:
+</a></p><p><a name="eq42">
+<a name="eq43">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(4.3)       
+    </td><td align="CENTER">  <i>T</i> = <i>F r</i>
+</td></tr></tbody></table></a><a name="eq43">
+</a></p><p><a name="eq43">
+If the flywheel rotates at a constant angular velocity, 
+the applied torque <i>T</i> (Eq. </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq43">4.3</a>)
+must balance the average drag torque (Eq. <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq34">3.4</a>):
+</p><p>
+<a name="eq44">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(4.4)        
+    </td><td align="CENTER">   <i>F</i> <i>r</i> = <i>k</i> &#969;<sup>2</sup>
+</td></tr></tbody></table><a name="eq44">
+</a></p><p><a name="eq44">
+So the power <i>P</i> required from the rower (Eqs. </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq41">(4.1)</a>
+and <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq42">(4.2)</a>)
+is:
+</p><p>
+<a name="eq45">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(4.5)          
+    </td><td align="CENTER">    <i>P</i> = <i>F</i> &#969; <i>r</i> 
+      = <i>k</i> &#969;<sup>3</sup>
+</td></tr></tbody></table><a name="eq45">
+
+</a></p><center><a name="eq45">
+<div class="state">
+<b>Power is (approximately) related to the cube of the flywheel speed</b>
+</div>
+</a></center><a name="eq45">
+
+(analogous to the </a><a href="http://www.atm.ox.ac.uk/rowing/physics/basics.html#eq22"><i>v</i><sup>3</sup> 
+relationship</a>
+for a boat). 
+
+So to make the flywheel rotate twice as fast, you need to supply 8 times as
+much power 
+This can be achieved by halving the cog size (so the handle
+speed <i>v</i> remains the same if &#969; is doubled) 
+and supply 8 times as much force,
+or by keeping the same cog size (in which case the handle speed is also
+doubled to keep up with the new rotation rate) and supplying 4 times as much 
+force, or various other combinations of cog-size (=handle speed) and force.
+<p>
+</p><ul>
+<li><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+<hr>
+<a name="section5">
+<h2>5. Changing the Cog</h2>
+
+Some of the older types of erg allowed you to set the chain on different
+size cogs in order to change the gearing.
+</a><p><a name="section5">
+Suppose the cog radius is changed from <i>r</i> to <i>r</i><sub>1</sub>.
+To maintain the same flywheel speed the applied force <i>F</i> will also
+have to be changed to <i>F</i><sub>1</sub> (using Eq. </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq44">4.4</a>):
+</p><p>
+<a name="eq51">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(5.1)
+    </td><td align="CENTER">       
+    <i>F</i><sub>1</sub><i>r</i><sub>1</sub> = <i>k</i> &#969;<sup>2</sup> 
+          = <i>F</i> <i>r</i>
+</td></tr></tbody></table><a name="eq51">
+</a></p><p><a name="eq51">
+Rearranging this gives the new force <i>F</i><sub>1</sub>:
+</a></p><p><a name="eq51">
+<a name="eq52">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(5.2)
+    </td><td align="CENTER"> <i>F</i><sub>1</sub> = <i>F</i> <i>r</i> /
+        r<sub>1</sub>
+</td></tr></tbody></table></a><a name="eq52">
+</a></p><p><a name="eq52">
+But, for a given flywheel speed &#969;,  changing the cog also changes the 
+handle speed from <i>v</i> to <i>v</i><sub>1</sub> 
+(using Eq. </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq42">4.2</a>):
+</p><p>
+<a name="eq53">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(5.3) 
+       </td><td align="CENTER">      <i>v</i><sub>1</sub> / <i>r</i><sub>1</sub> 
+        = &#969;= <i>v</i> / <i>r</i>
+</td></tr></tbody></table><a name="eq53">
+</a></p><p><a name="eq53">
+which can be rearranged to give the new handle speed <i>v</i><sub>1</sub>:
+</a></p><p><a name="eq53">
+<a name="eq54">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(5.4)
+         </td><td align="CENTER">  <i>v</i><sub>1</sub> 
+        = <i>v</i> <i>r</i><sub>1</sub> / <i>r</i>
+</td></tr></tbody></table></a><a name="eq54">
+</a></p><p><a name="eq54">
+So using <i>F</i><sub>1</sub> from Eq. (</a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq52">5.2</a>) and 
+<i>v</i><sub>1</sub> from
+Eq. (<a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq54">5.4</a>), the power <i>P</i><sub>1</sub> required to maintain
+the original speed with the new cog is:
+</p><p>
+<a name="eq55">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(5.5)
+      </td><td align="CENTER">  <i>P</i><sub>1</sub> 
+        = <i>F</i><sub>1</sub> <i>v</i><sub>1</sub> 
+        = ( <i>F</i> <i>r</i> / <i>r</i><sub>1</sub> )
+          ( <i>v</i> <i>r</i><sub>1</sub> / <i>r</i> ) 
+                    = <i>F</i> <i>v</i> 
+                    = <i>P</i>
+</td></tr></tbody></table><a name="eq55">
+</a></p><p><a name="eq55">
+
+i.e. same as the old power.
+Putting this into words: although you can maintain a certain flywheel speed
+with less force using a larger cog, you will need to apply this force quicker
+so that the power (=force x velocity) required actually remains the same. 
+
+</a></p><center><a name="eq55">
+<div class="state">
+<b>Cog-size does not affect the relationship between supplied power
+and flywheel speed.</b>
+</div>
+</a></center><a name="eq55">
+</a><p><a name="eq55">
+It is exactly the same as riding a bicycle in a 
+different gear, or changing the </a><a href="http://www.atm.ox.ac.uk/rowing/physics/basics.html#section8">gearing</a>,
+or length, of an oar.
+</p><p>
+</p><ul>
+<li><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+<hr>
+<a name="section6">
+<h2>6. Changing the Damping</h2>
+
+For air-resistance ergs, the damping is controlled by sliding vents which
+restrict the amount
+of air that gets 'pumped' by the fan.
+On a Concept Model C and later, the 
+vent setting is controlled by a lever with positions 1-10 (1=lightest,
+10=heaviest). 
+</a><p><a name="section6">
+Changing the air-flow into the erg
+means that the constant <i>a</i> in Eq. (</a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq31">3.1</a>) is
+altered. Since the constant <i>k</i> in Eq. (<a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq34">3.4</a>) is 
+proportional to <i>a</i>, this changes the drag torque: 
+</p><p>
+<a name="eq61">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td width="20" align="RIGHT">(6.1)
+    </td><td align="CENTER">     <i>D</i> = <i>k</i><sub>1</sub> &#969;<sup>2</sup>
+</td></tr></tbody></table><a name="eq61">
+</a></p><p><a name="eq61">
+
+If the same flywheel speed &#969; is to be maintained, the power required
+<i>P</i><sub>1</sub> (from Eq. </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq26">2.6</a>) is then given by
+</p><p>
+<a name="eq62">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td width="20" align="RIGHT">(6.2) 
+    </td><td align="CENTER">    <i>P</i><sub>1</sub> = <i>k</i><sub>1</sub>
+             &#969;<sup>3</sup>            
+</td></tr></tbody></table><a name="eq62">
+</a></p><p><a name="eq62">
+
+Substituting for &#969;<sup>3</sup> from Eq. (</a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq33">3.3</a>),
+</p><p>
+<a name="eq63">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td width="20" align="RIGHT">(6.3)  
+    </td><td align="CENTER">  <i>P</i><sub>1</sub> = 
+       ( <i>k</i><sub>1</sub> / <i>k</i>) <i>P</i>
+</td></tr></tbody></table><a name="eq63">
+</a></p><p><a name="eq63">
+
+so, unlike the cog-change, this time the power <i>is</i> different.
+</a></p><center><a name="eq63">
+<div class="state">
+<b>Changing the damping alters the relationship between power and
+flywheel speed</b>
+</div>
+</a></center><a name="eq63">
+<p>
+There are also other, unintentional, ways in which the damping can change:
+changes in friction in the bearings with age, proximity to a wall or other
+ergometers, air-pressure, viscosity... For these reasons 
+the ergometer computers do not measure 
+the vent/lever position to determine the damping torque
+via the constant <i>a</i>,
+but instead use a more direct
+method, explained in the next section.
+</p><p>
+</p></a><ul><a name="eq63">
+</a><li><a name="eq63"></a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+<p>
+</p><hr>
+<a name="section7">
+<h2>7. Measuring the Damping</h2>
+
+During the 'recovery' phase of stroke cycle, no power is applied to the 
+flywheel so it decelerates. During this period the only torque experienced
+by the flywheel is the damping, so using </a><a href="http://www.atm.ox.ac.uk/rowing/physics/basics.html#newton2">Newton's 
+2nd Law</a>:
+<p>
+<a name="eq71">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(7.1)
+    </td><td align="CENTER">        <i>D</i> = -<i>I</i> ( d&#969; / d<i>t</i> )
+</td></tr></tbody></table><a name="eq71">
+</a></p><p><a name="eq71">
+If the rate of change of angular velocity 
+d&#969;/d<i>t</i> (i.e. deceleration) 
+is measured,
+and the moment of inertia <i>I</i> is known 
+(presumed the constant, and the same
+for all flywheels of the same model), the damping torque <i>D</i>
+can be calculated.
+</a></p><p><a name="eq71">
+However, <i>D</i> itself is a function of angular velocity &#969;
+(Eq.</a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq34">3.4</a>) so a more fundamental parameter is the
+'drag factor' <i>k</i>
+</p><p>
+<a name="eq72">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(7.2)       
+    </td><td align="CENTER">     <i>k</i> = - <i>I</i> ( d&#969; / d<i>t</i> ) 
+ (1 / &#969;<sup>2</sup> ) = <i>I</i> d(1/&#969;) / d<i>t</i>
+</td></tr></tbody></table><a name="eq72">
+</a></p><p><a name="eq72">
+where <i>k</i> can either be calculated rotation by rotation using the
+first expression and averaged, or just once for the whole recovery phase
+using the second expression. The calculated 'Drag Factor' <i>k</i> 
+can be displayed on the Concept monitor 
+(units 10<sup>-6</sup> N m s<sup>2</sup>) and 
+something similar called 'Resistance Factor' is displayed on the 
+Rowperfect monitor (I'm afraid I don't know the units).
+</a></p><p><a name="eq72">
+</a></p><center><a name="eq72">
+<div class="box" style="background-color:eeeeff; width:75%;
+text-align:left">
+<blockquote>
+By measuring the damping, the ergometer will automatically compensate
+for any of the following: 
+<ul>
+<li> Opening/Closing the vents to increase/reduce resistance 
+</li><li> Changes in friction on the flywheel bearings with time
+</li><li> Changes in air pressure, density, viscosity etc.
+</li><li> Environmental factors such as proximity to walls or other ergs
+</li></ul>
+Things that are not compensated are:
+<ul>
+<li> Changes in the chain friction 
+</li><li> Changes in the tension of the return mechanism
+</li><li> Manufacturing variations flywheel moments of inertia (probably negligible)
+</li><li> Changes in flywheel moments of inertia (unlikely with the solid flywheels)
+</li></ul>
+</blockquote>
+</div>
+</a></center><a name="eq72">
+</a><p><a name="eq72">
+The first two effects are uncompensated because they have no influence on
+the damping, the second two are uncompensated because they affect the moment
+of inertia which is assumed to be just a fixed number in the damping
+calculation.
+As mentioned in </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section4">section 4</a>, the apparent change in 
+resistance from changing the cog is purely a 
+'gearing' effect (i.e. unrelated to damping) so no compensation is required to
+account for it.
+</p><p>
+</p><ul>
+<li><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+<hr>
+<a name="section8">
+<h2>8. Measuring the Power Supplied </h2>
+
+With variable damping,
+the acceleration of the flywheel d&#969;/d<i>t</i> 
+is measured during the stroke phase, and related to the
+net torque (=applied torque
+minus drag torque, Eq. </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq24">2.4</a>):
+<p>
+<a name="eq81">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(8.1)     
+    </td><td align="CENTER"><i>T</i> - <i>D</i> = <i>I</i> ( d&#969; / d<i>t</i> )
+</td></tr></tbody></table><a name="eq81">
+</a></p><p><a name="eq81">
+The energy d<i>E</i> supplied by the rower to turn the flywheel through an 
+angle d&#952; is therefore given by (Eq. </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq25">2.5</a>):
+</p><p>
+<a name="eq82">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(8.2)     
+    </td><td align="RIGHT">d<i>E</i> = <i>T</i> d&#952;
+    </td><td align="LEFT">= 
+         <i>I</i> ( d&#969; / d<i>t</i> ) d&#952; + <i>D</i> d&#952; 
+</td></tr><tr><td></td><td></td><td align="LEFT">= 
+         <i>I</i> ( d&#969; / d<i>t</i> ) d&#952; + <i>k</i> 
+                        &#969;<sup>2</sup> d&#952;
+</td></tr></tbody></table><a name="eq82">
+</a></p><p><a name="eq82">
+where all the terms are either constant (<i>I</i>), directly measured
+(&#969;,<i>t</i>,&#952;), 
+or assumed constant from derivation during the previous
+recovery phase (<i>k</i>, see Eq.</a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq72">7.2</a>).
+The Rowperfect has an additional term representing work
+done against the tension of the shock cord.
+</p><p>
+The average supplied power per stroke is then 
+simply obtained by dividing the energy per stroke <i>E</i>
+by the time taken for each stroke cycle <i>t</i>
+</p><p>
+<a name="eq83">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(8.3)     
+    </td><td align="CENTER"><i>P</i>  = <i>E</i> / <i>t</i>
+</td></tr></tbody></table><a name="eq83">
+</a></p><p><a name="eq83">
+See </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#note2">Note (2)</a>.
+</p><ul>
+<li><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+<hr>
+<a name="section9">
+<h2>9. Indicated Speed (Splits) and Distance </h2>
+
+From Eq.</a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq33">(3.3)</a> the dissipated power on an ergometer is
+related to the cube of the rotation velocity 
+(<i>P</i>=<i>k</i> &#969;<sup>3</sup>).
+A similar cube law relationship holds for dissipated power and boat velocity
+<i>u</i> (see <a href="http://www.atm.ox.ac.uk/rowing/physics/basics.html">Basics</a>, 
+<a href="http://www.atm.ox.ac.uk/rowing/physics/basics.html#eq22">Eq. 2.2</a>) 
+<p>
+<a name="eq91">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td width="20" align="RIGHT">(9.1)
+    </td><td align="CENTER"> <i>P</i> = <i>k</i> &#969;<sup>3</sup> = <i>c u</i><sup>3</sup>
+</td></tr></tbody></table><a name="eq91">
+</a></p><p><a name="eq91">
+So it is natural to relate fan rotational velocity &#969; to indicated 
+linear velocity <i>u</i>, and the number of rotations &#952; to
+the indicated distance covered <i>s</i>:
+</a></p><p><a name="eq91">
+<a name="eq92">
+    </a><a name="eq93">
+    </a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(9.2)
+    </td><td align="CENTER"> <i>u</i> = ( <i>k</i> / <i>c</i> )<sup>1/3</sup> &#969;
+</td></tr><tr><td align="RIGHT" width="20">(9.3)
+    </td><td align="CENTER"> <i>s</i> = ( <i>k</i> / <i>c</i> )<sup>1/3</sup> &#952;
+</td></tr></tbody></table></a><a name="eq93">
+</a></p><p><a name="eq93">
+For fixed-damping ergs (the old Concept Model A and the  WaterRower), 
+these are related
+by a fixed constant.
+However, for variable damping ergs (Concept B,C, Rowperfect), 
+the drag factor <i>k</i> can vary so
+the computer can re-evaluate these 'constants' stroke by stroke. So while
+the distance covered in each stroke is related to number of revs turned during
+that stroke, the factor may change from one stroke to the next if <i>k</i>
+changes.
+</a></p><p><a name="eq93">
+The figure
+used for <i>c</i> is somewhat arbitrary
+- selected to indicate a 'realistic' boat
+speed for a given output power. 
+Concept used to quote 
+a figure <i>c</i>=2.8, which, for a 2:00 per 500m split
+(equivalent to <i>u</i>=500/120=4.17m/s)  gives 203 Watts.
+However, Marinus van Holst
+(</a><a href="http://home.hccnet.nl/m.holst/ErgoDisp.html">"Behind the Ergometer
+Display"</a>),
+thinks the formula used is equivalent to
+</p><p>
+<a name="eq94">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(9.4)
+    </td><td align="CENTER">  <i>P</i> = 4.31 <i>u</i><sup>2.75</sup>
+</td></tr></tbody></table><a name="eq94">
+</a></p><p><a name="eq94">
+giving 218 Watts for a 2:00 split (in my experience this is a bit high).
+</a></p><p><a name="eq94">
+The Rowperfect definitely uses the cube law but the value <i>c</i> 
+can be adjusted for different boat-types and rower's  weight and sex.
+</a></p><ul><a name="eq94">
+</a><li><a name="eq94"></a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+
+<p>
+</p><hr>
+<a name="section10">
+<h2>10. Indicated Power v. Indicated Speed (Splits) </h2>
+</a><p><a name="section10">
+Even if the damping factor <i>k</i> were to remain constant
+(Eq.</a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq91">9.1</a>), there would not be a fixed relation between
+the average power for a piece and the mean split or speed.
+This arises from the 
+non-linear relationship between power and speed (i.e. <i>P</i> = 
+<i>c</i> <i>u</i><sup>3</sup> rather
+than <i>P</i> = <i>c</i> <i>u</i>), operating both from one stroke to the next and
+within individual strokes.
+</p><p>
+Take the case of rowing a 1000m piece in 4 minutes,
+either (a) at a uniform rate of 2:00/500m splits, or (b) rowing
+the first 500m at a steady 1:50 pace and the second half at a steady 2:10. 
+Using Eq. (<a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq91">9.1</a>)
+The average power for each of these two pieces will be
+</p><p>
+<a name="eq101">
+   </a><a name="eq102">
+   </a><table class="weq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(10.1)
+   </td><td align="RIGHT">  (a): <i>P</i> = 
+   </td><td align="LEFT"> <i>c</i> (500/120)<sup>3</sup> = 72.34<i>c</i>
+</td></tr><tr><td align="RIGHT" width="20">(10.2)  
+   </td><td align="RIGHT">  (b): <i>P</i> = 
+   </td><td align="LEFT">     (110<i>c</i>/240).(500/110)<sup>3</sup> 
+          + (130<i>c</i>/240).(500/130)<sup>3</sup> = 73.86<i>c</i>
+</td></tr></tbody></table><a name="eq102">
+</a></p><p><a name="eq102">
+Thus more power is required for the same average speed if the splits 
+are uneven (this is also true for boats: see </a><a href="http://www.atm.ox.ac.uk/rowing/physics/basics.html#section5">Basics (Section 5)</a>).
+</p><p>
+</p><center>
+<div class="state"><b>
+For a given average speed the indicated average power for a piece will be
+    higher if is rowed with uneven splits than with even splits
+</b></div>
+</center>
+<p>
+However, even maintaining a constant split, there is not a fixed relationship
+between  power and speed due to the variation of speed during the stroke
+itself. The split is derived from the mean fan rotational velocity 
+&#969; through
+the stroke (Eq.<a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq92">9.2</a>), while the
+power is proportional to an average of &#969;<sup>3</sup>. 
+So, for example, rowing
+a lower rate will lead to a wider variation in &#969; throughout the
+stroke cycle, so that the average of &#969;<sup>3</sup> 
+will be larger, and more
+power is required to maintain the same average speed.
+(In boat terms, this is why 'sliding-rigger' boats were developed
+to reduce hull-speed variation during the stroke cycle
+- <a href="http://www.atm.ox.ac.uk/rowing/physics/basics.html#section5">Basics, Section 5</a>).
+</p><p>
+</p><center>
+<div class="state">
+<b>
+For a given split, the indicated power
+<i>(but not necessarily the rower's actual power output)</i>
+        will be lower for a high rate than a low rate 
+</b></div></center>
+<p>
+See <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section13">section13</a> for the effect of rating on the 
+<i>actual</i> power output of the rower.
+</p><p>
+</p><ul>
+<li>Back to Contents
+</li></ul>
+<hr>
+<a name="section11">
+<h2>11. Power v. Indicated Calories </h2>
+
+The Concept Model C also has a 'Calories' display as a (very) rough
+guide to how many calories an average individual has burned up in a piece. This
+is not the same as the mechanical work done. 
+<p>
+Mechanical work <i>W</i> (a type of Energy) 
+is defined as the average Power x time:
+</p><p>
+<a name="eq111">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(11.1) 
+    </td><td align="CENTER">  <i> W</i> = <i>P</i> <i>t</i>
+</td></tr></tbody></table><a name="eq111">
+</a></p></a><p><a name="eq111">
+If Power <i>P</i> is measured in Watts and time <i>t</i> in seconds, 
+then the Work <i>W</i> is obtained
+in Joules. So, rowing a steady 200W for 30 minutes, you would generate an
+amount of mechanical work
+</a></p><p><a name="eq111">
+<a name="eq112">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(11.2) 
+    </td><td align="CENTER">   <i>W</i> = 200 x 1800 = 360 000 J = 360 kJ
+</td></tr></tbody></table></a><a name="eq112">
+</a></p><p><a name="eq112">
+In physics, a 'calorie' is defined as the amount of heat energy required to
+raise the temperature of 1 gramme of water by 1 degree centigrade, giving
+1 calorie = 4.2 Joules. Dieticians, on the other hand,
+use the term 'calories' differently -
+their 'calories' are 1000 times bigger ('kilo-calories', kC), 
+so dividing 360 kJ by 4.2 gives the <i>mechanical</i> work done in terms
+of 'dietary calories': 85.6 kC
+</a></p><p><a name="eq112">
+However, for the above workout you would actually get a displayed value
+approaching 500 kC, i.e. a factor 5 - 6 times larger.
+This is because the computer
+attempts to calculate the number of calories <i>you</i> burn up (effectively
+chemical energy contained in fats and carbohydrates) in order to generate
+the mechanical work. It uses the formula
+</a></p><p><a name="eq112">
+<a name="eq113">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(11.3) 
+    </td><td align="CENTER">  <i>E</i> =  ( 4 <i>W</i> + 0.35 <i>t</i> ) / 4.2  [kC]
+</td></tr></tbody></table></a><a name="eq113">
+</a></p><p><a name="eq113">
+where <i>E</i> is the displayed number of calories [kC],
+<i>W</i> is the mechanical work in kJ, calculated according to 
+Eq. (</a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq111">11.1</a>), <i>t</i> is the time in seconds. This assumes
+that the body actually requires 4 units of chemical energy to generate 1 unit
+of mechanical energy (i.e. 25% efficiency) plus a background consumption of
+0.35 kJ/sec (=300 kC/hour).
+</p><p>
+</p><blockquote>
+<i>Comment Jon Williams of Concept2 (12 Aug 04)</i><br>
+The 300 kC/hour has always been our best approximation for keeping alive and
+awake and going through the rowing motion at a reasonable stroke rate on an
+erg with the flywheel removed. This was arrived at from internal experiments
+and observations, data from Fritz Hagerman and studies done at Ball State.
+</blockquote>
+
+<p>
+For the above workout this would give 
+</p><p>
+<a name="eq114">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(11.4)
+    </td><td align="CENTER"> <i> E</i> = ( 4.0 x 360 + 0.35 x 1800 ) / 4.2 
+          = 493 [kC]
+</td></tr></tbody></table><a name="eq114">
+</a></p><p><a name="eq114">
+</a></p><center><a name="eq114">
+<div class="state">
+<b>The 'Calorie' output on a Concept ergometer is an approximate
+guide to calories [kC] burned rather than mechanical work performed </b>
+</div>
+</a></center><a name="eq114">
+
+</a><ul><a name="eq114">
+</a><li><a name="eq114"></a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+
+<hr>
+<a name="section12">
+<h2>12. Dynamic v. Static Ergs</h2>
+
+A fundamental difference between the linear mechanics of a 'static' ergometer 
+(such as a Concept) and a boat can be illustrated by the following test:
+<ul>
+<li>If you sit at front-stops on an erg and then push your legs down you move
+backwards relative to room by an amount equal to your leg length
+</li><li>If you sit at front-stops in a boat and then push your legs down 
+(oars out of the water) you only move backwards relative to the bank 
+by an amount ~20% of your leg length -
+the rest of the motion is taken by the boat moving away from you.
+</li></ul>
+</a><p><a name="section12">
+This is a result of the action-reaction principle 
+(</a><a href="http://www.atm.ox.ac.uk/rowing/physics/basics.html#newton">Newton's 3rd Law</a>). The force applied by your
+legs to the stretcher acts equally on you and the stretcher. In the static
+case, the stretcher is effectively attached to the whole planet so doesn't
+move - you do all the moving. In the dynamic case, the mass of the 
+boat is much lighter (typically 10-20%) than you, so it moves further than
+you do.
+</p><p>
+This is not just a matter of the frame of reference: in the static (ergometer)
+you are actually performing more work in accelerating your body weight than
+in the dynamic (floating) case where the work is split between accelerating
+the boat and your body in opposite directions.
+</p><p>
+A 'dynamic' ergometer, such as the RowPerfect, attempts to simulate the 
+reaction effect by having the stretcher/flywheel (together weighing
+approximately the same as a sculling boat) also mounted on a rail so that
+they also absorb most of the motion. Putting the Concept on 'slides'
+also simulates this effect, although since the Concept erg is much heavier
+than a sculling boat, it's not as realistic as the RowPerfect.
+</p><p>
+OK, those are the principles. Here's the maths ...
+</p><p>
+Imagine someone of mass <i>Ma</i> sitting in a boat of mass <i>Mb</i>,
+initially at rest then separating their centre of masses by a distance
+<i>x</i> in a time <i>t</i> with constant acceleration. Through conservation
+of momentum the final velocity <i>Va</i>, <i>Vb</i> 
+(measured in opposite directions)
+of each component will be given by:
+</p><p>
+<a name="eq121">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(12.1)
+    </td><td align="CENTER">      <i>Ma</i> <i>Va</i> = <i>Mb</i> <i>Vb</i>
+</td></tr></tbody></table><a name="eq121">
+</a></p><p><a name="eq121">
+Since the total separation <i>s</i> is achieved in a time <i>t</i>, at
+constant acceleration, then
+</a></p><p><a name="eq121">
+<a name="eq122">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(12.2) 
+    </td><td align="CENTER">      <i>Va</i> + <i>Vb</i> = <i>s</i> / <i>t</i>
+</td></tr></tbody></table></a><a name="eq122">
+</a></p><p><a name="eq122">
+Then the total kinetic energy <i>E</i>
+in the final state (which has to be supplied by
+the rower) is given by
+</a></p><p><a name="eq122">
+<a name="eq123">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(12.3)
+    </td><td align="RIGHT">        <i>E</i>
+    </td><td align="LEFT"> = ½ <i>Ma</i> <i>Va</i><sup>2</sup> + 
+                      ½ <i>Mb</i> <i>Vb</i><sup>2</sup>
+</td></tr><tr><td></td><td></td><td align="LEFT">  =  ½ <i>Ma</i> <i>Va</i><sup>2</sup>  
+     + ½ (<i>Ma</i> <i>Va</i>) ( <i>s</i>/<i>t</i> - <i>Va</i> )
+</td></tr><tr><td></td><td></td><td align="LEFT"> =  ½ <i>Ma</i> <i>Va</i> (<i>s</i>/<i>t</i>)
+</td></tr></tbody></table></a><a name="eq123">
+</a></p><p><a name="eq123">
+Putting in some typical numbers: <i>Ma</i> = 75 kg, <i>t</i> = 1 sec, 
+<i>s</i> = 1 metre. 
+
+</a></p><p><a name="eq123">
+In the static case <i>Mb</i> is effectively infinite
+and <i>Vb</i>=0, giving <i>Va</i> = 1 m/s, 
+</a></p><p><a name="eq123">
+<a name="eq124">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(12.4)  
+    </td><td align="LEFT">  Static: 
+    </td><td align="CENTER"><i>E</i> = 75 x 1 x 1 / 2 = 37.5 J
+</td></tr></tbody></table></a><a name="eq124">
+</a></p><p><a name="eq124">
+In the dynamic case, <i>Mb</i> = <i>Ma</i>/5, so <i>Vb</i> = 5 <i>Va</i>, 
+giving <i>Va</i> = 1/6 m/s and <i>Vb</i> = 5/6 m/s:
+</a></p><p><a name="eq124">
+<a name="eq125">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(12.5) 
+   </td><td align="LEFT">  Dynamic: 
+   </td><td align="CENTER"><i>E</i> = 75 x (1/6) x 1 / 2 = 6.25 J
+</td></tr></tbody></table></a><a name="eq125">
+</a></p><p><a name="eq125">
+That is, on a static erg, the rower is required to put in six times
+as much energy accelerating/decelerating just their bodyweight,
+compared to a boat or a dynamic erg where the energy is split between the 
+bodyweight and the boat/erg.
+</a></p><p><a name="eq125">
+Cas Rekers (designer of the Rowperfect) has performed tests comparing 
+the 'indicated' power output with and without the flywheel fixed - 
+the subject gained about 10-20% power output in the second case, representing
+the additional power that could be applied to the flywheel instead of 
+accelerating the bodyweight.
+</a></p><p><a name="eq125">
+</a></p><center><a name="eq125">
+<div class="state"><b> 
+More energy is used up by accelerating just the body backwards and forwards
+than by accelerating the body + (lighter) boat/erg in opposite directions.
+</b></div></a></center><a name="eq125">
+<p>
+This is also one reason why the 'catch' on a static erg feels relatively
+'slack' compared to a boat: the initial pressure on the feet is actually being
+used to decelerate/accelerate the body so the acceleration of the handle
+(as sensed by pressure in the hands) can only begin once the body has changed 
+direction. The catch in the handle feels 'late' compared to the catch
+on the stretcher.
+</p><p>
+</p></a><ul><a name="eq125">
+</a><li><a name="eq125"></a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+<hr>
+<a name="section13">
+<h2>13. Effect of Rating </h2>
+
+It is well known that most erg world records
+(on Concepts, at least) are 
+set at much lower rates than used in racing boats over events of
+similar duration. There are probably two reasons for this
+<ol>
+<li> The rowing stroke sweeps through an angle and is therefore less efficient
+     at the ends than in the middle - the ergometer stroke is equally efficient
+     at all parts of the stroke therefore additional length has more benefit
+     (plus no length is lost due to the need to cover/extract the blade)
+</li><li> The ergometer rower has to perform additional work accelerating/decelerating
+     their bodyweight each stroke - in a boat the body moves much less 
+     relative to the centre of mass of the whole system, so there is less of
+     a penalty for higher ratings.
+</li></ol>
+
+Here's a rough calculation of how much energy is lost by the ergometer rower
+having to accelerate/decelerate their bodyweight each stroke 
+
+If the rating is <i>R</i> (strokes/minute), then the time <i>t</i> [s]
+for each stroke is:
+<p>
+<a name="eq131">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(13.1)
+    </td><td align="CENTER">       <i>t</i> = 60 / <i>R</i>
+</td></tr></tbody></table><a name="eq131">
+</a></p></a><p><a name="eq131">
+Assuming the rower moves up or down the slide a distance <i>s</i>,
+at the same constant speed in the stroke as well as
+the recovery, and changes direction instantaneously (!) at each end,
+the speed <i>v</i> will be
+</a></p><p><a name="eq131">
+<a name="eq132">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(13.2)       
+    </td><td align="CENTER">   <i>v</i> = 2 <i>s</i> / <i>t</i> 
+               = 2 <i>s</i> <i>R</i> / 60
+</td></tr></tbody></table></a><a name="eq132">
+</a></p><p><a name="eq132">
+For a rower of mass <i>m</i>, the Kinetic Energy associated with this motion
+is:
+</a></p><p><a name="eq132">
+<a name="eq123">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(12.3)
+    </td><td align="CENTER">         
+    <i>U</i> = ½ <i>m</i> <i>v</i><sup>2</sup> 
+             =  2 <i>m</i> ( <i>s</i> <i>R</i> / 60 )<sup>2</sup>
+</td></tr></tbody></table></a><a name="eq123">
+</a></p><p><a name="eq123">
+Assuming 'inelastic' ends of the stroke (i.e. no 'bounce' at the catch), then
+the rower, mass <i>m</i>,
+ must supply sufficient work to recreate the kinetic energy 
+<i>U</i> each time they change direction, twice every stroke,
+requiring a work rate (= power) of
+</a></p><p><a name="eq123">
+<a name="eq134">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(13.4)  
+    </td><td align="CENTER">     <i>P</i> = 2 <i>U</i> ( <i>R</i> / 60 ) 
+       = 4 <i>m</i> <i>s</i><sup>2</sup> ( <i>R</i> / 60 )<sup>3</sup>
+</td></tr></tbody></table></a><a name="eq134">
+</a></p><p><a name="eq134">
+Trying some numbers: for <i>m</i>=75 kg, <i>s</i>=1 m, 
+<i>R</i>=30 str/min, this gives
+</a></p><p><a name="eq134">
+<a name="eq135">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td align="RIGHT" width="20">(13.5)  
+     </td><td align="CENTER">       
+  <i>P</i> = 4 x 75 x (1)<sup>2</sup> x (30/60)<sup>3</sup> = 37.5 W
+</td></tr></tbody></table></a></p><p><a name="eq135">
+(Note that this is the same answer as Eq. </a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq124">12.4</a>, which 
+is in fact derived for the same conditions).
+So the above rower is spending 37.5 W just moving up and down the slide at
+rate 30 (even without holding on to the handle). 
+</p><p>
+Note that the rate appears as a cube term: changing the rate from 30 to 36
+(a factor 1.2) results in a factor (1.2)<sup>3</sup> 
+= 1.7 increase in power loss.
+Similarly, rating 24 rather than 30 consumes (0.8)<sup>3</sup> 
+= 0.5 - only about half
+as much power is lost.
+</p><p>
+Also, note the appearance of the stroke-length term <i>s</i><sup>2</sup> 
+- taller
+athletes are going to suffer a lot more at higher rates than shorter athletes.
+</p><p>
+There are a few more effects which have been ignored in all this which are
+probably smaller and also cancel out to some extent over the stroke cycle
+(ie some of the energy lost is regained in a different part of the stroke).
+</p><ul>
+<li> The work done against the elastic (although this is included in the 
+power calculation for a RowPerfect)
+</li><li> The work done raising the centre of mass up the slide (slides slope
+upwards towards the end of the stroke
+</li><li> The work done raising the centre of mass of the body sitting
+up after the catch
+</li></ul>
+<ul>
+<li><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+<hr>
+<a name="section14">
+<h2>14. Effect of Altitude </h2>
+<p>
+An approximate formula for the rate of change of air-pressure <tt>p</tt>
+with altitude is:
+</p><p>
+<a name="eq141">
+</a><table class="eq" align="CENTER">
+<tbody><tr><td width="20" align="RIGHT">(14.1)
+    </td><td align="CENTER">  <i>p</i> = <i>p</i><sub>0</sub> exp(-<i>z</i>/7000)
+</td></tr></tbody></table><a name="eq141">
+</a></p></a><p><a name="eq141">
+where <i>p</i><sub>0</sub> 
+is the sea-level pressure (approx 1000mb) and <i>z</i> is
+the altitude above sea-level in metres. 
+</a></p><p><a name="eq141">
+Self-calibrating ergs such as the Concept and RowPerfect would compensate
+for this by calculating a reduced drag factor
+(</a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7">section 7</a>), so still give an accurate
+measurement of the work done.
+</p><p>
+Eq. (<a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq141">14.1</a>)  corresponds to a pressure 
+decrease of 1% for every 70m increase altitude.
+This means that, for a given lung-volume and breathing rate, 
+the amount of oxygen taken into the bloodstream would
+also decrease by 1% for every 70m.
+If oxygen uptake through the lungs is the
+limiting factor in aerobic power output, then you would expect your
+erg power scores to fall off at the same rate (or split times to increase
+by 1% for every 210 m due to the cube relationship between power and 
+speed, Eq. <a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq45">4.5</a>).
+E.g., in Denver (altitude 1500m), the air pressure is only 80% of the sea
+level value, so anyone moving up from sea level and trying a long-distance
+erg would probably find their power reduced by 20% (or times increased by
+approximately 7%).
+</p><p>
+Similarly, someone moving in the opposite direction (1500m down to sea level)
+would find 25% more oxygen in each lungful of air. 
+</p><p>
+</p><ul>
+<li><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+<hr>
+<a name="section15">
+<h2>15. Glossary of terms used in Rotational Mechanics</h2>
+
+</a><a name="y">
+<dt><b>Rotation Angle (&#952;)</b> (Units: radians, Linear analogue: Displacement, 
+or Distance)
+</dt></a><dd><a name="y">Angular position. Conventionally expressed in 'radians',
+1 revolution = 2&#960; radians,
+1 radian = 180/&#960; (approx.57) degrees.
+</a><p><a name="y">
+</a><a name="w">
+</a></p></dd><dt><a name="w"><b>Angular Velocity (&#969;)</b> (Units: rad/s, Linear analogue: Velocity)
+</a></dt><dd><a name="w">Rate of change of rotation angle with time.
+Can also be measured in degrees/second or revolutions/minute, etc. but one
+advantage of using rad/s is that it gives a direct conversion to 
+velocity <i>v</i> (in m/s): <i></i> = &#969; <i>r</i>
+</a><p><a name="w">
+</a><a name="b">
+</a></p></dd><dt><a name="b"><b>Angular Acceleration (b)</b> (Units: rad/s<sup>2</sup>, 
+                                     Linear analogue: Acceleration)
+</a></dt><dd><a name="b">Rate of change of angular velocity with time: 
+<i>b</i> = ( d&#969; / d<i>t</i> )
+</a><p><a name="b">
+</a><a name="I">
+</a></p></dd><dt><a name="I"><b>Moment of Inertia (I) </b> (Units: kg. m<sup>2</sup>, 
+Linear analogue: Mass)
+</a></dt><dd><a name="I">Sum of (Mass x square of distance from axis of rotation) for each mass
+element of system.
+E.g. for a thin ring of mass 10 kg with radius 10 cm, the moment of inertia
+is: 10 kg x (0.1 m)<sup>2</sup> = 0.1 kg.m<sup>2</sup>. 
+For other shapes, given the mass 
+distribution <i>m</i>(<i>r</i>) as a function of radius <i>r</i>, 
+an integration 
+&#8747; d<i>I</i> = &#8747; <i>r</i> <sup>2</sup> d<i>m</i> is required. 
+For a disk this gives <i>I</i> = ½ <i>m</i> <i>a</i><sup>2</sup>,
+where <i>a</i> is the radius of the disk.
+</a><p><a name="I">
+</a><a name="J">
+</a></p></dd><dt><a name="J"><b>Angular Momentum (J) </b> 
+(Units: kg m<sup>2</sup> rad / s, Linear analogue: Momentum)
+</a></dt><dd><a name="J">Product of Moment of Inertia x angular velocity.
+
+</a><p><a name="J">
+</a><a name="T">
+</a></p></dd><dt><a name="T"><b>Torque (T,D)</b> (Units: N.m, Linear analogue: Force)
+</a></dt><dd><a name="T">Product of Force x distance from axis of rotation at which the force is
+applied. E.g. if a force of 10 N is applied via a cog of radius 3 cm, the
+Torque is 10 N x 0.03 m = 0.3 N.m .
+<p>
+</p></a><ul><a name="T">
+</a><li><a name="T"></a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+<hr>
+<a name="section16">
+<h3>Notes</h3>
+</a><ol><a name="section16">
+</a><a name="note1">
+</a><li><a name="note1"> <i>D</i> = <i>k</i> &#969;<sup>2</sup> 
+is only true for 'fluid' damping: other damping
+mechanisms, e.g. electro-magnetic or friction-belt, follow a 
+<i>D</i> = <i>k</i> &#969; relationship.
+ For a given initial value of
+<i>D</i> and &#969;, as &#969; increases during the stroke, a
+<i>k</i> &#969; damping increases the drag 
+more slowly than a <i>k</i> &#969;<sup>2</sup> damping, 
+hence gives a 'lighter' feel on the finish.
+</a><a name="note2">
+</a></li><li><a name="note2"> A similar answer could be obtained simply by averaging 
+<i>P</i> = <i>k</i> &#969;<sup>3</sup>
+throughout a stroke cycle. However, this would not
+take into account any additional kinetic energy put into the flywheel on
+that particular stroke, and Eq.</a><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#eq82">(8.2)</a> is more accurate 
+anyway since the (dominant) first term is derived from Newton's 2nd Law
+(robust) while the <i>D</i> = <i>k</i> &#969;<sup>2</sup> 
+relationship is only
+an approximation.
+</li></ol>
+<p>
+</p><ul>
+<li><a href="http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#contents">Back to Contents</a>
+</li></ul>
+
+
+
+</dd></body></html>

@@ -71,9 +71,8 @@ void loop()
                           {
 
                               lcd.print("Dec");
-                              if(Accelerating)
-                              {
-                                //finished drive
+                              if(Accelerating)//previously accelerating
+                              { //finished drive
                                 float diffrotations = laststrokerotations - rotations;
                                 long difft = laststroketime - millis();
                                 laststrokerotations = rotations;
@@ -96,6 +95,7 @@ void loop()
                                 lcd.print("D:");
                                 lcd.print(rotations);
                               }
+                              Accelerating = false;
                           }
                           //watch out for integer math problems here
                           //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms);

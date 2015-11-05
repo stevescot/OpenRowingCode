@@ -1,0 +1,42 @@
+ body { background-color: white; 
+        font-family: arial,helvetica, verdana,sans-serif }
+ pre { font-family: monospace }
+
+ TD   {font-family: arial,helvetica, verdana,sans-serif }
+
+ TH   {font-family: arial,helvetica, verdana,sans-serif }
+
+a:link { text-decoration: none }
+a:visited { text-decoration: none }
+
+div.box { border-width: thin;
+          border-style: solid;
+          padding: 5;
+          width: 400}
+
+div.state { border-width: thin;
+            border-style: solid;
+            padding: 5;
+            width: 75%;
+            background-color: pink;
+            text-align: center}
+
+table.eq { width: 50%;
+           padding: 10px;
+           background-color: antiquewhite;
+           border-width: thin;
+           border-style: solid;
+           border-color: black }
+
+table.weq { width: 75%;
+           padding: 10px;
+           background-color: antiquewhite;
+           border-width: thin;
+           border-style: solid;
+           border-color: black }
+
+table.fig { padding: 10px;
+           border-width: thin;
+           border-style: solid;
+           border-color: black }
+
