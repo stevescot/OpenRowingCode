@@ -43,12 +43,16 @@ void loop()
 {
   val = digitalRead(switchPin);            // read input value and store it in val                       
        if (val != buttonState)            // the button state has changed!
-          {                
+          {     
+                              lcd.setCursor(0,0);
+                  lcd.print("                ");           
              if (val == LOW)                    // check if the button is pressed
-                {  
+                {  //switch passing.
                   //initialise the start time
                   if(startTime == 0) startTime = millis();
                   count++;
+
+                  lcd.setCursor(0,1);
 //                  if (count==2)//twp subsequent reads in this state.
 //                      {
                           timetakenms = millis() - laststatechange;
@@ -56,7 +60,7 @@ void loop()
                           //Serial.print("TimeTaken(ms):");
                           //Serial.println(timetakenms);
                           nextinstantaneousrpm = 60000/timetakenms;
-                          if(nextinstantaneousrpm >= instantaneousrpm)
+                          if(nextinstantaneousrpm >= (instantaneousrpm))
                           {
                               lcd.print("Acc");        
                               if(!Accelerating)
@@ -73,18 +77,21 @@ void loop()
                               lcd.print("Dec");
                               if(Accelerating)//previously accelerating
                               { //finished drive
-                                float diffrotations = laststrokerotations - rotations;
-                                long difft = laststroketime - millis();
+                                long diffrotations = rotations - laststrokerotations;
+                                unsigned long difft = millis() - laststroketime;
                                 laststrokerotations = rotations;
                                 laststroketime = millis();
-                                float split =  (difft/1000)/ diffrotations ;
+                                float split =  ((float)difft/1000)/ diffrotations*50 ;
                                 lcd.setCursor(0, 1);
                                 lcd.setCursor(0,1);
                                 lcd.print("                ");
                                 lcd.setCursor(0,1);
-                                lcd.print("Split:");
+                                lcd.print("S:");
                                 lcd.print(split);
-                                
+                                lcd.print("d");
+                                lcd.print(rotations);
+                                lcd.print("s");
+                                lcd.print(diffrotations);
 //                                lcd.print("RPM:");
 //                                lcd.print(instantaneousrpm);
 //                                lcd.print("distance:");
@@ -97,12 +104,17 @@ void loop()
                               }
                               Accelerating = false;
                           }
+                          lcd.print("r");
+                          lcd.print(instantaneousrpm);
+                          lcd.print("n");
+                          lcd.print(nextinstantaneousrpm);
+                          
+                          instantaneousrpm = nextinstantaneousrpm;
                           //watch out for integer math problems here
                           //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms);
                           count=0;
-                          instantaneousrpm = nextinstantaneousrpm;
                           laststatechange = millis();
-                          delay(5);//wait 5ms
+                          //delay(5);//wait 5ms
 //                      }                     
                 } 
                 else
@@ -110,15 +122,16 @@ void loop()
                   lcd.setCursor(0,0);
                   lcd.print("HIGH"); 
                 }
+                laststatechange=millis();
           }
           buttonState = val;                       // save the new state in our variable
 }
 
-void resetT()
-{
-  t1 = t2;
-  t2 = millis();
-}
+//void resetT()
+//{
+//  t1 = t2;
+//  t2 = millis();
+//}
 
 ////return the power supplied in Watts - given angular velocity change, and time change.
 //float PowerSupplied()
