@@ -112,6 +112,7 @@ void loop()
 
 void writeNextScreen()
 {
+  int timemins;
   screenstep++;
   switch(screenstep)
   {//only write a little bit to the screen to save time.
@@ -120,7 +121,11 @@ void writeNextScreen()
     break;
     case 1:
       lcd.print("S:");
-      lcd.print(split);
+      int splitmin;
+      splitmin = (int)split;
+      lcd.print(splitmin);//minutes in split.
+      lcd.print(":");
+      lcd.print((int)(((split-splitmin)*60)));//seconds
     break;
     case 2:
       lcd.print("SPM:");
@@ -138,19 +143,28 @@ void writeNextScreen()
       lcd.setCursor(0,1);
       lcd.print("D:");
       lcd.print(rotations);
+      break;
     case 6:
 //      lcd.print("d");
 //      lcd.print(rotations);
+break;
     case 7:
 //      lcd.print("r");
 //      lcd.print(instantaneousrpm);
+break;
     case 8:
 //      lcd.print("n");
 //      lcd.print(nextinstantaneousrpm);
       lcd.print(" AvS:");
-      lcd.print(rotations/(millis()-starttime);
+      lcd.print(rotations/(millis()-startTime));
+      break;
     case 9:
-
+      //lcd.print(" t:");
+      timemins = (millis()-startTime)/60000;
+      lcd.print(timemins);//total mins
+      lcd.print(":");
+      lcd.print((int)(millis()-startTime/1000 - timemins*60));//total seconds.
+      break;
     default:
       screenstep = -1;//will clear next time, as 1 is added and if 0 will be cleared.
   }
