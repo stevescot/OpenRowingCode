@@ -83,11 +83,9 @@ void loop()
                                 spm = 60000 /difft;
                                 laststrokerotations = rotations;
                                 laststroketime = millis();
-                                split =  ((float)difft/1000)/ diffrotations*50 ;
+                                split =  ((float)difft)/((float)diffrotations*0.301932*2) ;//time for stroke
+                                //  /1000*500 = /2
                               }
-                              //if(nextinstantaneousrpm < 300)
-                              //{//going slow enough that we have time to print.
-                              //}
                               Accelerating = false;
                           }                          
                           writeNextScreen();
@@ -123,13 +121,13 @@ void writeNextScreen()
     case 1:
       lcd.print("S:");
       int splitmin;
-      splitmin = (int)split;
+      splitmin = (int)(split/60);
       lcd.print(splitmin);//minutes in split.
       lcd.print(":");
-      lcd.print((int)(((split-splitmin)*60)));//seconds
+      lcd.print((int)(((split-splitmin*60))));//seconds
     break;
     case 2:
-    lcd.setCursor(9,0);
+    lcd.setCursor(10,0);
       lcd.print("SPM:");
       lcd.print(spm);
       lcd.print("  ");
