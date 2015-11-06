@@ -72,7 +72,7 @@ void loop()
 
                               Accelerating = true;    
                           }
-                          else
+                          else if(nextinstantaneousrpm <= (instantaneousrpm*0.95))
                           {
 
                               //lcd.print("Dec");
@@ -129,8 +129,10 @@ void writeNextScreen()
       lcd.print((int)(((split-splitmin)*60)));//seconds
     break;
     case 2:
+    lcd.setCursor(9,0);
       lcd.print("SPM:");
       lcd.print(spm);
+      lcd.print("  ");
     break;
     case 3:
      lcd.setCursor(0,1);
