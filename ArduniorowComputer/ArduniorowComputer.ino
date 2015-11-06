@@ -22,6 +22,7 @@ unsigned long laststroketime = 0;
 unsigned long difft;
 long diffrotations;
 float split;
+int screenstep=0;
 
 //unsigned long angularmomentum_gm2 = 100;//0.1001 kgm2 == 100.1g/m2 moment of intertia
 float I = 100.1/*moment of  interia*/;
@@ -34,7 +35,7 @@ bool Accelerating;
 void setup() 
 {
  pinMode(switchPin, INPUT_PULLUP);                // Set the switch pin as input
- Serial.begin(115200);                      // Set up serial communication at 115200bps
+ //Serial.begin(115200);                      // Set up serial communication at 115200bps
  buttonState = digitalRead(switchPin);  // read the initial state
    // set up the LCD's number of columns and rows: 
   lcd.begin(16, 2);
@@ -47,15 +48,11 @@ void loop()
   val = digitalRead(switchPin);            // read input value and store it in val                       
        if (val != buttonState)            // the button state has changed!
           {     
-             lcd.setCursor(0,0);
-             lcd.print("                ");           
              if (val == LOW)                    // check if the button is pressed
                 {  //switch passing.
                   //initialise the start time
                   if(startTime == 0) startTime = millis();
                   count++;
-
-                  lcd.setCursor(0,1);
 //                  if (count==2)//twp subsequent reads in this state.
 //                      {
                           timetakenms = millis() - laststatechange;
@@ -88,28 +85,7 @@ void loop()
                               }
                               if(nextinstantaneousrpm < 300)
                               {//going slow enough that we have time to print.
-                                lcd.setCursor(0,1);
-                                lcd.print("                ");
-                                lcd.setCursor(0,1);
-                                lcd.print("S:");
-                                lcd.print(split);
-                                lcd.print("d");
-                                lcd.print(rotations);
-                                lcd.print("s");
-                                lcd.print(diffrotations);
-//                                lcd.print("RPM:");
-//                                lcd.print(instantaneousrpm);
-//                                lcd.print("distance:");
-//                                lcd.print(rotations);
-                                //Serial.print("RPM:");
-                                //Serial.println(instantaneousrpm);
-                                lcd.setCursor(0,0);
-                                lcd.print("D:");
-                                lcd.print(rotations);
-                                lcd.print("r");
-                                lcd.print(instantaneousrpm);
-                                lcd.print("n");
-                                lcd.print(nextinstantaneousrpm);
+                                writeNextScreen();
                               }
                               Accelerating = false;
                           }                          
@@ -129,6 +105,61 @@ void loop()
                 laststatechange=millis();
           }
           buttonState = val;                       // save the new state in our variable
+}
+
+void writeNextScreen()
+{
+  screenstep++;
+  switch(screenstep)
+  {
+    case 0:
+    lcd.clear();
+    break;
+    case 1:
+      lcd.print("S:");
+      lcd.print(split);
+    break;
+    case 2:
+      lcd.print("d");
+      lcd.print(rotations);
+    break;
+    case 3:
+      lcd.print("d");
+      lcd.print(rotations);
+    break;
+    case 4:
+      lcd.print("s");
+      lcd.print(diffrotations);
+      break;
+    case 5://next lime
+      lcd.setCursor(0,1);
+      lcd.print("D:");
+    case 6:
+      lcd.print(rotations);
+      lcd.print("r");
+    case 7:
+      lcd.print(rotations);
+      lcd.print("r");
+    case 8:
+      lcd.print(instantaneousrpm);
+      lcd.print("n");
+    case 9:
+      lcd.print(nextinstantaneousrpm);
+    default:
+      screenstep = -1;
+  }
+
+
+  //                                lcd.print("RPM:");
+  //                                lcd.print(instantaneousrpm);
+  //                                lcd.print("distance:");
+  //                                lcd.print(rotations);
+  //Serial.print("RPM:");
+  //Serial.println(instantaneousrpm);
+    
+    
+    
+    
 }
 
 //void resetT()
