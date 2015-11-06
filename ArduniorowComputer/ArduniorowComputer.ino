@@ -2,7 +2,7 @@
 // http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7
 // read reed switch from rowing machine.
 // based on Lady Ada's "debounced blinking bicycle light" code
-
+// when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
@@ -19,6 +19,7 @@ unsigned long startTime = 0;
 unsigned long rotations = 0;
 unsigned long laststrokerotations = 0;
 unsigned long laststroketime = 0;
+unsigned long spm = 0; //strokes per minute.
 unsigned long difft;
 long diffrotations;
 float split;
@@ -79,6 +80,7 @@ void loop()
                               { //finished drive
                                 diffrotations = rotations - laststrokerotations;
                                 difft = millis() - laststroketime;
+                                spm = 60000 /(laststroketime - millis());
                                 laststrokerotations = rotations;
                                 laststroketime = millis();
                                 split =  ((float)difft/1000)/ diffrotations*50 ;
@@ -99,8 +101,9 @@ void loop()
                 } 
                 else
                 {
-                  lcd.setCursor(0,0);
-                  lcd.print("HIGH"); 
+                  //lcd.setCursor(0,0);
+                  //lcd.print("HIGH"); 
+                  count = 0;
                 }
                 laststatechange=millis();
           }
@@ -111,7 +114,7 @@ void writeNextScreen()
 {
   screenstep++;
   switch(screenstep)
-  {
+  {//only write a little bit to the screen to save time.
     case 0:
     lcd.clear();
     break;
@@ -120,33 +123,36 @@ void writeNextScreen()
       lcd.print(split);
     break;
     case 2:
-      lcd.print("d");
-      lcd.print(rotations);
+      lcd.print("SPM:");
+      lcd.print(spm);
     break;
     case 3:
-      lcd.print("d");
-      lcd.print(rotations);
+//      lcd.print("d");
+//      lcd.print(rotations);
     break;
     case 4:
-      lcd.print("s");
-      lcd.print(diffrotations);
+//      lcd.print("s");
+//      lcd.print(diffrotations);
       break;
     case 5://next lime
       lcd.setCursor(0,1);
       lcd.print("D:");
+      lcd.print(rotations);
     case 6:
-      lcd.print(rotations);
-      lcd.print("r");
+//      lcd.print("d");
+//      lcd.print(rotations);
     case 7:
-      lcd.print(rotations);
-      lcd.print("r");
+//      lcd.print("r");
+//      lcd.print(instantaneousrpm);
     case 8:
-      lcd.print(instantaneousrpm);
-      lcd.print("n");
+//      lcd.print("n");
+//      lcd.print(nextinstantaneousrpm);
+      lcd.print(" AvS:");
+      lcd.print(rotations/(millis()-starttime);
     case 9:
-      lcd.print(nextinstantaneousrpm);
+
     default:
-      screenstep = -1;
+      screenstep = -1;//will clear next time, as 1 is added and if 0 will be cleared.
   }
 
 
