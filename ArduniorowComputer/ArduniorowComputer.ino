@@ -19,6 +19,9 @@ unsigned long startTime = 0;
 unsigned long rotations = 0;
 unsigned long laststrokerotations = 0;
 unsigned long laststroketime = 0;
+unsigned long difft;
+long diffrotations;
+float split;
 
 //unsigned long angularmomentum_gm2 = 100;//0.1001 kgm2 == 100.1g/m2 moment of intertia
 float I = 100.1/*moment of  interia*/;
@@ -44,8 +47,8 @@ void loop()
   val = digitalRead(switchPin);            // read input value and store it in val                       
        if (val != buttonState)            // the button state has changed!
           {     
-                              lcd.setCursor(0,0);
-                  lcd.print("                ");           
+             lcd.setCursor(0,0);
+             lcd.print("                ");           
              if (val == LOW)                    // check if the button is pressed
                 {  //switch passing.
                   //initialise the start time
@@ -62,7 +65,7 @@ void loop()
                           nextinstantaneousrpm = 60000/timetakenms;
                           if(nextinstantaneousrpm >= (instantaneousrpm))
                           {
-                              lcd.print("Acc");        
+                              //lcd.print("Acc");        
                               if(!Accelerating)
                               {
                                 //beginning drive.
@@ -74,15 +77,17 @@ void loop()
                           else
                           {
 
-                              lcd.print("Dec");
+                              //lcd.print("Dec");
                               if(Accelerating)//previously accelerating
                               { //finished drive
-                                long diffrotations = rotations - laststrokerotations;
-                                unsigned long difft = millis() - laststroketime;
+                                diffrotations = rotations - laststrokerotations;
+                                difft = millis() - laststroketime;
                                 laststrokerotations = rotations;
                                 laststroketime = millis();
-                                float split =  ((float)difft/1000)/ diffrotations*50 ;
-                                lcd.setCursor(0, 1);
+                                split =  ((float)difft/1000)/ diffrotations*50 ;
+                              }
+                              if(nextinstantaneousrpm < 300)
+                              {//going slow enough that we have time to print.
                                 lcd.setCursor(0,1);
                                 lcd.print("                ");
                                 lcd.setCursor(0,1);
@@ -101,14 +106,13 @@ void loop()
                                 lcd.setCursor(0,0);
                                 lcd.print("D:");
                                 lcd.print(rotations);
+                                lcd.print("r");
+                                lcd.print(instantaneousrpm);
+                                lcd.print("n");
+                                lcd.print(nextinstantaneousrpm);
                               }
                               Accelerating = false;
-                          }
-                          lcd.print("r");
-                          lcd.print(instantaneousrpm);
-                          lcd.print("n");
-                          lcd.print(nextinstantaneousrpm);
-                          
+                          }                          
                           instantaneousrpm = nextinstantaneousrpm;
                           //watch out for integer math problems here
                           //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms);
