@@ -22,6 +22,8 @@ unsigned long laststrokerotations = 0;    // number of rotations since last driv
 unsigned long laststroketime = 0;         // milliseconds from startup to last stroke drive
 unsigned long spm = 0;                    // current strokes per minute.  
 unsigned long difft;                      // milliseconds from last stroke to this one
+unsigned long driveTime;                  //time of the end of the last drive
+float driveAngularVelocity;                // fastest angular velocity at end of drive
 bool afterfirstdecrotation = false;       // after the first deceleration rotation (to give good figures for drag factor);
 long diffrotations;                       // rotations from last stroke to this one
 float split;                              // split time for last stroke in seconds
@@ -61,14 +63,19 @@ void loop()
                     //Serial.print("TimeTaken(ms):");
                     //Serial.println(timetakenms);
                     nextinstantaneousrpm = 60000/timetakenms;
+                    float radSec = 6.283185307/((float)timetakenms/1000);
+                    float prevradSec = 6.283185307/((float)lastrotationms/1000);
+                    float angulardeceleration = (prevradSec-radSec)/((float)timetakenms/1000);
                     if(nextinstantaneousrpm >= (instantaneousrpm*1.05))
                     {
                         //lcd.print("Acc");        
                         if(!Accelerating)
                         {
                           //beginning drive.
-
+                          
                         }
+                        driveAngularVelocity = radSec;
+                        driveTime = millis();
                         afterfirstdecrotation = false;
                         Accelerating = true;    
                     }
@@ -84,21 +91,18 @@ void loop()
                           laststrokerotations = rotations;
                           laststroketime = millis();
                           split =  ((float)difft)/((float)diffrotations*mPerRot*2) ;//time for stroke
-                          afterfirstdecrotation = true;
-                          //  /1000*500 = /2
-                        }
-                        else if(afterfirstdecrotation)
-                        {
-                          float radSec = 6.283185307/((float)timetakenms/1000);
-                          float prevradSec = 6.283185307/((float)lastrotationms/1000);
-                          float angulardeceleration = (prevradSec-radSec)/((float)timetakenms/1000);
-                          Serial.println(radSec);
-                          Serial.println(prevradSec);
-                          Serial.println(timetakenms);
-                          Serial.println(angulardeceleration);
-                          k = calculateDragFactor(angulardeceleration , radSec);
-                          Serial.println(k);
+
+                          float secondsdecel = ((float)millis()-(float)driveTime)/1000;
+                          float angularDecel = (driveAngularVelocity-radSec)/(secondsdecel);
+                          k = calculateDragFactor(angularDecel, radSec);
                           Serial.println();
+                          Serial.println(secondsdecel);
+                          Serial.println(driveAngularVelocity);
+                          Serial.println(angularDecel);
+                          Serial.println(radSec);
+                          Serial.println(k);
+                         // afterfirstdecrotation = true;
+                          //  /1000*500 = /2
                         }
                         Accelerating = false;
                     }                          
@@ -152,7 +156,7 @@ void writeNextScreen()
     case 3:
      lcd.setCursor(0,1);
      //Distance in meters:
-     /*
+     
      dm = (int)(rotations*mPerRot);
       lcd.print("D:");
       if(dm <1000) lcd.print("0");
@@ -160,11 +164,11 @@ void writeNextScreen()
       if(dm <10) lcd.print("0");
       lcd.print(dm);
       lcd.print("m ");
-      */
+      
 
       //Drag factor
-      lcd.print("k:");
-      lcd.print(k);
+      //lcd.print("k:");
+      //lcd.print(k);
     break;
     case 4:
       timemins = (millis()-startTime)/60000;
@@ -187,7 +191,7 @@ void writeNextScreen()
       //lcd.print(" AvS:");
       //lcd.print(rotations/(millis()-startTime));     
       break;
-    case 6:
+/*    case 6:
           //lcd.print(" t:");
 
 //      lcd.print("d");
@@ -204,7 +208,7 @@ break;
       break;
     case 9:
 
-      break;
+      break;*/
     default:
       screenstep = -1;//will clear next time, as 1 is added and if 0 will be cleared.
   }
@@ -259,13 +263,14 @@ break;
 //k = - I ( dω / dt ) (1 / ω2 ) = I d(1/ω) / dt
 float calculateDragFactor(float angulardeceleration, float angularvelocity)
 {
-  return -I*angulardeceleration*(1/pow(angularvelocity,2));
+  /*
   Serial.println("D:");
   Serial.println(angulardeceleration);
   Serial.println(angularvelocity);
   Serial.println(I);
   Serial.println();
-  
+  */
+  return I*angulardeceleration*(1.0/(angularvelocity*angularvelocity));
 }
 
 //(9.2)	u = ( k / c )1/3 ω
