@@ -23,6 +23,7 @@ unsigned long laststroketime = 0;         // milliseconds from startup to last s
 unsigned long spm = 0;                    // current strokes per minute.  
 unsigned long difft;                      // milliseconds from last stroke to this one
 unsigned long driveTime;                  //time of the end of the last drive
+float newk;
 float driveAngularVelocity;                // fastest angular velocity at end of drive
 bool afterfirstdecrotation = false;       // after the first deceleration rotation (to give good figures for drag factor);
 long diffrotations;                       // rotations from last stroke to this one
@@ -72,7 +73,8 @@ void loop()
                         if(!Accelerating)
                         {
                           //beginning drive.
-                          
+                          Serial.println("lastk");
+                          Serial.println(newk);
                         }
                         driveAngularVelocity = radSec;
                         driveTime = millis();
@@ -91,20 +93,23 @@ void loop()
                           laststrokerotations = rotations;
                           laststroketime = millis();
                           split =  ((float)difft)/((float)diffrotations*mPerRot*2) ;//time for stroke
-
+                         // afterfirstdecrotation = true;
+                          //  /1000*500 = /2
+                        }
+                        else
+                        {
                           float secondsdecel = ((float)millis()-(float)driveTime)/1000;
                           float angularDecel = (driveAngularVelocity-radSec)/(secondsdecel);
-                          k = calculateDragFactor(angularDecel, radSec);
+                          newk = calculateDragFactor(angularDecel, radSec);
                           Serial.println();
                           Serial.println(secondsdecel);
                           Serial.println(driveAngularVelocity);
                           Serial.println(angularDecel);
                           Serial.println(radSec);
-                          Serial.println(k);
-                         // afterfirstdecrotation = true;
-                          //  /1000*500 = /2
+                          Serial.println(newk);
                         }
                         Accelerating = false;
+                                                  
                     }                          
                     lastrotationms = timetakenms;
                     instantaneousrpm = nextinstantaneousrpm;
