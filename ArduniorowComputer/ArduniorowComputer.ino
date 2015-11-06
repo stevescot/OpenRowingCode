@@ -61,7 +61,7 @@ void loop()
                           //Serial.print("TimeTaken(ms):");
                           //Serial.println(timetakenms);
                           nextinstantaneousrpm = 60000/timetakenms;
-                          if(nextinstantaneousrpm >= (instantaneousrpm))
+                          if(nextinstantaneousrpm >= (instantaneousrpm*1.05))
                           {
                               //lcd.print("Acc");        
                               if(!Accelerating)
@@ -80,17 +80,17 @@ void loop()
                               { //finished drive
                                 diffrotations = rotations - laststrokerotations;
                                 difft = millis() - laststroketime;
-                                spm = 60000 /(laststroketime - millis());
+                                spm = 60000 /difft;
                                 laststrokerotations = rotations;
                                 laststroketime = millis();
                                 split =  ((float)difft/1000)/ diffrotations*50 ;
                               }
-                              if(nextinstantaneousrpm < 300)
-                              {//going slow enough that we have time to print.
-                                writeNextScreen();
-                              }
+                              //if(nextinstantaneousrpm < 300)
+                              //{//going slow enough that we have time to print.
+                              //}
                               Accelerating = false;
                           }                          
+                          writeNextScreen();
                           instantaneousrpm = nextinstantaneousrpm;
                           //watch out for integer math problems here
                           //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms);
@@ -117,7 +117,8 @@ void writeNextScreen()
   switch(screenstep)
   {//only write a little bit to the screen to save time.
     case 0:
-    lcd.clear();
+    //lcd.clear();
+    lcd.setCursor(0,0);
     break;
     case 1:
       lcd.print("S:");
@@ -132,19 +133,28 @@ void writeNextScreen()
       lcd.print(spm);
     break;
     case 3:
+     lcd.setCursor(0,1);
+      lcd.print("D:");
+      lcd.print((int)(rotations*0.301932));
 //      lcd.print("d");
 //      lcd.print(rotations);
     break;
     case 4:
+    lcd.print("t");
+      timemins = (millis()-startTime)/60000;
+      lcd.print(timemins);//total mins
+      lcd.print(":");
+      lcd.print((int)((millis()-startTime)/1000 - timemins*60));//total seconds.
 //      lcd.print("s");
 //      lcd.print(diffrotations);
       break;
     case 5://next lime
-      lcd.setCursor(0,1);
-      lcd.print("D:");
-      lcd.print(rotations);
+      lcd.print(" AvS:");
+      lcd.print(rotations/(millis()-startTime));     
       break;
     case 6:
+          //lcd.print(" t:");
+
 //      lcd.print("d");
 //      lcd.print(rotations);
 break;
@@ -155,15 +165,10 @@ break;
     case 8:
 //      lcd.print("n");
 //      lcd.print(nextinstantaneousrpm);
-      lcd.print(" AvS:");
-      lcd.print(rotations/(millis()-startTime));
+
       break;
     case 9:
-      //lcd.print(" t:");
-      timemins = (millis()-startTime)/60000;
-      lcd.print(timemins);//total mins
-      lcd.print(":");
-      lcd.print((int)(millis()-startTime/1000 - timemins*60));//total seconds.
+
       break;
     default:
       screenstep = -1;//will clear next time, as 1 is added and if 0 will be cleared.
