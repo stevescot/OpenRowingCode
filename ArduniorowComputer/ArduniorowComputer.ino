@@ -55,8 +55,10 @@ void setup()
  buttonState = digitalRead(switchPin);  // read the initial state
    // set up the LCD's number of columns and rows: 
   lcd.begin(16, 2);
+  lcd.print("V-Fit powered by");
+  lcd.setCursor(0,1);
+  lcd.print("IP Technology");
   // Print a message to the LCD.
-  //lcd.print("hello, Lisa!");
 }
 
 void loop()
