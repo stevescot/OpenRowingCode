@@ -5,6 +5,7 @@
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
 float mPerRot = 0.301932;                   // meters per rotation of the flywheel
 int switchPin = 6;                          // switch is connected to pin 6
 int val;                                    // variable for reading the pin status
@@ -76,7 +77,7 @@ void loop()
               rotations++;
               //Serial.print("TimeTaken(ms):");
               //Serial.println(timetakenms);
-              nextinstantaneousrpm = (float)60000000.0/timetakenus;
+              nextinstantaneousrpm = (float)60000000.0*numrotationspercalc/timetakenus;
               float radSec = (6.283185307*numrotationspercalc)/((float)timetakenus/1000000.0);
               float prevradSec = (6.283185307*numrotationspercalc)/((float)lastrotationus/1000000.0);
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
@@ -90,8 +91,8 @@ void loop()
                     if(!Accelerating)
                     {
                       //beginning drive.
-                      //Serial.println("lastk");
-                      //Serial.println(newk);
+                      Serial.println("lastk");
+                      Serial.println(newk);
                     }
                     driveAngularVelocity = radSec;
                     driveTimems = mtime;
@@ -109,9 +110,8 @@ void loop()
                       spm = 60000 /difftms;
                       laststrokerotations = rotations;
                       laststroketimems = mtime;
-                      split =  ((float)difftms)/((float)diffrotations*mPerRot*2) ;//time for stroke
-                     // afterfirstdecrotation = true;
-                      //  /1000*500 = /2
+                      split =  ((float)difftms)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
+                      //   /1000*500 = /2
                     }
                     else
                     {
