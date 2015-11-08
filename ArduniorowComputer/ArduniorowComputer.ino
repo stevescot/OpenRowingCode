@@ -6,7 +6,7 @@
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
-//float mPerRot = 0.301932;                   // meters per rotation of the flywheel
+float mPerRot = 0.301932;                   // meters per rotation of the flywheel
 int switchPin = 6;                          // switch is connected to pin 6
 int val;                                    // variable for reading the pin status
 int val2;                                   // variable for reading the delayed/debounced status
@@ -100,7 +100,12 @@ void loop()
                 }
                 else if(nextinstantaneousrpm <= (instantaneousrpm*0.99))
                 {
-                    
+                  /*
+                  Serial.println("m/rot");
+                  Serial.println(k);
+                  Serial.println(c);
+                  Serial.println(pow((k/c),(1.0/3.0)));
+                    Serial.println(pow((k/c),(1.0/3.0))*2*3.1415926535);*/
                     //lcd.print("Dec");
                     if(Accelerating)//previously accelerating
                     { //finished drive
@@ -110,7 +115,7 @@ void loop()
                       spm = 60000 /difftms;
                       laststrokerotations = rotations;
                       laststroketimems = mtime;
-                      split =  ((float)difftms)/((float)diffrotations*pow((k/c),(1/3))*2*3.1415926535*2) ;//time for stroke /1000 for ms *500 for 500m = *2
+                      split =  ((float)difftms)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
                       //   /1000*500 = /2
                     }
                     else
@@ -122,6 +127,7 @@ void loop()
                       Serial.println(secondsdecel);
                       Serial.println(I);*/
                       k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);
+                      mPerRot = pow((k/c),(1.0/3.0))*2*3.1415926535;
                      /* Serial.println(k);*/
                     }
                     Accelerating = false;
@@ -171,7 +177,7 @@ void writeNextScreen()
      lcd.setCursor(0,1);
      //Distance in meters:
      
-      dm = (int)(rotations*pow((k/c),(1/3))*2*3.1415926535);
+      dm = (int)(rotations*mPerRot);
       lcd.print("D:");
       if(dm <1000) lcd.print("0");
       if(dm <100) lcd.print("0");
@@ -181,7 +187,7 @@ void writeNextScreen()
       
 
       //Drag factor
-      lcd.print("DragFactor:");
+      lcd.print("D:");
       lcd.println(k*1000000);
     break;
     case 4:
