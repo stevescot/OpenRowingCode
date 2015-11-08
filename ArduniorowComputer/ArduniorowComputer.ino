@@ -6,7 +6,7 @@
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
-float mPerRot = 0.301932;                   // meters per rotation of the flywheel
+//float mPerRot = 0.301932;                   // meters per rotation of the flywheel
 int switchPin = 6;                          // switch is connected to pin 6
 int val;                                    // variable for reading the pin status
 int val2;                                   // variable for reading the delayed/debounced status
@@ -34,7 +34,6 @@ unsigned long microshistory[100];
 
 short nextrpm;
 
-float newk;
 float driveAngularVelocity;                // fastest angular velocity at end of drive
 bool afterfirstdecrotation = false;       // after the first deceleration rotation (to give good figures for drag factor);
 long diffrotations;                       // rotations from last stroke to this one
@@ -43,7 +42,7 @@ int screenstep=0;                         // int - which part of the display to 
 
 //unsigned long angularmomentum_gm2 = 100;//0.1001 kgm2 == 100.1g/m2 moment of intertia
 float I = 0.1001/*moment of  interia*/;
-float k = 170;/*drag factor 10^6 nm/s/s*/
+float k = 0.000185;/*drag factor 10^6 nm/s/s*/
 float c = 2.8; //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power.
          //Concept used to quote a figure c=2.8, which, for a 2:00 per 500m split (equivalent to u=500/120=4.17m/s) gives 203 Watts. 
 bool Accelerating;
@@ -66,9 +65,8 @@ void loop()
        if (val != buttonState && val == LOW)            // the button state has changed!
           {   
             currentrot ++;
-            if(currentrot>= numrotationspercalc )
+            if(numrotationspercalc >= currentrot)
             {
-              currentrot = 0;
               utime = micros();    
               mtime = millis();      
               //initialise the start time
@@ -91,8 +89,8 @@ void loop()
                     if(!Accelerating)
                     {
                       //beginning drive.
-                      Serial.println("lastk");
-                      Serial.println(newk);
+//                      Serial.println("lastk");
+//                      Serial.println(newk);
                     }
                     driveAngularVelocity = radSec;
                     driveTimems = mtime;
@@ -110,14 +108,13 @@ void loop()
                       spm = 60000 /difftms;
                       laststrokerotations = rotations;
                       laststroketimems = mtime;
-                      split =  ((float)difftms)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
+                      split =  ((float)difftms)/((float)diffrotations*k*2*3.1415926535*2) ;//time for stroke /1000 for ms *500 for 500m = *2
                       //   /1000*500 = /2
                     }
                     else
                     {
                       float secondsdecel = ((float)mtime-(float)driveTimems)/1000;
-                      float angularDecel = (driveAngularVelocity-radSec)/(secondsdecel);
-                      newk = calculateDragFactor(angularDecel, radSec);
+                      k = I * ((1.0/driveAngularVelocity)-(1.0/radSec))/(secondsdecel)*1000000;
                     }
                     Accelerating = false;
                                               
@@ -129,8 +126,8 @@ void loop()
             } 
             laststatechangeus=utime;
             writeNextScreen();
-            microshistory[nextrpm] = micros()-utime;
           }
+          microshistory[nextrpm] = micros()-utime;
   buttonState = val;                       // save the new state in our variable
 }
 
@@ -166,7 +163,7 @@ void writeNextScreen()
      lcd.setCursor(0,1);
      //Distance in meters:
      
-     dm = (int)(rotations*mPerRot);
+      dm = (int)(rotations*k*2*3.1415926535);
       lcd.print("D:");
       if(dm <1000) lcd.print("0");
       if(dm <100) lcd.print("0");
@@ -185,7 +182,7 @@ void writeNextScreen()
         if(timemins <10) lcd.print("0");
         lcd.print(timemins);//total mins
         lcd.print(":");
-        timeseconds = (long)((mtime)-startTimems)/1000 - timemins*60;
+        timeseconds = (int)((mtime)-startTimems)/1000 - timemins*60;
         if(timeseconds < 10) lcd.print("0");
         lcd.print(timeseconds);//total seconds.
 //      lcd.print("s");
@@ -283,27 +280,13 @@ void dumprpms()
 {
   if(nextrpm > 97)
   {
-    /*
     Serial.println("Rpm dump");
-    for(int i = 0; i < 90; i++)
+    for(int i = 0; i < 190; i++)
     {
       Serial.println(rpmhistory[i]);
     }
-  }
-    Serial.println("micros dump");
-    for(int i = 0; i <90; i++)
-    {
-      Serial.println(microshistory[i]);
-    }
-    */
     nextrpm = 0;
   }
-}
-
-//(9.2)	u = ( k / c )1/3 ω
-float calculateSplit(float angularVelocity)
-{
-  return pow((k/c),(1/3)) * angularVelocity;
 }
 
 
