@@ -41,7 +41,7 @@ float split;                              // split time for last stroke in secon
 int screenstep=0;                         // int - which part of the display to draw next.
 
 //unsigned long angularmomentum_gm2 = 100;//0.1001 kgm2 == 100.1g/m2 moment of intertia
-float I = 0.101;//0.1001/*moment of  interia*/;
+float I = 0.05;//0.1001/*moment of  interia - 0.101 for Concept2*/;
 float k = 0.000185;/*drag factor 10^6 nm/s/s*/
 float c = 2.8; //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power.
          //Concept used to quote a figure c=2.8, which, for a 2:00 per 500m split (equivalent to u=500/120=4.17m/s) gives 203 Watts. 
@@ -110,7 +110,7 @@ void loop()
                       spm = 60000 /difftms;
                       laststrokerotations = rotations;
                       laststroketimems = mtime;
-                      split =  ((float)difftms)/((float)diffrotations*pow((k/c),(1/3))*2) ;//time for stroke /1000 for ms *500 for 500m = *2
+                      split =  ((float)difftms)/((float)diffrotations*pow((k/c),(1/3))*2*3.1415926535*2) ;//time for stroke /1000 for ms *500 for 500m = *2
                       //   /1000*500 = /2
                     }
                     else
@@ -121,7 +121,7 @@ void loop()
                       Serial.println(radSec);
                       Serial.println(secondsdecel);
                       Serial.println(I);*/
-                      k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel)*1000000;
+                      k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);
                      /* Serial.println(k);*/
                     }
                     Accelerating = false;
@@ -171,7 +171,7 @@ void writeNextScreen()
      lcd.setCursor(0,1);
      //Distance in meters:
      
-      dm = (int)(rotations*pow((k/c),(1/3)));
+      dm = (int)(rotations*pow((k/c),(1/3))*2*3.1415926535);
       lcd.print("D:");
       if(dm <1000) lcd.print("0");
       if(dm <100) lcd.print("0");
@@ -181,8 +181,8 @@ void writeNextScreen()
       
 
       //Drag factor
-      lcd.print("k:");
-      lcd.print(k);
+      lcd.print("DragFactor:");
+      lcd.println(k*1000000);
     break;
     case 4:
       timemins = (mtime-startTimems)/60000;
