@@ -115,7 +115,7 @@ void loop()
                     driveAngularVelocity = radSec;
                     driveEndms = mtime;
                     lastDriveTimems = driveEndms - driveBeginms;
-                    StrokeToDriveRatio = (laststroketimems / lastDriveTimems);
+                    StrokeToDriveRatio = (strokems / lastDriveTimems);
                     afterfirstdecrotation = false;
                     Accelerating = true;    
                 }
@@ -137,7 +137,7 @@ void loop()
                       laststrokerotations = rotations;
                       laststroketimems = mtime;
                       split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
-                      distancem += diffrotations*mPerRot*2;
+                      if(mPerRot <= 20)distancem += diffrotations*mPerRot*2;
                       //   /1000*500 = /2
                     }
                     else
@@ -182,7 +182,7 @@ void writeNextScreen()
       splitmin = (int)(split/60);
       if(splitmin < 10)
       {//only display the split if it is less than 10 mins per 500m
-        lcd.print("S");
+        //lcd.print("S");
         lcd.print(splitmin);//minutes in split.
         lcd.print(":");
         splits = (int)(((split-splitmin*60)));
@@ -218,7 +218,7 @@ void writeNextScreen()
         if(timemins <10) lcd.print("0");
         lcd.print(timemins);//total mins
         lcd.print(":");
-        timeseconds = (int)((mtime)-startTimems)/1000 - timemins*60;
+        timeseconds = (long)((mtime)-startTimems)/1000 - timemins*60;
         if(timeseconds < 10) lcd.print("0");
         lcd.print(timeseconds);//total seconds.*/
 
@@ -229,8 +229,8 @@ void writeNextScreen()
       break;
     case 5://next lime
       //lcd 6->9 , 0
-       lcd.setCursor(6,0);
-       lcd.print(" r");
+       lcd.setCursor(4,0);
+       lcd.print("r");
        lcd.print(StrokeToDriveRatio);
       //lcd.setCursor(10,1);
       //lcd.print(" AvS:");
