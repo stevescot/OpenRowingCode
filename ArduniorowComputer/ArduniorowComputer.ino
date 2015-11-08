@@ -1,52 +1,64 @@
+/* Arduino row Computer
+ * Uses a 16x2 lcd to display rowing statistics on an ergometer
+ * principles are here : http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7
+ * 
+ */
 #include <LiquidCrystal.h>
-// http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7
-// read reed switch from rowing machine.
-// based on Lady Ada's "debounced blinking bicycle light" code
+
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
-float mPerRot = 0.301932;                   // meters per rotation of the flywheel
-int switchPin = 6;                          // switch is connected to pin 6
+const int switchPin = 6;                          // switch is connected to pin 6
 int val;                                    // variable for reading the pin status
-int val2;                                   // variable for reading the delayed/debounced status
 int buttonState;                            // variable to hold the button state
-const short numrotationspercalc = 1;
+const short numrotationspercalc = 1;        // number of rotations to wait for before doing anything, if we need more time this will have to be reduced.
 short currentrot = 0;
 
-unsigned long utime; 
-unsigned long mtime;
+unsigned long utime;                        //time of tick in microseconds
+unsigned long mtime;                        //time of tick in milliseconds
+
 unsigned long laststatechangeus;            //time of last switch.
-unsigned long timetakenus;                //time taken in milliseconds for a rotation of the flywheel
-unsigned long instantaneousrpm;           //rpm from the rotatiohn
-float nextinstantaneousrpm;       // next rpm reading to compare with previous
-unsigned long lastrotationus;              // milliseconds taken for the last rotation of the flywheel
+unsigned long timetakenus;                  //time taken in milliseconds for a rotation of the flywheel
+unsigned long instantaneousrpm;             //rpm from the rotatiohn
+float nextinstantaneousrpm;                 // next rpm reading to compare with previous
+unsigned long lastrotationus;               // milliseconds taken for the last rotation of the flywheel
 unsigned long startTimems = 0;              // milliseconds from startup to first sample
-unsigned long rotations = 0;              // number of rotations since start
-unsigned long laststrokerotations = 0;    // number of rotations since last drive
+unsigned long rotations = 0;                // number of rotations since start
+unsigned long laststrokerotations = 0;      // number of rotations since last drive
 unsigned long laststroketimems = 0;         // milliseconds from startup to last stroke drive
-unsigned long spm = 0;                    // current strokes per minute.  
-unsigned long difftms;                      // milliseconds from last stroke to this one
-unsigned long driveTimems;                  //time of the end of the last drive
+unsigned long strokems;                      // milliseconds from last stroke to this one
 
-float rpmhistory[100];
-unsigned long microshistory[100];
+float rpmhistory[100];                      //array of rpm per rotation for debugging
+unsigned long microshistory[100];           //array of the amount of time taken in calc/display for debugging.
 
-short nextrpm;
+short nextrpm;                              // currently measured rpm, to compare to last.
 
 float driveAngularVelocity;                // fastest angular velocity at end of drive
-bool afterfirstdecrotation = false;       // after the first deceleration rotation (to give good figures for drag factor);
-long diffrotations;                       // rotations from last stroke to this one
-float split;                              // split time for last stroke in seconds
-int screenstep=0;                         // int - which part of the display to draw next.
+bool afterfirstdecrotation = false;        // after the first deceleration rotation (to give good figures for drag factor);
+int diffrotations;                         // rotations from last stroke to this one
 
-//unsigned long angularmomentum_gm2 = 100;//0.1001 kgm2 == 100.1g/m2 moment of intertia
-float I = 0.05;//0.1001/*moment of  interia - 0.101 for Concept2*/;
-float k = 0.000185;/*drag factor 10^6 nm/s/s*/
-float c = 2.8; //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power.
-         //Concept used to quote a figure c=2.8, which, for a 2:00 per 500m split (equivalent to u=500/120=4.17m/s) gives 203 Watts. 
-bool Accelerating;
+int screenstep=0;                           // int - which part of the display to draw next.
+float k = 0.000185;                         //  drag factor nm/s/s (displayed *10^6 on a Concept 2
+float c = 2.8;                              //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power.
+                                            //Concept used to quote a figure c=2.8, which, for a 2:00 per 500m split (equivalent to u=500/120=4.17m/s) gives 203 Watts. 
+                                            
+float mPerRot = 0;                          // meters per rotation of the flywheel
 
+bool Accelerating;                          //whether or not we were accelerating at the last tick
+
+unsigned long driveEndms;                   // time of the end of the last drive
+unsigned long driveBeginms;                 // time of the start of the last drive
+unsigned int lastDriveTimems;               // time that the last drive took in milliseconds
+
+//Stats for display
+float split;                                // split time for last stroke in seconds
+unsigned long spm = 0;                      // current strokes per minute.  
+float distancem = 0;                        // distance rowed in meters.
+float StrokeToDriveRatio = 0;                // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
+
+//Constants that vary with machine:
+float I = 0.05;                             // moment of  interia of the wheel - 0.1001 for Concept2, ~0.05 for V-Fit air rower.*/;
 
 void setup() 
 {
@@ -72,7 +84,11 @@ void loop()
               utime = micros();    
               mtime = millis();      
               //initialise the start time
-              if(startTimems == 0) startTimems = mtime;
+              if(startTimems == 0) 
+              {
+                startTimems = mtime;
+                lcd.clear();
+              }
               timetakenus = utime - laststatechangeus;
               rotations++;
               //Serial.print("TimeTaken(ms):");
@@ -90,13 +106,16 @@ void loop()
                 {
                     //lcd.print("Acc");        
                     if(!Accelerating)
-                    {
-                      //beginning drive.
-//                      Serial.println("lastk");
-//                      Serial.println(newk);
+                    {//beginning of drive /end recovery
+                      driveBeginms = mtime;
+                      float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
+                      k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);
+                      mPerRot = pow((k/c),(1.0/3.0))*2*3.1415926535;
                     }
                     driveAngularVelocity = radSec;
-                    driveTimems = mtime;
+                    driveEndms = mtime;
+                    lastDriveTimems = driveEndms - driveBeginms;
+                    StrokeToDriveRatio = (laststroketimems / lastDriveTimems);
                     afterfirstdecrotation = false;
                     Accelerating = true;    
                 }
@@ -113,23 +132,22 @@ void loop()
                     { //finished drive
                       //Serial.println("ACC");
                       diffrotations = rotations - laststrokerotations;
-                      difftms = mtime - laststroketimems;
-                      spm = 60000 /difftms;
+                      strokems = mtime - laststroketimems;
+                      spm = 60000 /strokems;
                       laststrokerotations = rotations;
                       laststroketimems = mtime;
-                      split =  ((float)difftms)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
+                      split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
+                      distancem += diffrotations*mPerRot*2;
                       //   /1000*500 = /2
                     }
                     else
-                    {
-                      float secondsdecel = ((float)mtime-(float)driveTimems)/1000;
+                    {//started recovery / deceleration
+                      
                       /*Serial.println("DEC");
                       Serial.println(driveAngularVelocity);
                       Serial.println(radSec);
                       Serial.println(secondsdecel);
                       Serial.println(I);*/
-                      k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);
-                      mPerRot = pow((k/c),(1.0/3.0))*2*3.1415926535;
                      /* Serial.println(k);*/
                     }
                     Accelerating = false;
@@ -149,6 +167,9 @@ void loop()
 
 void writeNextScreen()
 {
+  //Display Format:
+  //2:16 r3  SPM:35
+  //5000m     10:00
   int timemins, timeseconds, splitmin, splits, dm;
   screenstep++;
   switch(screenstep)
@@ -160,16 +181,18 @@ void writeNextScreen()
     case 1:
       splitmin = (int)(split/60);
       if(splitmin < 10)
-      {
-      lcd.print(splitmin);//minutes in split.
-      lcd.print(":");
-      splits = (int)(((split-splitmin*60)));
-      if(splits <10) lcd.print("0");
-      lcd.print(splits);//seconds
-      lcd.print("/500");
+      {//only display the split if it is less than 10 mins per 500m
+        lcd.print("S");
+        lcd.print(splitmin);//minutes in split.
+        lcd.print(":");
+        splits = (int)(((split-splitmin*60)));
+        if(splits <10) lcd.print("0");
+        lcd.print(splits);//seconds
+        //lcd 0->5, 0  used
       }
     break;
     case 2:
+      //lcd 10->16,0 used
     lcd.setCursor(10,0);
       lcd.print("SPM:");
       lcd.print(spm);
@@ -178,24 +201,21 @@ void writeNextScreen()
     case 3:
      lcd.setCursor(0,1);
      //Distance in meters:
-     
-      dm = (int)(rotations*mPerRot);
-      lcd.print("D:");
-      if(dm <1000) lcd.print("0");
-      if(dm <100) lcd.print("0");
-      if(dm <10) lcd.print("0");
-      lcd.print(dm);
+      if(distancem <1000) lcd.print("0");
+      if(distancem <100) lcd.print("0");
+      if(distancem <10) lcd.print("0");
+      lcd.print(distancem);
       lcd.print("m ");
-      
-
+      //lcd 0->5, 1 used
       //Drag factor
-      lcd.print("D:");
-      lcd.println(k*1000000);
+      /*lcd.print("D:");
+      lcd.println(k*1000000);*/
     break;
     case 4:
+      //lcd 11->16 used
       timemins = (mtime-startTimems)/60000;
         lcd.setCursor(11,1);
-     /*   if(timemins <10) lcd.print("0");
+        if(timemins <10) lcd.print("0");
         lcd.print(timemins);//total mins
         lcd.print(":");
         timeseconds = (int)((mtime)-startTimems)/1000 - timemins*60;
@@ -208,78 +228,24 @@ void writeNextScreen()
 //      lcd.print(diffrotations);
       break;
     case 5://next lime
-    screenstep = -1;
+      //lcd 6->9 , 0
+       lcd.setCursor(6,0);
+       lcd.print(" r");
+       lcd.print(StrokeToDriveRatio);
       //lcd.setCursor(10,1);
       //lcd.print(" AvS:");
       //lcd.print(rotations/(millis()-startTime));     
       break;
-/*    case 6:
-          //lcd.print(" t:");
+   //case 6:
+       //lcd 6->10, 1
+   //    lcd.setCursor(7,1);
+   // break;
 
-//      lcd.print("d");
-//      lcd.print(rotations);
-break;
-    case 7:
-//      lcd.print("r");
-//      lcd.print(instantaneousrpm);
-break;
-    case 8:
-//      lcd.print("n");
-//      lcd.print(nextinstantaneousrpm);
-
-      break;
-    case 9:
-
-      break;*/
     default:
       screenstep = -1;//will clear next time, as 1 is added and if 0 will be cleared.
-  }
-
-
-  //                                lcd.print("RPM:");
-  //                                lcd.print(instantaneousrpm);
-  //                                lcd.print("distance:");
-  //                                lcd.print(rotations);
-  //Serial.print("RPM:");
-  //Serial.println(instantaneousrpm);
-    
-    
-    
-    
+  }    
 }
 
-//void resetT()
-//{
-//  t1 = t2;
-//  t2 = millis();
-//}
-
-////return the power supplied in Watts - given angular velocity change, and time change.
-//float PowerSupplied()
-//{
-//  float result = I * dw()/(dt()/(float)1000) * dtheta() + k *  dw()*dw() * dtheta();
-//  //reset previous angular velocity;
-//  w1 = dtheta()/dt();
-//  return result;
-//}
-//
-////change in angular velocity
-//float dw()
-//{
-//  return dtheta()/dt() - w1;
-//}
-//
-////change in angular velocity rad/s
-//float dtheta()
-//{
-//  return 2 * 3.1415926535;
-//}
-//
-////time difference in milliseconds
-//float dt()
-//{
-//  return t2-t1;
-//}
 
 //k can be displayed on the Concept monitor (units 10-6 N m s2)
 //k = - I ( dω / dt ) (1 / ω2 ) = I d(1/ω) / dt
