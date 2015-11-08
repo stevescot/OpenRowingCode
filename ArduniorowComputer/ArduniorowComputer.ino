@@ -41,7 +41,7 @@ float split;                              // split time for last stroke in secon
 int screenstep=0;                         // int - which part of the display to draw next.
 
 //unsigned long angularmomentum_gm2 = 100;//0.1001 kgm2 == 100.1g/m2 moment of intertia
-float I = 0.1001/*moment of  interia*/;
+float I = 0.101;//0.1001/*moment of  interia*/;
 float k = 0.000185;/*drag factor 10^6 nm/s/s*/
 float c = 2.8; //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power.
          //Concept used to quote a figure c=2.8, which, for a 2:00 per 500m split (equivalent to u=500/120=4.17m/s) gives 203 Watts. 
@@ -65,7 +65,7 @@ void loop()
        if (val != buttonState && val == LOW)            // the button state has changed!
           {   
             currentrot ++;
-            if(numrotationspercalc >= currentrot)
+            if(currentrot >= numrotationspercalc)
             {
               utime = micros();    
               mtime = millis();      
@@ -83,6 +83,7 @@ void loop()
               rpmhistory[nextrpm] = nextinstantaneousrpm;
               dumprpms();
               if(nextrpm >=99) nextrpm = 0;
+              //Serial.println(nextinstantaneousrpm);
               if(nextinstantaneousrpm >= instantaneousrpm)
                 {
                     //lcd.print("Acc");        
@@ -103,18 +104,25 @@ void loop()
                     //lcd.print("Dec");
                     if(Accelerating)//previously accelerating
                     { //finished drive
+                      //Serial.println("ACC");
                       diffrotations = rotations - laststrokerotations;
                       difftms = mtime - laststroketimems;
                       spm = 60000 /difftms;
                       laststrokerotations = rotations;
                       laststroketimems = mtime;
-                      split =  ((float)difftms)/((float)diffrotations*k*2*3.1415926535*2) ;//time for stroke /1000 for ms *500 for 500m = *2
+                      split =  ((float)difftms)/((float)diffrotations*pow((k/c),(1/3))*2) ;//time for stroke /1000 for ms *500 for 500m = *2
                       //   /1000*500 = /2
                     }
                     else
                     {
                       float secondsdecel = ((float)mtime-(float)driveTimems)/1000;
-                      k = I * ((1.0/driveAngularVelocity)-(1.0/radSec))/(secondsdecel)*1000000;
+                      /*Serial.println("DEC");
+                      Serial.println(driveAngularVelocity);
+                      Serial.println(radSec);
+                      Serial.println(secondsdecel);
+                      Serial.println(I);*/
+                      k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel)*1000000;
+                     /* Serial.println(k);*/
                     }
                     Accelerating = false;
                                               
@@ -163,7 +171,7 @@ void writeNextScreen()
      lcd.setCursor(0,1);
      //Distance in meters:
      
-      dm = (int)(rotations*k*2*3.1415926535);
+      dm = (int)(rotations*pow((k/c),(1/3)));
       lcd.print("D:");
       if(dm <1000) lcd.print("0");
       if(dm <100) lcd.print("0");
@@ -173,18 +181,21 @@ void writeNextScreen()
       
 
       //Drag factor
-      //lcd.print("k:");
-      //lcd.print(k);
+      lcd.print("k:");
+      lcd.print(k);
     break;
     case 4:
       timemins = (mtime-startTimems)/60000;
         lcd.setCursor(11,1);
-        if(timemins <10) lcd.print("0");
+     /*   if(timemins <10) lcd.print("0");
         lcd.print(timemins);//total mins
         lcd.print(":");
         timeseconds = (int)((mtime)-startTimems)/1000 - timemins*60;
         if(timeseconds < 10) lcd.print("0");
-        lcd.print(timeseconds);//total seconds.
+        lcd.print(timeseconds);//total seconds.*/
+
+        //lcd.print(k);
+        //Serial.println(k);
 //      lcd.print("s");
 //      lcd.print(diffrotations);
       break;
@@ -278,6 +289,7 @@ float calculateDragFactor(float angulardeceleration, float angularvelocity)
 
 void dumprpms()
 {
+  /*
   if(nextrpm > 97)
   {
     Serial.println("Rpm dump");
@@ -287,6 +299,7 @@ void dumprpms()
     }
     nextrpm = 0;
   }
+  */
 }
 
 
