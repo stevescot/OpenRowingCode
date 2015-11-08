@@ -10,8 +10,6 @@ int switchPin = 6;                          // switch is connected to pin 6
 int val;                                    // variable for reading the pin status
 int val2;                                   // variable for reading the delayed/debounced status
 int buttonState;                            // variable to hold the button state
-int count=0;
-
 const short numrotationspercalc = 1;
 short currentrot = 0;
 
@@ -30,7 +28,9 @@ unsigned long spm = 0;                    // current strokes per minute.
 unsigned long difftms;                      // milliseconds from last stroke to this one
 unsigned long driveTimems;                  //time of the end of the last drive
 
-float rpmhistory[200];
+float rpmhistory[100];
+unsigned long microshistory[100];
+
 short nextrpm;
 
 float newk;
@@ -62,82 +62,75 @@ void setup()
 void loop()
 {
   val = digitalRead(switchPin);            // read input value and store it in val                       
-       if (val != buttonState)            // the button state has changed!
+       if (val != buttonState && val == LOW)            // the button state has changed!
           {   
-             utime = micros();    
-             mtime = millis();      
-             if (val == LOW)                    // check if the button is pressed
-                {  //switch passing.    
-                  //initialise the start time
-                  if(startTimems == 0) startTimems = mtime;
-                    count++;
-                    timetakenus = utime - laststatechangeus;
-                    rotations++;
-                    //Serial.print("TimeTaken(ms):");
-                    //Serial.println(timetakenms);
-                    nextinstantaneousrpm = (float)60000000.0/timetakenus;
-                    float radSec = (6.283185307*numrotationspercalc)/((float)timetakenus/1000000.0);
-                    float prevradSec = (6.283185307*numrotationspercalc)/((float)lastrotationus/1000000.0);
-                    float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
-                    nextrpm ++;
-                    rpmhistory[nextrpm] = nextinstantaneousrpm;
-                    dumprpms();
-                    if(nextrpm >=199) nextrpm = 0;
-                    if(nextinstantaneousrpm >= instantaneousrpm)
-                    {
-                        //lcd.print("Acc");        
-                        if(!Accelerating)
-                        {
-                          //beginning drive.
-                          //Serial.println("lastk");
-                          //Serial.println(newk);
-                        }
-                        driveAngularVelocity = radSec;
-                        driveTimems = mtime;
-                        afterfirstdecrotation = false;
-                        Accelerating = true;    
-                    }
-                    else if(nextinstantaneousrpm <= (instantaneousrpm*0.99))
-                    {
-                        
-                        //lcd.print("Dec");
-                        if(Accelerating)//previously accelerating
-                        { //finished drive
-                          diffrotations = rotations - laststrokerotations;
-                          difftms = mtime - laststroketimems;
-                          spm = 60000 /difftms;
-                          laststrokerotations = rotations;
-                          laststroketimems = mtime;
-                          split =  ((float)difftms)/((float)diffrotations*mPerRot*2) ;//time for stroke
-                         // afterfirstdecrotation = true;
-                          //  /1000*500 = /2
-                        }
-                        else
-                        {
-                          float secondsdecel = ((float)mtime-(float)driveTimems)/1000;
-                          float angularDecel = (driveAngularVelocity-radSec)/(secondsdecel);
-                          newk = calculateDragFactor(angularDecel, radSec);
-                        }
-                        Accelerating = false;
-                                                  
-                    }                          
-                    lastrotationus = timetakenus;
-                    instantaneousrpm = nextinstantaneousrpm;
-                    //watch out for integer math problems here
-                    //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms);
-                    count=0;
-                    laststatechangeus = utime;           
-                } 
-                else
+            currentrot ++;
+            if(numrotationspercalc >= currentrot)
+            {
+              utime = micros();    
+              mtime = millis();      
+              //initialise the start time
+              if(startTimems == 0) startTimems = mtime;
+              timetakenus = utime - laststatechangeus;
+              rotations++;
+              //Serial.print("TimeTaken(ms):");
+              //Serial.println(timetakenms);
+              nextinstantaneousrpm = (float)60000000.0/timetakenus;
+              float radSec = (6.283185307*numrotationspercalc)/((float)timetakenus/1000000.0);
+              float prevradSec = (6.283185307*numrotationspercalc)/((float)lastrotationus/1000000.0);
+              float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
+              nextrpm ++;
+              rpmhistory[nextrpm] = nextinstantaneousrpm;
+              dumprpms();
+              if(nextrpm >=99) nextrpm = 0;
+              if(nextinstantaneousrpm >= instantaneousrpm)
                 {
-                  //lcd.setCursor(0,0);
-                  //lcd.print("HIGH"); 
-                  count = 0;
+                    //lcd.print("Acc");        
+                    if(!Accelerating)
+                    {
+                      //beginning drive.
+                      //Serial.println("lastk");
+                      //Serial.println(newk);
+                    }
+                    driveAngularVelocity = radSec;
+                    driveTimems = mtime;
+                    afterfirstdecrotation = false;
+                    Accelerating = true;    
                 }
-                laststatechangeus=utime;
-                writeNextScreen();
+                else if(nextinstantaneousrpm <= (instantaneousrpm*0.99))
+                {
+                    
+                    //lcd.print("Dec");
+                    if(Accelerating)//previously accelerating
+                    { //finished drive
+                      diffrotations = rotations - laststrokerotations;
+                      difftms = mtime - laststroketimems;
+                      spm = 60000 /difftms;
+                      laststrokerotations = rotations;
+                      laststroketimems = mtime;
+                      split =  ((float)difftms)/((float)diffrotations*mPerRot*2) ;//time for stroke
+                     // afterfirstdecrotation = true;
+                      //  /1000*500 = /2
+                    }
+                    else
+                    {
+                      float secondsdecel = ((float)mtime-(float)driveTimems)/1000;
+                      float angularDecel = (driveAngularVelocity-radSec)/(secondsdecel);
+                      newk = calculateDragFactor(angularDecel, radSec);
+                    }
+                    Accelerating = false;
+                                              
+                }                          
+                lastrotationus = timetakenus;
+                instantaneousrpm = nextinstantaneousrpm;
+                //watch out for integer math problems here
+                //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms); 
+            } 
+            laststatechangeus=utime;
+            writeNextScreen();
           }
-          buttonState = val;                       // save the new state in our variable
+          microshistory[nextrpm] = micros()-utime;
+  buttonState = val;                       // save the new state in our variable
 }
 
 void writeNextScreen()
@@ -287,7 +280,7 @@ float calculateDragFactor(float angulardeceleration, float angularvelocity)
 
 void dumprpms()
 {
-  if(nextrpm > 190)
+  if(nextrpm > 97)
   {
     Serial.println("Rpm dump");
     for(int i = 0; i < 190; i++)
