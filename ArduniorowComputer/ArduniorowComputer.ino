@@ -65,8 +65,9 @@ void loop()
        if (val != buttonState && val == LOW)            // the button state has changed!
           {   
             currentrot ++;
-            if(numrotationspercalc >= currentrot)
+            if(currentrot>= numrotationspercalc )
             {
+              currentrot = 0;
               utime = micros();    
               mtime = millis();      
               //initialise the start time
@@ -128,8 +129,8 @@ void loop()
             } 
             laststatechangeus=utime;
             writeNextScreen();
+            microshistory[nextrpm] = micros()-utime;
           }
-          microshistory[nextrpm] = micros()-utime;
   buttonState = val;                       // save the new state in our variable
 }
 
@@ -283,12 +284,17 @@ void dumprpms()
   if(nextrpm > 97)
   {
     Serial.println("Rpm dump");
-    for(int i = 0; i < 190; i++)
+    for(int i = 0; i < 90; i++)
     {
       Serial.println(rpmhistory[i]);
     }
+ /*   Serial.println("micros dump");
+    for(int i = 0; i <90; i++)
+    {
+      Serial.println(microshistory[i]);
+    }
     nextrpm = 0;
-  }
+  }*/
 }
 
 //(9.2)	u = ( k / c )1/3 ω
