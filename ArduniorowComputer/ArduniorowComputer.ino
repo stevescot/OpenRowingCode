@@ -25,6 +25,7 @@ unsigned long difftms;                      // milliseconds from last stroke to 
 unsigned long driveTimems;                  //time of the end of the last drive
 
 float rpmhistory[200];
+short nextrpm;
 
 float newk;
 float driveAngularVelocity;                // fastest angular velocity at end of drive
@@ -72,6 +73,10 @@ void loop()
                     float radSec = 6.283185307/((float)timetakenus/1000000);
                     float prevradSec = 6.283185307/((float)lastrotationus/1000000);
                     float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000);
+                    nextrpm ++;
+                    rpmhistory[nextrpm] = nextinstantaneousrpm;
+                    dumprpms();
+                    if(nextrpm >=199) nextrpm = 0;
                     if(nextinstantaneousrpm >= instantaneousrpm)
                     {
                         //lcd.print("Acc");        
@@ -275,6 +280,19 @@ float calculateDragFactor(float angulardeceleration, float angularvelocity)
   Serial.println();
   */
   return I*angulardeceleration*(1.0/(angularvelocity*angularvelocity));
+}
+
+void dumprpms()
+{
+  if(nextrpm > 190)
+  {
+    Serial.println("Rpm dump");
+    for(int i = 0; i < 190; i++)
+    {
+      Serial.println(rpmhistory[i]);
+    }
+    nextrpm = 0;
+  }
 }
 
 //(9.2)	u = ( k / c )1/3 ω
