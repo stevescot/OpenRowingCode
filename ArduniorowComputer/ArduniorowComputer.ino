@@ -185,7 +185,7 @@ void writeNextScreen()
         if(timemins <10) lcd.print("0");
         lcd.print(timemins);//total mins
         lcd.print(":");
-        timeseconds = (int)((mtime)-startTimems)/1000 - timemins*60;
+        timeseconds = (long)((mtime)-startTimems)/1000 - timemins*60;
         if(timeseconds < 10) lcd.print("0");
         lcd.print(timeseconds);//total seconds.
 //      lcd.print("s");
@@ -283,18 +283,21 @@ void dumprpms()
 {
   if(nextrpm > 97)
   {
+    /*
     Serial.println("Rpm dump");
     for(int i = 0; i < 90; i++)
     {
       Serial.println(rpmhistory[i]);
     }
- /*   Serial.println("micros dump");
+  }
+    Serial.println("micros dump");
     for(int i = 0; i <90; i++)
     {
       Serial.println(microshistory[i]);
     }
+    */
     nextrpm = 0;
-  }*/
+  }
 }
 
 //(9.2)	u = ( k / c )1/3 ω
