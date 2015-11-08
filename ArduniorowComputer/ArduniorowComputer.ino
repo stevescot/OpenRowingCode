@@ -11,10 +11,16 @@ int val;                                    // variable for reading the pin stat
 int val2;                                   // variable for reading the delayed/debounced status
 int buttonState;                            // variable to hold the button state
 int count=0;
+
+const short numrotationspercalc = 1;
+short currentrot = 0;
+
+unsigned long utime; 
+unsigned long mtime;
 unsigned long laststatechangeus;            //time of last switch.
 unsigned long timetakenus;                //time taken in milliseconds for a rotation of the flywheel
 unsigned long instantaneousrpm;           //rpm from the rotatiohn
-unsigned long nextinstantaneousrpm;       // next rpm reading to compare with previous
+float nextinstantaneousrpm;       // next rpm reading to compare with previous
 unsigned long lastrotationus;              // milliseconds taken for the last rotation of the flywheel
 unsigned long startTimems = 0;              // milliseconds from startup to first sample
 unsigned long rotations = 0;              // number of rotations since start
@@ -57,11 +63,11 @@ void loop()
 {
   val = digitalRead(switchPin);            // read input value and store it in val                       
        if (val != buttonState)            // the button state has changed!
-          { 
-            unsigned long utime = micros();    
-            unsigned long mtime = millis();            
+          {   
+             utime = micros();    
+             mtime = millis();      
              if (val == LOW)                    // check if the button is pressed
-                {  //switch passing.
+                {  //switch passing.    
                   //initialise the start time
                   if(startTimems == 0) startTimems = mtime;
                     count++;
@@ -69,10 +75,10 @@ void loop()
                     rotations++;
                     //Serial.print("TimeTaken(ms):");
                     //Serial.println(timetakenms);
-                    nextinstantaneousrpm = 60000000/timetakenus;
-                    float radSec = 6.283185307/((float)timetakenus/1000000);
-                    float prevradSec = 6.283185307/((float)lastrotationus/1000000);
-                    float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000);
+                    nextinstantaneousrpm = (float)60000000.0/timetakenus;
+                    float radSec = (6.283185307*numrotationspercalc)/((float)timetakenus/1000000.0);
+                    float prevradSec = (6.283185307*numrotationspercalc)/((float)lastrotationus/1000000.0);
+                    float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
                     nextrpm ++;
                     rpmhistory[nextrpm] = nextinstantaneousrpm;
                     dumprpms();
@@ -83,8 +89,8 @@ void loop()
                         if(!Accelerating)
                         {
                           //beginning drive.
-                          Serial.println("lastk");
-                          Serial.println(newk);
+                          //Serial.println("lastk");
+                          //Serial.println(newk);
                         }
                         driveAngularVelocity = radSec;
                         driveTimems = mtime;
@@ -108,7 +114,7 @@ void loop()
                         }
                         else
                         {
-                          float secondsdecel = ((float)millis()-(float)driveTimems)/1000;
+                          float secondsdecel = ((float)mtime-(float)driveTimems)/1000;
                           float angularDecel = (driveAngularVelocity-radSec)/(secondsdecel);
                           newk = calculateDragFactor(angularDecel, radSec);
                         }
@@ -128,7 +134,7 @@ void loop()
                   //lcd.print("HIGH"); 
                   count = 0;
                 }
-                laststatechangeus=utime;;
+                laststatechangeus=utime;
                 writeNextScreen();
           }
           buttonState = val;                       // save the new state in our variable
@@ -180,17 +186,14 @@ void writeNextScreen()
       //lcd.print(k);
     break;
     case 4:
-      timemins = (millis()-startTimems)/60000;
-      if(timemins <10)
-      {
+      timemins = (mtime-startTimems)/60000;
         lcd.setCursor(11,1);
         if(timemins <10) lcd.print("0");
         lcd.print(timemins);//total mins
         lcd.print(":");
-        timeseconds = (int)((millis()-startTimems)/1000 - timemins*60);
+        timeseconds = (int)((mtime)-startTimems)/1000 - timemins*60;
         if(timeseconds < 10) lcd.print("0");
         lcd.print(timeseconds);//total seconds.
-      }
 //      lcd.print("s");
 //      lcd.print(diffrotations);
       break;
