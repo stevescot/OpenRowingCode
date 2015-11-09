@@ -191,9 +191,10 @@ void launchWeb(int webtype) {
           Serial.println("Server started");   
           int b = 20;
           int c = 0;
-          while(b == 20) { 
+          while(b == 20) 
+          { 
              b = mdns1(webtype);
-           }
+          }
 }
 
 void setupAP(void) {
@@ -469,7 +470,7 @@ void loop()
                       laststrokerotations = rotations;
                       laststroketimems = mtime;
                       split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
-                      if(mPerRot <= 20)distancem += diffrotations*mPerRot*2;
+                      if(mPerRot <= 20)distancem += diffrotations*mPerRot;
                       //Send the split to the server.
                       SendSplit(mtime, diffrotations*mPerRot, distancem, lastDriveTimems, strokems - lastDriveTimems);
                       //   /1000*500 = /2
@@ -612,9 +613,9 @@ void dumprpms()
   */
 }
 
-void SendSplit(unsigned long msfromStart, float splitDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery)
+void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery)
 {
-  RowServer.sendSplit(MAC, msfromStart, splitDistance, totalDistancem, msDrive, msRecovery);
+  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery);
 }
 
 

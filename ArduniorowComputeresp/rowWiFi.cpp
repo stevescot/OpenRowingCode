@@ -32,7 +32,7 @@ int rowWiFi::connect()
 }
 
 
-int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float splitDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery)
+int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery)
 {
 	Serial.println("sendSplit");
 	if (connect())
@@ -47,7 +47,7 @@ int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float splitDistanc
 			_client.print("&t=");
 			_client.print(msfromStart);
 			_client.print("&sd=");
-			_client.print(splitDistance);
+			_client.print(strokeDistance);
 			_client.print("&d=");
 			_client.print(totalDistancem);
       _client.print("&msD=");

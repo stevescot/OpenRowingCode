@@ -137,7 +137,7 @@ void loop()
                       laststrokerotations = rotations;
                       laststroketimems = mtime;
                       split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
-                      if(mPerRot <= 20)distancem += diffrotations*mPerRot*2;
+                      if(mPerRot <= 20)distancem += diffrotations*mPerRot;
                       //   /1000*500 = /2
                     }
                     else
