@@ -7,6 +7,17 @@ namespace RowingSite
 {
     public class RowingSample
     {
+        public static RowingSample FromQueryString(System.Collections.Specialized.NameValueCollection QueryString)
+        {
+            RowingSample newSample = new RowingSample();
+            newSample.mac = QueryString["m"];//mac address of this client
+            newSample.TimeFromStart = TimeSpan.FromMilliseconds(double.Parse(QueryString["t"])); //time to this sample (ms from start)
+            newSample.Distancem = float.Parse(QueryString["d"]);//distance (m)
+            newSample.SplitDistancem = float.Parse(QueryString["sd"]);//stroke Distance
+            newSample.DriveTime = TimeSpan.FromMilliseconds(double.Parse(QueryString["msD"]));// time spent on the drive (ms)
+            newSample.RecoveryTime = TimeSpan.FromMilliseconds(double.Parse(QueryString["msR"])); //time spent on the recovery (ms)
+            return newSample;
+    }
         //mac address of this client
         public String mac{get;set;} 
         /// <summary>
@@ -35,7 +46,14 @@ namespace RowingSite
         {
             get
             {
-                TimeSpan retval = TimeSpan.FromSeconds((DriveTime.TotalMilliseconds + RecoveryTime.TotalMilliseconds)/(SplitDistancem*2));
+                return TimeSpan.FromSeconds((DriveTime.TotalMilliseconds + RecoveryTime.TotalMilliseconds)/(SplitDistancem*2));
+            }
+        }
+        public TimeSpan AverageSplit
+        {
+            get
+            {
+                return TimeSpan.FromSeconds(TimeFromStart.TotalSeconds / Distancem * 500);
             }
         }
         /// <summary>
