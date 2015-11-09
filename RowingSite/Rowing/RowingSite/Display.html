@@ -22,47 +22,34 @@
                 row.server.registerForUpdates("test");
                 // Create a function that the hub can call to broadcast messages.
                 
-            }
+                }
             )
-            /*
-            // Get the user name and store it to prepend to messages.
-            $('#displayname').val(prompt('Enter your name:', ''));
-            // Set initial focus to message input box.
-            $('#message').focus();
-            // Start the connection.
-            $.connection.hub.start().done(function () {
-                $('#sendmessage').click(function () {
-                    // Call the Send method on the hub.
-                    chat.server.send($('#displayname').val(), $('#message').val());
-                    // Clear text box and reset focus for next comment.
-                    $('#message').val('').focus();
-                });
-            });
-            */
         });
     </script>
 
 </head>
-<body     style="font-size: 1000%;font-family: sans-serif;font-weight: bolder;float:left;">
+<body     style="font-size: 500%;font-family: sans-serif;font-weight: bolder;float:left;">
     <table>
         <tr>
-            <td width="440px"><label id="TimeFromStart">00:00</label></td>
-            <td width="200px"><label id="SPM">00</label><label style="font-size: 50%">s/m</label></td>
+            <td width="470px"><label id="TimeFromStart">00:00:00</label></td>
+
+        </tr>
+        <tr>
+            <td>
+                <label id="Distancem">0000</label> m
+            </td>
         </tr>
     </table>
     <table>
         <tr>
+            <td width="200px"><label id="SPM">00</label><label style="font-size: 50%">s/m</label></td>
             <td>
                 <label id="Split">0:00</label><label style="font-size: 50%">/500m</label>
             </td>
         </tr>
     </table>
     <table>
-        <tr>
-            <td>
-                <label id="Distancem">0000</label> m
-            </td>
-        </tr>
+
     </table>
 </body>
 </html>
