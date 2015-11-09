@@ -15,6 +15,7 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 */
 #include <LiquidCrystal.h>
 #include "ESP8266WiFi.h"
+#include "rowWifi.h"
 //#include <ESP8266mDNS.h>
 #include <WiFiClient.h>
 #include <EEPROM.h>
@@ -451,6 +452,8 @@ void loop()
                       laststroketimems = mtime;
                       split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
                       if(mPerRot <= 20)distancem += diffrotations*mPerRot*2;
+                      //Send the split to the server.
+                      SendSplit(mtime, diffrotations*mPerRot, distancem);
                       //   /1000*500 = /2
                     }
                     else
@@ -589,6 +592,11 @@ void dumprpms()
     nextrpm = 0;
   }
   */
+}
+
+void SendSplit(unsigned long msfromStart, float splitDistance,  float totalDistancem)
+{
+  
 }
 
 

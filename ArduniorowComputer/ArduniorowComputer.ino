@@ -246,21 +246,6 @@ void writeNextScreen()
   }    
 }
 
-
-//k can be displayed on the Concept monitor (units 10-6 N m s2)
-//k = - I ( dω / dt ) (1 / ω2 ) = I d(1/ω) / dt
-float calculateDragFactor(float angulardeceleration, float angularvelocity)
-{
-  /*
-  Serial.println("D:");
-  Serial.println(angulardeceleration);
-  Serial.println(angularvelocity);
-  Serial.println(I);
-  Serial.println();
-  */
-  return I*angulardeceleration*(1.0/(angularvelocity*angularvelocity));
-}
-
 void dumprpms()
 {
   /*
