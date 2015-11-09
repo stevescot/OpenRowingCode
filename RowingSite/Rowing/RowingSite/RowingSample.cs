@@ -23,7 +23,18 @@ namespace RowingSite
         /// <summary>
         /// time in milliseconds from the start
         /// </summary>
+        /// 
         public TimeSpan TimeFromStart { get; set; }
+
+        public string TimeFromStartStr
+        {
+            get
+            {
+                return TimeFromStart.Hours.ToString("DD") + ":"
+                    + TimeFromStart.Minutes.ToString("DD") + ":"
+                    + TimeFromStart.Seconds.ToString("DD") ;
+            }
+        }
 
         /// <summary>
         /// time spent on the drive (ms)
@@ -39,6 +50,15 @@ namespace RowingSite
         {
             get; set;
         } //
+
+        public string SplitStr
+        {
+            get
+            {
+                return Split.Minutes.ToString("DD") + ":" + Split.Seconds.ToString("DD");
+            }
+        }
+
         /// <summary>
         /// split (seconds).
         /// </summary>
@@ -47,6 +67,14 @@ namespace RowingSite
             get
             {
                 return TimeSpan.FromSeconds((DriveTime.TotalMilliseconds + RecoveryTime.TotalMilliseconds)/(SplitDistancem*2));
+            }
+        }
+
+        public string AverageSplitStr
+        {
+            get
+            {
+                return AverageSplit.Minutes.ToString("DD") + ":" + AverageSplit.Seconds.ToString("DD");
             }
         }
         public TimeSpan AverageSplit
@@ -66,6 +94,14 @@ namespace RowingSite
         public float SplitDistancem
         {
             get; set;
+        }
+
+        public int Spm
+        {
+            get
+            {
+                return (int)(1.0 / (DriveTime.TotalMinutes + RecoveryTime.TotalMinutes));
+            }
         }
     }
 }

@@ -20,6 +20,8 @@ namespace RowingSite
             {
                 rowers[thisSample.mac].Session.Add(thisSample);
             }
+            rowHub x = new rowHub();
+            x.updateStats(thisSample);
         }
     }
 }
