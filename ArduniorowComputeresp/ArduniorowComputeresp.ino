@@ -16,16 +16,23 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 #include <LiquidCrystal.h>
 #include "ESP8266WiFi.h"
 #include "rowWifi.h"
-//#include <ESP8266mDNS.h>
+#include <ESP8266mDNS.h>
 #include <WiFiClient.h>
 #include <EEPROM.h>
 WiFiClient client;
 WiFiServer server(80);
+
+MDNSResponder mdns;
 String st, host, site;
 //SSID when in unassociated mode.
 const char * ssid = "IntelligentPlant";
 //name of this node.
 String myName = "";
+String MAC;                  // the MAC address of your Wifi shield
+rowWiFi RowServer("demo1.intelligentplant.com","IProw", client);
+
+
+
 const int switchPin = 2;                          // switch is connected to pin 6
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
@@ -97,6 +104,15 @@ void setupWiFi() {
   EEPROM.begin(512);
   Serial.begin(115200);
   delay(10);
+  byte mac[6];   
+  WiFi.macAddress(mac);
+  MAC = "";
+  for(int i=0; i<6;i++)
+  {
+    MAC += String(mac[i],16);
+    //if we want http colons:
+    //if(i < 5) MAC +="%3A";
+  }
   Serial.println();
   Serial.println();
   Serial.println("Startup");
@@ -169,6 +185,7 @@ void launchWeb(int webtype) {
           Serial.println("WiFi connected");
           Serial.println(WiFi.localIP());
           Serial.println(WiFi.softAPIP());
+          mdns.begin("row", WiFi.softAPIP());
           // Start the server
           server.begin();
           Serial.println("Server started");   
@@ -219,6 +236,7 @@ void setupAP(void) {
     }
   st += "</select>";
   delay(100);
+
   WiFi.softAP(ssid);
   Serial.println("softap");
   Serial.println("");
@@ -453,7 +471,7 @@ void loop()
                       split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
                       if(mPerRot <= 20)distancem += diffrotations*mPerRot*2;
                       //Send the split to the server.
-                      SendSplit(mtime, diffrotations*mPerRot, distancem);
+                      SendSplit(mtime, diffrotations*mPerRot, distancem, lastDriveTimems, strokems - lastDriveTimems);
                       //   /1000*500 = /2
                     }
                     else
@@ -594,9 +612,9 @@ void dumprpms()
   */
 }
 
-void SendSplit(unsigned long msfromStart, float splitDistance,  float totalDistancem)
+void SendSplit(unsigned long msfromStart, float splitDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery)
 {
-  
+  RowServer.sendSplit(MAC, msfromStart, splitDistance, totalDistancem, msDrive, msRecovery);
 }
 
 
