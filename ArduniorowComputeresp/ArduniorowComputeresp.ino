@@ -25,7 +25,7 @@ String st, host, site;
 const char * ssid = "IntelligentPlant";
 //name of this node.
 String myName = "";
-const int switchPin = 6;                          // switch is connected to pin 6
+const int switchPin = 2;                          // switch is connected to pin 6
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
 const short numrotationspercalc = 1;        // number of rotations to wait for before doing anything, if we need more time this will have to be reduced.
