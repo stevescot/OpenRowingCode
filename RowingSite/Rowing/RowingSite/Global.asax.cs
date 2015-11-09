@@ -19,7 +19,7 @@ namespace RowingSite
             AreaRegistration.RegisterAllAreas();
             GlobalConfiguration.Configure(WebApiConfig.Register);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
-            Rowers = new Dictionary<string, Rower>(1000);
+            Application["Rowers"] = new Dictionary<string, Rower>(1000);
         }
     }
 }

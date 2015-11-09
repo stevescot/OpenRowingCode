@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.SignalR;
 using System.Linq;
 
 namespace RowingSite
@@ -8,20 +9,20 @@ namespace RowingSite
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            RowingSample thisSample = RowingSample.FromQueryString(Request.QueryString);
+            RowingSample rowSample = RowingSample.FromQueryString(Request.QueryString);
             var rowers = ((Dictionary<string, Rower>)Application["Rowers"]);
-            if(!rowers.ContainsKey(thisSample.mac))
+            if(!rowers.ContainsKey(rowSample.mac))
             {
                 var rower = new Rower();
-                rower.Session.Add(thisSample);
-                rowers.Add(thisSample.mac, rower);
+                rower.Session.Add(rowSample);
+                rowers.Add(rowSample.mac, rower);
             }
             else
             {
-                rowers[thisSample.mac].Session.Add(thisSample);
+                rowers[rowSample.mac].Session.Add(rowSample);
             }
-            rowHub x = new rowHub();
-            x.updateStats(thisSample);
+            var x = GlobalHost.ConnectionManager.GetHubContext <rowHub>();
+            x.Clients.Group(rowSample.mac).update(rowSample.TimeFromStartStr, rowSample.Spm, rowSample.SplitStr, rowSample.Distancem);
         }
     }
 }

@@ -30,9 +30,9 @@ namespace RowingSite
         {
             get
             {
-                return TimeFromStart.Hours.ToString("DD") + ":"
-                    + TimeFromStart.Minutes.ToString("DD") + ":"
-                    + TimeFromStart.Seconds.ToString("DD") ;
+                return TimeFromStart.Hours.ToString("D2") + ":"
+                    + TimeFromStart.Minutes.ToString("D2") + ":"
+                    + TimeFromStart.Seconds.ToString("D2") ;
             }
         }
 
@@ -55,7 +55,7 @@ namespace RowingSite
         {
             get
             {
-                return Split.Minutes.ToString("DD") + ":" + Split.Seconds.ToString("DD");
+                return Split.Minutes.ToString("D2") + ":" + Split.Seconds.ToString("D2");
             }
         }
 

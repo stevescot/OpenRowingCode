@@ -13,27 +13,10 @@ namespace RowingSite
         /// </summary>
         public static Dictionary<string,List<string>> Users = new Dictionary<string, List<string>>();
 
-        public void updateStats(RowingSample rowsample)
-        {
-            foreach(var user in Users.Where(p=>p.Value.Contains(rowsample.mac)))
-            {
-                Clients.Client(user.Key).update(rowsample.TimeFromStartStr,rowsample.Spm , rowsample.SplitStr, rowsample.Distancem);
-            }
-        }
-
         public void registerForUpdates(string mac)
         {
             string clientId = GetClientId();
-
-            if (!Users.ContainsKey(clientId))
-            {
-                Users.Add(clientId, new List<string>());
-            }
-
-            if (Users.ContainsKey(clientId) )
-            {
-                Users[clientId].Add(mac);
-            }
+            Groups.Add(clientId, mac);
         }
 
         /// <summary>
