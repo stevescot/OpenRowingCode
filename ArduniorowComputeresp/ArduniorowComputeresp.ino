@@ -19,7 +19,7 @@ const char * ssid = "IntelligentPlant";
 //name of this node.
 String myName = "";
 String MAC;                  // the MAC address of your Wifi shield
-rowWiFi RowServer("demo1.intelligentplant.com","IProw", client);
+rowWiFi RowServer("row.intelligentplant.com","Row", client);
 
 
 
