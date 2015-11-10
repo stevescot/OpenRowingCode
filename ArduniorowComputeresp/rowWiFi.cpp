@@ -16,7 +16,10 @@ rowWiFi::rowWiFi(const char *host, const char *path, WiFiClient &client)
 	_inRequest = false;
 	//connect();
 }
-
+int rowWiFi::finishSend()
+{
+  _client.stop();
+}
 int rowWiFi::connect()
 {
 	if (!_client.connected())

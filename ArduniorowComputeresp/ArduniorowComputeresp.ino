@@ -17,6 +17,7 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 #include "ESP8266WiFi.h"
 #include "rowWifi.h"
 #include <ESP8266mDNS.h>
+#include "gpio.h"
 #include <WiFiClient.h>
 #include <EEPROM.h>
 WiFiClient client;
@@ -33,6 +34,7 @@ rowWiFi RowServer("demo1.intelligentplant.com","IProw", client);
 
 
 
+bool wifiactive = false;                    //
 const int switchPin = 2;                          // switch is connected to pin 6
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
@@ -158,12 +160,14 @@ void setupWiFi() {
   Serial.println(site);
   if ( esid.length() > 1 ) {
       // test esid 
+      WiFi.mode(WIFI_STA);
       WiFi.begin(esid.c_str(), epass.c_str());
       if ( testWifi() == 20 ) { 
-          //launchWeb(0);
+          wifiactive = true;
           return;
       }
   }
+  /*not returned above, so go to setup*/
   setupAP(); 
 }
 
@@ -411,6 +415,7 @@ void loop()
   val = digitalRead(switchPin);            // read input value and store it in val                       
        if (val != buttonState && val == LOW)            // the button state has changed!
           {   
+            if(!wifiactive) setupWiFi();//reconnect to WiFi if we are currently disconnected.
             currentrot ++;
             if(currentrot >= numrotationspercalc)
             {
@@ -497,6 +502,15 @@ void loop()
           }
           microshistory[nextrpm] = micros()-utime;
   buttonState = val;                       // save the new state in our variable
+}
+
+void sleep()
+{
+    RowServer.finishSend();
+    delay(2000);
+    WiFi.mode(WIFI_OFF);
+    wifiactive = false;
+  //gpio_pin_wakeup_enable(GPIO_ID_PIN(4), GPIO_PIN_INTR_HILEVEL);
 }
 
 void dumprpms()
