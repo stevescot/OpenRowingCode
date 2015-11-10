@@ -33,6 +33,7 @@ short currentrot = 0;
 unsigned long utime;                        //time of tick in microseconds
 unsigned long mtime;                        //time of tick in milliseconds
 
+unsigned long lastRecoveryms;               //last time in recovery
 unsigned long laststatechangeus;            //time of last switch.
 unsigned long timetakenus;                  //time taken in milliseconds for a rotation of the flywheel
 unsigned long instantaneousrpm;             //rpm from the rotatiohn
@@ -40,6 +41,7 @@ float nextinstantaneousrpm;                 // next rpm reading to compare with 
 unsigned long lastrotationus;               // milliseconds taken for the last rotation of the flywheel
 unsigned long startTimems = 0;              // milliseconds from startup to first sample
 unsigned long rotations = 0;                // number of rotations since start
+unsigned long rotationsInDistance = 0;     // number of rotations already accounted for in the distance.
 unsigned long laststrokerotations = 0;      // number of rotations since last drive
 unsigned long laststroketimems = 0;         // milliseconds from startup to last stroke drive
 unsigned long strokems;                      // milliseconds from last stroke to this one
@@ -50,7 +52,6 @@ unsigned long microshistory[100];           //array of the amount of time taken 
 short nextrpm;                              // currently measured rpm, to compare to last.
 
 float driveAngularVelocity;                // fastest angular velocity at end of drive
-bool afterfirstdecrotation = false;        // after the first deceleration rotation (to give good figures for drag factor);
 int diffrotations;                         // rotations from last stroke to this one
 
 int screenstep=0;                           // int - which part of the display to draw next.
@@ -168,20 +169,20 @@ int testWifi(void) {
 } 
 
 void launchWeb(int webtype) {
-          Serial.println("");
-          Serial.println("WiFi connected");
-          Serial.println(WiFi.localIP());
-          Serial.println(WiFi.softAPIP());
-          mdns.begin("row", WiFi.softAPIP());
-          // Start the server
-          server.begin();
-          Serial.println("Server started");   
-          int b = 20;
-          int c = 0;
-          while(b == 20) 
-          { 
-             b = mdns1(webtype);
-          }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println(WiFi.localIP());
+  Serial.println(WiFi.softAPIP());
+  mdns.begin("row", WiFi.softAPIP());
+  // Start the server
+  server.begin();
+  Serial.println("Server started");   
+  int b = 20;
+  int c = 0;
+  while(b == 20) 
+  { 
+     b = mdns1(webtype);
+  }
 }
 
 void setupAP(void) {
@@ -412,8 +413,6 @@ void loop()
               }
               timetakenus = utime - laststatechangeus;
               rotations++;
-              //Serial.print("TimeTaken(ms):");
-              //Serial.println(timetakenms);
               nextinstantaneousrpm = (float)60000000.0*numrotationspercalc/timetakenus;
               float radSec = (6.283185307*numrotationspercalc)/((float)timetakenus/1000000.0);
               float prevradSec = (6.283185307*numrotationspercalc)/((float)lastrotationus/1000000.0);
@@ -422,6 +421,11 @@ void loop()
               rpmhistory[nextrpm] = nextinstantaneousrpm;
               dumprpms();
               if(nextrpm >=99) nextrpm = 0;
+              if(mPerRot <= 20)
+              {
+                distancem += (rotationsInDistance - rotations)*mPerRot;
+                rotationsInDistance = rotations;
+              }
               //Serial.println(nextinstantaneousrpm);
               if(nextinstantaneousrpm >= instantaneousrpm)
                 {
@@ -429,57 +433,41 @@ void loop()
                     if(!Accelerating)
                     {//beginning of drive /end recovery
                       driveBeginms = mtime;
-                      float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
-                      k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);
+                      float secondsdecel = ((float)lastRecoveryms-(float)driveEndms)/1000;
+                      
+                      //calculate the drag factor - and tweak previous estimate by 1/3 the difference 
+                      k = k + ((I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel))-k)/3.0;
                       mPerRot = pow((k/c),(1.0/3.0))*2*3.1415926535;
+                      //calculate rotations on this stroke
+                      diffrotations = rotations - laststrokerotations;
+                      laststrokerotations = rotations;
+                      //calculate time on this stroke
+                      strokems = mtime - laststroketimems;
+                      //use time and rotations to calculate split on this stroke.
+                      split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
+                      spm = 60000 /strokems;
+                      laststroketimems = mtime;
+                      //now is a good time to send the split - we are at the slowest rotation possible...
+                      SendSplit(mtime, diffrotations*mPerRot, distancem, lastDriveTimems, strokems - lastDriveTimems);
+                      StrokeToDriveRatio = (strokems / lastDriveTimems);
                     }
                     driveAngularVelocity = radSec;
-                    driveEndms = mtime;
-                    lastDriveTimems = driveEndms - driveBeginms;
-                    StrokeToDriveRatio = (strokems / lastDriveTimems);
-                    afterfirstdecrotation = false;
                     Accelerating = true;    
                 }
                 else if(nextinstantaneousrpm <= (instantaneousrpm*0.99))
                 {
-                  /*
-                  Serial.println("m/rot");
-                  Serial.println(k);
-                  Serial.println(c);
-                  Serial.println(pow((k/c),(1.0/3.0)));
-                    Serial.println(pow((k/c),(1.0/3.0))*2*3.1415926535);*/
-                    //lcd.print("Dec");
                     if(Accelerating)//previously accelerating
                     { //finished drive
-                      //Serial.println("ACC");
-                      diffrotations = rotations - laststrokerotations;
-                      strokems = mtime - laststroketimems;
-                      spm = 60000 /strokems;
-                      laststrokerotations = rotations;
-                      laststroketimems = mtime;
-                      split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
-                      if(mPerRot <= 20)distancem += diffrotations*mPerRot;
-                      //Send the split to the server.
-                      SendSplit(mtime, diffrotations*mPerRot, distancem, lastDriveTimems, strokems - lastDriveTimems);
-                      //   /1000*500 = /2
+                      driveEndms = mtime - (timetakenus/1000);
+                      lastDriveTimems = driveEndms - driveBeginms;
+                      //Serial.println("ACC");//this is when we are spinning fastest.
                     }
-                    else
-                    {//started recovery / deceleration
-                      
-                      /*Serial.println("DEC");
-                      Serial.println(driveAngularVelocity);
-                      Serial.println(radSec);
-                      Serial.println(secondsdecel);
-                      Serial.println(I);*/
-                     /* Serial.println(k);*/
-                    }
+                    lastRecoveryms = mtime;
                     Accelerating = false;
-                                              
-                }                          
+                }        
+                //store this time for a rotation, and rpm to allow it to be used as the previous next time.                  
                 lastrotationus = timetakenus;
                 instantaneousrpm = nextinstantaneousrpm;
-                //watch out for integer math problems here
-                //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms); 
             } 
             laststatechangeus=utime;
           }
