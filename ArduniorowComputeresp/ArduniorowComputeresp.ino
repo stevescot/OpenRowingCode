@@ -3,17 +3,6 @@
  * principles are here : http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7
  * 
  */
-
-/*
-
-
-
-
-// when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
-// initialize the library with the numbers of the interface pins
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
-*/
-#include <LiquidCrystal.h>
 #include "ESP8266WiFi.h"
 #include "rowWifi.h"
 #include <ESP8266mDNS.h>
@@ -94,12 +83,6 @@ void setup()
  pinMode(switchPin, INPUT_PULLUP);                // Set the switch pin as input
  Serial.begin(115200);                      // Set up serial communication at 115200bps
  buttonState = digitalRead(switchPin);  // read the initial state
-   // set up the LCD's number of columns and rows: 
-//  lcd.begin(16, 2);
-//  lcd.print("V-Fit powered by");
-//  lcd.setCursor(0,1);
-//  lcd.print("IP Technology");
-  // Print a message to the LCD.
 }
 
 void setupWiFi() {
@@ -413,7 +396,7 @@ int mdns1(int webtype)
 void loop()
 {
   val = digitalRead(switchPin);            // read input value and store it in val                       
-       if (val != buttonState && val == LOW)            // the button state has changed!
+       if ((val != buttonState) && (val == LOW) && (utime-laststatechangeus > 10000) )  
           {   
             if(!wifiactive) setupWiFi();//reconnect to WiFi if we are currently disconnected.
             currentrot ++;

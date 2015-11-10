@@ -4,8 +4,6 @@
  * 
  */
 #include <LiquidCrystal.h>
-
-// when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
@@ -76,7 +74,8 @@ void setup()
 void loop()
 {
   val = digitalRead(switchPin);            // read input value and store it in val                       
-       if (val != buttonState && val == LOW)            // the button state has changed!
+       utime = micros(); 
+       if ((val != buttonState) && (val == LOW) && (utime-laststatechangeus > 10000) )            // the button state has changed!
           {   
             currentrot ++;
             if(currentrot >= numrotationspercalc)
