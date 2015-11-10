@@ -129,6 +129,7 @@
     <Content Include="Default.aspx" />
     <Content Include="Display.html" />
     <Content Include="Global.asax" />
+    <None Include="Properties\PublishProfiles\monitoring.pubxml" />
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
     <Content Include="Scripts\jquery-1.6.4.js" />
     <Content Include="Scripts\jquery-1.6.4.min.js" />
