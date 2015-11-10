@@ -28,6 +28,7 @@ unsigned long rotations = 0;                // number of rotations since start
 unsigned long laststrokerotations = 0;      // number of rotations since last drive
 unsigned long laststroketimems = 0;         // milliseconds from startup to last stroke drive
 unsigned long strokems;                      // milliseconds from last stroke to this one
+unsigned long rotationsInDistance = 0;     // number of rotations already accounted for in the distance.
 
 float rpmhistory[100];                      //array of rpm per rotation for debugging
 unsigned long microshistory[100];           //array of the amount of time taken in calc/display for debugging.
@@ -58,7 +59,7 @@ float distancem = 0;                        // distance rowed in meters.
 float StrokeToDriveRatio = 0;                // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
 
 //Constants that vary with machine:
-float I = 0.05;                             // moment of  interia of the wheel - 0.1001 for Concept2, ~0.05 for V-Fit air rower.*/;
+float I = 0.04;                             // moment of  interia of the wheel - 0.1001 for Concept2, ~0.05 for V-Fit air rower.*/;
 
 void setup() 
 {
@@ -76,13 +77,13 @@ void setup()
 void loop()
 {
   val = digitalRead(switchPin);            // read input value and store it in val                       
-       if (val != buttonState && val == LOW)            // the button state has changed!
-          {   
+  utime = micros(); 
+       if (val != buttonState && val == LOW && (utime- laststatechangeus) >10000)            // the button state has changed!
+          { 
+            mtime = millis();
             currentrot ++;
             if(currentrot >= numrotationspercalc)
             {
-              utime = micros();    
-              mtime = millis();      
               //initialise the start time
               if(startTimems == 0) 
               {
@@ -137,22 +138,17 @@ void loop()
                       laststrokerotations = rotations;
                       laststroketimems = mtime;
                       split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
-                      if(mPerRot <= 20)distancem += diffrotations*mPerRot;
                       //   /1000*500 = /2
-                    }
-                    else
-                    {//started recovery / deceleration
-                      
-                      /*Serial.println("DEC");
-                      Serial.println(driveAngularVelocity);
-                      Serial.println(radSec);
-                      Serial.println(secondsdecel);
-                      Serial.println(I);*/
-                     /* Serial.println(k);*/
                     }
                     Accelerating = false;
                                               
                 }                          
+                
+                if(mPerRot <= 20)
+                {
+                  distancem += (rotations-rotationsInDistance)*mPerRot;
+                  rotationsInDistance = rotations;
+                }
                 lastrotationus = timetakenus;
                 instantaneousrpm = nextinstantaneousrpm;
                 //watch out for integer math problems here
@@ -161,7 +157,7 @@ void loop()
             laststatechangeus=utime;
             writeNextScreen();
           }
-          microshistory[nextrpm] = micros()-utime;
+//          microshistory[nextrpm] = micros()-utime;
   buttonState = val;                       // save the new state in our variable
 }
 
