@@ -13,6 +13,7 @@ const int switchPin = 6;                    // switch is connected to pin 6
 const int analogPin = 3;                    // analog pin (Concept2)
 
 bool C2 = false;                            // if we are connected to a concept2
+int C2lim = 40;                             // limit to detect a rotation from C2  (0.00107421875mV per 1, so 40 = 42mV
 
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
@@ -77,10 +78,10 @@ void setup()
   lcd.print("IP Technology");
   analogReference(INTERNAL);
   delay(100);
-  int x = analogRead(analogPin);
-  if(x == 0) 
-  {
+  if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
+  {//Concept 2 - set I and flag for analogRead.
     C2 = true;
+    I - 0.101;
     Serial.println("Concept 2 detected on pin 3");
   }
   else
@@ -95,8 +96,7 @@ void loop()
   if(C2)
   {
     //simulate a reed switch from the coil
-    val = analogRead(analogPin);
-    if(val >0) 
+    if(analogRead(analogPin) > C2lim) 
     {
       val = LOW;
     }
