@@ -78,7 +78,7 @@ void setup()
   analogReference(INTERNAL);
   delay(100);
   int x = analogRead(analogPin);
-  if(x = 0) 
+  if(x == 0) 
   {
     C2 = true;
     Serial.println("Concept 2 detected on pin 3");
