@@ -9,7 +9,11 @@
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
-const int switchPin = 6;                          // switch is connected to pin 6
+const int switchPin = 6;                    // switch is connected to pin 6
+const int analogPin = 3;                    // analog pin (Concept2)
+
+bool C2 = false;                            // if we are connected to a concept2
+
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
 const short numrotationspercalc = 1;        // number of rotations to wait for before doing anything, if we need more time this will have to be reduced.
@@ -63,20 +67,48 @@ float I = 0.04;                             // moment of  interia of the wheel -
 
 void setup() 
 {
- pinMode(switchPin, INPUT_PULLUP);                // Set the switch pin as input
- Serial.begin(115200);                      // Set up serial communication at 115200bps
- buttonState = digitalRead(switchPin);  // read the initial state
+   pinMode(switchPin, INPUT_PULLUP);                // Set the switch pin as input
+   Serial.begin(115200);                      // Set up serial communication at 115200bps
+   buttonState = digitalRead(switchPin);  // read the initial state
    // set up the LCD's number of columns and rows: 
   lcd.begin(16, 2);
   lcd.print("V-Fit powered by");
   lcd.setCursor(0,1);
   lcd.print("IP Technology");
+  analogReference(INTERNAL);
+  delay(100);
+  int x = analogRead(analogPin);
+  if(x = 0) 
+  {
+    C2 = true;
+    Serial.println("Concept 2 detected on pin 3");
+  }
+  else
+  {
+    Serial.println("No Concept 2 detected on Analog pin 3");
+  }
   // Print a message to the LCD.
 }
 
 void loop()
 {
-  val = digitalRead(switchPin);            // read input value and store it in val                       
+  if(C2)
+  {
+    //simulate a reed switch from the coil
+    val = analogRead(analogPin);
+    if(val >0) 
+    {
+      val = LOW;
+    }
+    else
+    {
+      val = HIGH;
+    }
+  }
+  else
+  {
+    val = digitalRead(switchPin);            // read input value and store it in val                       
+  }
   utime = micros(); 
        if (val != buttonState && val == LOW && (utime- laststatechangeus) >10000)            // the button state has changed!
           { 
