@@ -8,6 +8,12 @@ int iswitch = 0;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  for(int i =10; i >0; i--)
+  {
+    delay(1000);
+    Serial.print(i);
+    Serial.println(" seconds to go to sampling");
+  }
 }
 
 void loop() {
