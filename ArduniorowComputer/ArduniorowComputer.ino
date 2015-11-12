@@ -81,7 +81,7 @@ void setup()
   if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
     C2 = true;
-    I - 0.101;
+    I = 0.101;
     Serial.println("Concept 2 detected on pin 3");
   }
   else
