@@ -161,7 +161,7 @@ void loop()
                       driveBeginms = mtime;
                       float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
                       k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);
-                      mPerRot = pow((k/c),(1.0/3.0))*2*3.1415926535;
+                      mPerRot = pow((k/c),(0.33333333333333333))*2.0*3.1415926535;
                       Serial.println(distancem);
                       driveStartRotations = rotations;
                     }
