@@ -174,13 +174,6 @@ void loop()
                 }
                 else if(nextinstantaneousrpm <= (instantaneousrpm*0.99))
                 {
-                  /*
-                  Serial.println("m/rot");
-                  Serial.println(k);
-                  Serial.println(c);
-                  Serial.println(pow((k/c),(1.0/3.0)));
-                    Serial.println(pow((k/c),(1.0/3.0))*2*3.1415926535);*/
-                    //lcd.print("Dec");
                     if(Accelerating)//previously accelerating
                     { //finished drive
                       //Serial.println("ACC");
@@ -189,8 +182,7 @@ void loop()
                       spm = 60000 /strokems;
                       laststrokerotations = rotations;
                       laststroketimems = mtime;
-                      split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
-                      //   /1000*500 = /2
+                      split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
                       driveLengthm = (float)(rotations - driveStartRotations) * mStrokePerRotation;
                     }
                     Accelerating = false;
