@@ -9,6 +9,8 @@
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
+int backLight = 13;
+
 const int switchPin = 6;                    // switch is connected to pin 6
 const int analogPin = 3;                    // analog pin (Concept2)
 
@@ -34,7 +36,7 @@ unsigned long laststrokerotations = 0;      // number of rotations since last dr
 unsigned long laststroketimems = 0;         // milliseconds from startup to last stroke drive
 unsigned long strokems;                      // milliseconds from last stroke to this one
 unsigned long rotationsInDistance = 0;     // number of rotations already accounted for in the distance.
-
+float driveLengthm = 0;                    // last stroke length in meters
 float rpmhistory[100];                      //array of rpm per rotation for debugging
 unsigned long microshistory[100];           //array of the amount of time taken in calc/display for debugging.
 
@@ -50,6 +52,9 @@ float c = 2.8;                              //The figure used for c is somewhat 
                                             //Concept used to quote a figure c=2.8, which, for a 2:00 per 500m split (equivalent to u=500/120=4.17m/s) gives 203 Watts. 
                                             
 float mPerRot = 0;                          // meters per rotation of the flywheel
+
+unsigned long driveStartRotations;           // number of rotations at start of drive.
+float mStrokePerRotation = 0;               // meters of stroke per rotation of the flywheel to work out how long we have pulled the handle in meters from rotations.
 
 bool Accelerating;                          //whether or not we were accelerating at the last tick
 
@@ -73,6 +78,8 @@ void setup()
    buttonState = digitalRead(switchPin);  // read the initial state
    // set up the LCD's number of columns and rows: 
   lcd.begin(16, 2);
+  pinMode(backLight, OUTPUT);
+  digitalWrite(backLight, HIGH); // turn backlight on. Replace 'HIGH' with 'LOW' to turn it off.
   lcd.print("V-Fit powered by");
   lcd.setCursor(0,1);
   lcd.print("IP Technology");
@@ -82,10 +89,14 @@ void setup()
   {//Concept 2 - set I and flag for analogRead.
     C2 = true;
     I - 0.101;
+    mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
     Serial.println("Concept 2 detected on pin 3");
   }
   else
   {
+    C2 = false;
+    I = 0.04;
+    mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
     Serial.println("No Concept 2 detected on Analog pin 3");
   }
   // Print a message to the LCD.
@@ -152,6 +163,7 @@ void loop()
                       k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);
                       mPerRot = pow((k/c),(1.0/3.0))*2*3.1415926535;
                       Serial.println(distancem);
+                      driveStartRotations = rotations;
                     }
                     driveAngularVelocity = radSec;
                     driveEndms = mtime;
@@ -179,6 +191,7 @@ void loop()
                       laststroketimems = mtime;
                       split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
                       //   /1000*500 = /2
+                      driveLengthm = (float)(rotations - driveStartRotations) * mStrokePerRotation;
                     }
                     Accelerating = false;
                                               
@@ -272,10 +285,18 @@ void writeNextScreen()
       //lcd.print(" AvS:");
       //lcd.print(rotations/(millis()-startTime));     
       break;
-   //case 6:
-       //lcd 6->10, 1
-   //    lcd.setCursor(7,1);
-   // break;
+   case 6:
+    //lcd 6->9 , 0
+      // lcd.setCursor(4,0);
+      // lcd.print("r");
+      // lcd.print(StrokeToDriveRatio);
+
+      Serial.print("Drive length: ");
+      Serial.println(driveLengthm);
+      //lcd.setCursor(10,1);
+      //lcd.print(" AvS:");
+      //lcd.print(rotations/(millis()-startTime));   
+    break;
 
     default:
       screenstep = -1;//will clear next time, as 1 is added and if 0 will be cleared.
