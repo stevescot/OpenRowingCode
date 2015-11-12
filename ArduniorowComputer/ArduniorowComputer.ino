@@ -13,7 +13,7 @@ const int switchPin = 6;                    // switch is connected to pin 6
 const int analogPin = 3;                    // analog pin (Concept2)
 
 bool C2 = false;                            // if we are connected to a concept2
-int C2lim = 40;                             // limit to detect a rotation from C2  (0.00107421875mV per 1, so 40 = 42mV
+float C2lim = 10;                             // limit to detect a rotation from C2  (0.00107421875mV per 1, so 40 = 42mV
 
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
@@ -76,7 +76,7 @@ void setup()
   lcd.print("V-Fit powered by");
   lcd.setCursor(0,1);
   lcd.print("IP Technology");
-  analogReference(INTERNAL);
+  analogReference(DEFAULT);//analogReference(INTERNAL);
   delay(100);
   if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
@@ -96,7 +96,14 @@ void loop()
   if(C2)
   {
     //simulate a reed switch from the coil
-    if(analogRead(analogPin) > C2lim) 
+    int analog = analogRead(analogPin);
+    //make C2lim a running 4 second average of the sample.
+    if(micros() > utime && utime > 0)
+    {//if this isn't an overflow, and there has been at least one sample, start to tune the C2lim.
+      C2lim = C2lim + ((float)val - C2lim)*((float)(micros()-utime)/4000000);
+    }
+    if(C2lim < 5) C2lim = 5;//don't let it get back to zero if nothing is happening...
+    if(analog > C2lim) 
     {
       val = LOW;
     }
