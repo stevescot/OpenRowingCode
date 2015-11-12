@@ -162,7 +162,6 @@ void loop()
                       float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
                       k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);
                       mPerRot = pow((k/c),(0.33333333333333333))*2.0*3.1415926535;
-                      Serial.println(distancem);
                       driveStartRotations = rotations;
                     }
                     driveAngularVelocity = radSec;
@@ -230,6 +229,10 @@ void writeNextScreen()
         if(splits <10) lcd.print("0");
         lcd.print(splits);//seconds
         //lcd 0->5, 0  used
+        Serial.print("Split:\t");
+        Serial.print(splitmin);
+        Serial.print(":");
+        Serial.println(splits);
       }
     break;
     case 2:
@@ -238,6 +241,8 @@ void writeNextScreen()
       lcd.print("SPM:");
       lcd.print(spm);
       lcd.print("  ");
+    Serial.print("SPM:\t");
+    Serial.println(spm);
     break;
     case 3:
      lcd.setCursor(0,1);
@@ -247,6 +252,10 @@ void writeNextScreen()
       if(distancem <10) lcd.print("0");
       lcd.print(distancem);
       lcd.print("m ");
+      Serial.print("Distance:\t");
+      Serial.print(distancem);
+      Serial.println("m");
+      
       //lcd 0->5, 1 used
       //Drag factor
       /*lcd.print("D:");
@@ -262,7 +271,10 @@ void writeNextScreen()
         timeseconds = (long)((mtime)-startTimems)/1000 - timemins*60;
         if(timeseconds < 10) lcd.print("0");
         lcd.print(timeseconds);//total seconds.*/
-
+        Serial.print("time:\t");
+        Serial.print(timemins);
+        Serial.print(":");
+        Serial.println(timeseconds);
         //lcd.print(k);
         //Serial.println(k);
 //      lcd.print("s");
@@ -273,6 +285,9 @@ void writeNextScreen()
        lcd.setCursor(4,0);
        lcd.print("r");
        lcd.print(StrokeToDriveRatio);
+
+       Serial.print("Drag factor \t");
+       Serial.println(k);
       //lcd.setCursor(10,1);
       //lcd.print(" AvS:");
       //lcd.print(rotations/(millis()-startTime));     
