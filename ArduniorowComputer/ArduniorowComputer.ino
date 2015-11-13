@@ -4,7 +4,7 @@
  * 
  */
 #include <LiquidCrystal.h>
-//#define UseLCD // comment out this line to not use a 16x2 LCD
+#define UseLCD // comment out this line to not use a 16x2 LCD
 
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
@@ -16,6 +16,7 @@ int backLight = 13;
 const int switchPin = 6;                    // switch is connected to pin 6
 const int analogPin = 3;                    // analog pin (Concept2)
 
+int peakrpm = 0;
 bool C2 = false;                            // if we are connected to a concept2
 float C2lim = 10;                             // limit to detect a rotation from C2  (0.00107421875mV per 1, so 40 = 42mV
 
@@ -91,7 +92,7 @@ float I = 0.04;                             // moment of  interia of the wheel -
 void setup() 
 {
    pinMode(switchPin, INPUT_PULLUP);                // Set the switch pin as input
-   Serial.begin(1000000);                      // Set up serial communication at 115200bps
+   Serial.begin(115200);                      // Set up serial communication at 115200bps
    buttonState = digitalRead(switchPin);  // read the initial state
    // set up the LCD's number of columns and rows: 
    #ifdef UseLCD
@@ -149,12 +150,13 @@ void loop()
   }
   else
   {
+    mtime = millis();
+    utime = micros(); 
     val = digitalRead(switchPin);            // read input value and store it in val                       
   }
-  utime = micros(); 
-       if (val != buttonState && val == LOW && (utime- laststatechangeus) >10000)            // the button state has changed!
+       if (val != buttonState && val == LOW && (utime- laststatechangeus) >3000)            // the button state has changed!
           { 
-            mtime = millis();
+           
             currentrot ++;
             if(currentrot >= numrotationspercalc)
             {
@@ -172,6 +174,7 @@ void loop()
               //Serial.print("TimeTaken(ms):");
               //Serial.println(timetakenms);
               nextinstantaneousrpm = (float)(60000000.0*numrotationspercalc)/timetakenus;
+              if(nextinstantaneousrpm > peakrpm) peakrpm = nextinstantaneousrpm;
               float radSec = (6.283185307*numrotationspercalc)/((float)timetakenus/1000000.0);
               float prevradSec = (6.283185307*numrotationspercalc)/((float)lastrotationus/1000000.0);
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
@@ -229,6 +232,12 @@ void loop()
                 //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms); 
                 laststatechangeus=utime;
             } 
+          }
+
+          if((millis()-mtime) >=5)
+          {
+            Serial.print("warning - loop took (ms):");
+            Serial.println(millis()-mtime);
           }
 //          microshistory[nextrpm] = micros()-utime;
   buttonState = val;                       // save the new state in our variable
@@ -340,11 +349,13 @@ void writeNextScreen()
       // lcd.print("r");
       // lcd.print(StrokeToDriveRatio);
 
-      Serial.print("Drive length: ");
-      Serial.println(driveLengthm);
+      Serial.print("Drive angularve: ");
+      Serial.println(driveAngularVelocity);
 
       Serial.print("rpm\t");
       Serial.println(instantaneousrpm);
+      Serial.print("peakrpm:\t");
+      Serial.println(peakrpm);
       //lcd.setCursor(10,1);
       //lcd.print(" AvS:");
       //lcd.print(rotations/(millis()-startTime));   
