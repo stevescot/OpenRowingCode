@@ -22,7 +22,7 @@ float C2lim = 10;                             // limit to detect a rotation from
 
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
-const short numrotationspercalc = 2;        // number of rotations to wait for before doing anything, if we need more time this will have to be reduced.
+const short numrotationspercalc = 1;        // number of rotations to wait for before doing anything, if we need more time this will have to be reduced.
 short currentrot = 0;
 
 unsigned long utime;                        // time of tick in microseconds
@@ -30,7 +30,7 @@ unsigned long mtime;                        // time of tick in milliseconds
 
 unsigned long laststatechangeus;            // time of last switch.
 unsigned long timetakenus;                  // time taken in milliseconds for a rotation of the flywheel
-unsigned long instantaneousrpm;             // rpm from the rotatiohn
+float instantaneousrpm;             // rpm from the rotatiohn
 float nextinstantaneousrpm;                 // next rpm reading to compare with previous
 unsigned long lastrotationus;               // milliseconds taken for the last rotation of the flywheel
 unsigned long startTimems = 0;              // milliseconds from startup to first sample
@@ -154,7 +154,7 @@ void loop()
     utime = micros(); 
     val = digitalRead(switchPin);            // read input value and store it in val                       
   }
-       if (val != buttonState && val == LOW && (utime- laststatechangeus) >3000)            // the button state has changed!
+       if (val != buttonState && val == LOW && (utime- laststatechangeus) >5000)            // the button state has changed!
           { 
            
             currentrot ++;
@@ -185,16 +185,19 @@ void loop()
               //Serial.println(nextinstantaneousrpm);
               if(nextinstantaneousrpm >= instantaneousrpm)
                 {
+
                     //lcd.print("Acc");        
                     if(!Accelerating)
                     {//beginning of drive /end recovery
+                      Serial.println("acceleration");
+                      Serial.println(nextinstantaneousrpm);
+                      Serial.println(instantaneousrpm);
                       driveBeginms = mtime;
                       float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
                       k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);  //nm/s/s == W/s/s
                       mPerRot = pow((k/c),(0.33333333333333333))*2*3.1415926535;//v= (2.8/p)^1/3  
                       driveStartRotations = rotations;
                       //safest time to write a screen or to serial (slowest rpm)
-                      writeNextScreen();
                     }
                     driveAngularVelocity = radSec;
                     driveEndms = mtime;
@@ -202,11 +205,21 @@ void loop()
                     StrokeToDriveRatio = (strokems / lastDriveTimems);
                     afterfirstdecrotation = false;
                     Accelerating = true;    
+                    instantaneousrpm = nextinstantaneousrpm;
+                }
+                else if(nextinstantaneousrpm <= instantaneousrpm *(1.0/(numrotationspercalc+1)))
+                {        //looks like we missed a rotation
+                  Serial.println("missed a rotation");
+                  rotations++;
                 }
                 else if(nextinstantaneousrpm <= (instantaneousrpm*0.98))
                 {
                     if(Accelerating)//previously accelerating
                     { //finished drive
+                    Serial.println("Decel");
+                    Serial.println(nextinstantaneousrpm);
+                    //Serial.print(" ");
+                    Serial.println(instantaneousrpm);
                       //Serial.println("ACC");
                       diffrotations = rotations - laststrokerotations;
                       strokems = mtime - laststroketimems;
@@ -218,14 +231,15 @@ void loop()
                       driveLengthm = (float)(rotations - driveStartRotations) * mStrokePerRotation;
                     }
                     Accelerating = false;
-                                              
-                }                          
+                    instantaneousrpm = nextinstantaneousrpm;             
+                }
                 
                 if(mPerRot <= 20)
                 {
                   distancem += (rotations-rotationsInDistance)*mPerRot;
                   rotationsInDistance = rotations;
                 }
+                if(timetakenus > 10000) writeNextScreen();
                 lastrotationus = timetakenus;
                 instantaneousrpm = nextinstantaneousrpm;
                 //watch out for integer math problems here
@@ -234,10 +248,12 @@ void loop()
             } 
           }
 
-          if((millis()-mtime) >=5)
+          if((millis()-mtime) >=6)
           {
             Serial.print("warning - loop took (ms):");
             Serial.println(millis()-mtime);
+            Serial.print("screen:");
+            Serial.println(screenstep);
           }
 //          microshistory[nextrpm] = micros()-utime;
   buttonState = val;                       // save the new state in our variable
@@ -297,8 +313,8 @@ void writeNextScreen()
         if(distancem <1000) lcd.print("0");
         if(distancem <100) lcd.print("0");
         if(distancem <10) lcd.print("0");
-        lcd.print(distancem);
-        lcd.print("m ");
+        lcd.print((int)distancem);
+        lcd.print("m");
       #endif
       Serial.print("Distance:\t");
       Serial.print(distancem);
