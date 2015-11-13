@@ -325,7 +325,7 @@ void writeNextScreen()
        lcd.print(StrokeToDriveRatio);
     #endif
        Serial.print("Drag factor \t");
-       Serial.println(k);
+       Serial.println(k*1000000);
       //lcd.setCursor(10,1);
       //lcd.print(" AvS:");
       //lcd.print(rotations/(millis()-startTime));     
