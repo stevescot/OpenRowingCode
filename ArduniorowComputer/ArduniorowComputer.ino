@@ -4,10 +4,23 @@
  * 
  */
 #include <LiquidCrystal.h>
+#define UseLCD // comment out this line to not use a 16x2 LCD
 
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+#ifdef UseLCD
+  LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+#endif
+
+//change the resolution of analog read to make it faster...
+// defines for setting and clearing register bits
+#ifndef cbi
+  #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
+#ifndef sbi
+  #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif
+//end of changes to resolution.
 
 int backLight = 13;
 
@@ -77,18 +90,25 @@ void setup()
    Serial.begin(115200);                      // Set up serial communication at 115200bps
    buttonState = digitalRead(switchPin);  // read the initial state
    // set up the LCD's number of columns and rows: 
-  lcd.begin(16, 2);
+   #ifdef UseLCD
+    lcd.begin(16, 2);  
+    lcd.print("V-Fit powered by");
+    lcd.setCursor(0,1);
+    lcd.print("IP Technology");
+   #endif
   pinMode(backLight, OUTPUT);
   digitalWrite(backLight, HIGH); // turn backlight on. Replace 'HIGH' with 'LOW' to turn it off.
-  lcd.print("V-Fit powered by");
-  lcd.setCursor(0,1);
-  lcd.print("IP Technology");
+
   analogReference(DEFAULT);//analogReference(INTERNAL);
+  // set prescale to 16
+  sbi(ADCSRA,ADPS2) ;
+  cbi(ADCSRA,ADPS1) ;
+  cbi(ADCSRA,ADPS0) ;
   delay(100);
   if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
     C2 = true;
-    I = 0.101;
+    I - 0.101;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
     Serial.println("Concept 2 detected on pin 3");
   }
@@ -225,11 +245,14 @@ void writeNextScreen()
   {//only write a little bit to the screen to save time.
     case 0:
     //lcd.clear();
-    lcd.setCursor(0,0);
+    #ifdef UseLCD
+      lcd.setCursor(0,0);
+    #endif
     break;
     case 1:
       splitmin = (int)(split/60);
       if(splitmin < 10)
+      #ifdef UseLCD
       {//only display the split if it is less than 10 mins per 500m
         //lcd.print("S");
         lcd.print(splitmin);//minutes in split.
@@ -238,6 +261,7 @@ void writeNextScreen()
         if(splits <10) lcd.print("0");
         lcd.print(splits);//seconds
         //lcd 0->5, 0  used
+      #endif
       }
     break;
     case 2:
