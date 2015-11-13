@@ -4,7 +4,7 @@
  * 
  */
 #include <LiquidCrystal.h>
-//#define UseLCD // comment out this line to not use a 16x2 LCD
+#define UseLCD // comment out this line to not use a 16x2 LCD
 
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
@@ -21,7 +21,7 @@ float C2lim = 10;                             // limit to detect a rotation from
 
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
-const short numrotationspercalc = 1;        // number of rotations to wait for before doing anything, if we need more time this will have to be reduced.
+const short numrotationspercalc = 3;        // number of rotations to wait for before doing anything, if we need more time this will have to be reduced.
 short currentrot = 0;
 
 unsigned long utime;                        // time of tick in microseconds
@@ -91,7 +91,7 @@ float I = 0.04;                             // moment of  interia of the wheel -
 void setup() 
 {
    pinMode(switchPin, INPUT_PULLUP);                // Set the switch pin as input
-   Serial.begin(250000);                      // Set up serial communication at 115200bps
+   Serial.begin(115200);                      // Set up serial communication at 115200bps
    buttonState = digitalRead(switchPin);  // read the initial state
    // set up the LCD's number of columns and rows: 
    #ifdef UseLCD
