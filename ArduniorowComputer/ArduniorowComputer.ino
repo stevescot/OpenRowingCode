@@ -4,22 +4,11 @@
  * 
  */
 #include <LiquidCrystal.h>
-#define UseLCD // comment out this line to not use a 16x2 LCD
+//#define UseLCD // comment out this line to not use a 16x2 LCD
 
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
-#ifdef UseLCD
-  LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
-#endif
 
-//change the resolution of analog read to make it faster...
-// defines for setting and clearing register bits
-#ifndef cbi
-  #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#endif
-#ifndef sbi
-  #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#endif
 //end of changes to resolution.
 
 int backLight = 13;
@@ -84,6 +73,19 @@ float StrokeToDriveRatio = 0;                // the ratio of time taken for the 
 //Constants that vary with machine:
 float I = 0.04;                             // moment of  interia of the wheel - 0.1001 for Concept2, ~0.05 for V-Fit air rower.*/;
 
+#ifdef UseLCD
+  LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+#endif
+
+//change the resolution of analog read to make it faster...
+// defines for setting and clearing register bits
+#ifndef cbi
+  #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
+#ifndef sbi
+  #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif
+
 void setup() 
 {
    pinMode(switchPin, INPUT_PULLUP);                // Set the switch pin as input
@@ -115,7 +117,7 @@ void setup()
   else
   {
     C2 = false;
-    I = 0.04;
+    I = 0.024;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
     Serial.println("No Concept 2 detected on Analog pin 3");
   }
@@ -158,7 +160,9 @@ void loop()
               if(startTimems == 0) 
               {
                 startTimems = mtime;
-                lcd.clear();
+                 #ifdef UseLCD
+                    lcd.clear();
+                 #endif
               }
               timetakenus = utime - laststatechangeus;
               rotations++;
@@ -181,8 +185,7 @@ void loop()
                       driveBeginms = mtime;
                       float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
                       k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);
-                      mPerRot = pow((k/c),(1.0/3.0))*2*3.1415926535;
-                      Serial.println(distancem);
+                      mPerRot = pow((k/c),(0.33333333333333333))*2.0*3.1415926535;
                       driveStartRotations = rotations;
                     }
                     driveAngularVelocity = radSec;
@@ -194,13 +197,6 @@ void loop()
                 }
                 else if(nextinstantaneousrpm <= (instantaneousrpm*0.99))
                 {
-                  /*
-                  Serial.println("m/rot");
-                  Serial.println(k);
-                  Serial.println(c);
-                  Serial.println(pow((k/c),(1.0/3.0)));
-                    Serial.println(pow((k/c),(1.0/3.0))*2*3.1415926535);*/
-                    //lcd.print("Dec");
                     if(Accelerating)//previously accelerating
                     { //finished drive
                       //Serial.println("ACC");
@@ -209,8 +205,7 @@ void loop()
                       spm = 60000 /strokems;
                       laststrokerotations = rotations;
                       laststroketimems = mtime;
-                      split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = *2
-                      //   /1000*500 = /2
+                      split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
                       driveLengthm = (float)(rotations - driveStartRotations) * mStrokePerRotation;
                     }
                     Accelerating = false;
@@ -251,34 +246,49 @@ void writeNextScreen()
     break;
     case 1:
       splitmin = (int)(split/60);
-      if(splitmin < 10)
-      #ifdef UseLCD
-      {//only display the split if it is less than 10 mins per 500m
-        //lcd.print("S");
-        lcd.print(splitmin);//minutes in split.
-        lcd.print(":");
-        splits = (int)(((split-splitmin*60)));
-        if(splits <10) lcd.print("0");
-        lcd.print(splits);//seconds
-        //lcd 0->5, 0  used
-      #endif
+
+        if(splitmin < 10)
+        {//only display the split if it is less than 10 mins per 500m
+          #ifdef UseLCD
+            //lcd.print("S");
+            lcd.print(splitmin);//minutes in split.
+            lcd.print(":");
+            splits = (int)(((split-splitmin*60)));
+            if(splits <10) lcd.print("0");
+            lcd.print(splits);//seconds
+            //lcd 0->5, 0  used
+          #endif
+        Serial.print("Split:\t");
+        Serial.print(splitmin);
+        Serial.print(":");
+        Serial.println(splits);
       }
     break;
     case 2:
       //lcd 10->16,0 used
-    lcd.setCursor(10,0);
-      lcd.print("SPM:");
-      lcd.print(spm);
-      lcd.print("  ");
+      #ifdef UseLCD
+        lcd.setCursor(10,0);
+        lcd.print("SPM:");
+        lcd.print(spm);
+        lcd.print("  ");
+      #endif
+    Serial.print("SPM:\t");
+    Serial.println(spm);
     break;
     case 3:
-     lcd.setCursor(0,1);
-     //Distance in meters:
-      if(distancem <1000) lcd.print("0");
-      if(distancem <100) lcd.print("0");
-      if(distancem <10) lcd.print("0");
-      lcd.print(distancem);
-      lcd.print("m ");
+      #ifdef UseLCD
+        lcd.setCursor(0,1);
+       //Distance in meters:
+        if(distancem <1000) lcd.print("0");
+        if(distancem <100) lcd.print("0");
+        if(distancem <10) lcd.print("0");
+        lcd.print(distancem);
+        lcd.print("m ");
+      #endif
+      Serial.print("Distance:\t");
+      Serial.print(distancem);
+      Serial.println("m");
+      
       //lcd 0->5, 1 used
       //Drag factor
       /*lcd.print("D:");
@@ -287,6 +297,7 @@ void writeNextScreen()
     case 4:
       //lcd 11->16 used
       timemins = (mtime-startTimems)/60000;
+      #ifdef UseLCD
         lcd.setCursor(11,1);
         if(timemins <10) lcd.print("0");
         lcd.print(timemins);//total mins
@@ -294,17 +305,25 @@ void writeNextScreen()
         timeseconds = (long)((mtime)-startTimems)/1000 - timemins*60;
         if(timeseconds < 10) lcd.print("0");
         lcd.print(timeseconds);//total seconds.*/
-
+      #endif
+        Serial.print("time:\t");
+        Serial.print(timemins);
+        Serial.print(":");
+        Serial.println(timeseconds);
         //lcd.print(k);
         //Serial.println(k);
 //      lcd.print("s");
 //      lcd.print(diffrotations);
       break;
     case 5://next lime
+    #ifdef UseLCD
       //lcd 6->9 , 0
        lcd.setCursor(4,0);
        lcd.print("r");
        lcd.print(StrokeToDriveRatio);
+    #endif
+       Serial.print("Drag factor \t");
+       Serial.println(k);
       //lcd.setCursor(10,1);
       //lcd.print(" AvS:");
       //lcd.print(rotations/(millis()-startTime));     
