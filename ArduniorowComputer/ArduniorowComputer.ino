@@ -336,6 +336,9 @@ void writeNextScreen()
 
       Serial.print("Drive length: ");
       Serial.println(driveLengthm);
+
+      Serial.print("rpm\t");
+      Serial.println(instantaneousrpm)
       //lcd.setCursor(10,1);
       //lcd.print(" AvS:");
       //lcd.print(rotations/(millis()-startTime));   
