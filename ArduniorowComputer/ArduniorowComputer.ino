@@ -49,8 +49,8 @@ bool afterfirstdecrotation = false;        // after the first deceleration rotat
 int diffrotations;                         // rotations from last stroke to this one
 
 int screenstep=0;                           // int - which part of the display to draw next.
-float k = 0.000185;                         //  drag factor nm/s/s (displayed *10^6 on a Concept 2
-float c = 2.8;                              //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power.
+float k = 0.000185;                         //  drag factor nm/s/s (displayed *10^6 on a Concept 2) nm/s/s == W/s/s
+float c = 2.8;                              //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power. c/p = (v)^3 where p = power in watts, v = velocity in m/s  so v = (c/p)^1/3 v= (2.8/p)^1/3
                                             //Concept used to quote a figure c=2.8, which, for a 2:00 per 500m split (equivalent to u=500/120=4.17m/s) gives 203 Watts. 
                                             
 float mPerRot = 0;                          // meters per rotation of the flywheel
@@ -89,7 +89,7 @@ float I = 0.04;                             // moment of  interia of the wheel -
 void setup() 
 {
    pinMode(switchPin, INPUT_PULLUP);                // Set the switch pin as input
-   Serial.begin(115200);                      // Set up serial communication at 115200bps
+   Serial.begin(250000);                      // Set up serial communication at 115200bps
    buttonState = digitalRead(switchPin);  // read the initial state
    // set up the LCD's number of columns and rows: 
    #ifdef UseLCD
@@ -184,8 +184,8 @@ void loop()
                     {//beginning of drive /end recovery
                       driveBeginms = mtime;
                       float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
-                      k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);
-                      mPerRot = pow((k/c),(0.33333333333333333))*2.0*3.1415926535;
+                      k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);  //nm/s/s == W/s/s
+                      mPerRot = pow((k/c),(0.33333333333333333))*2*3.1415926535;//v= (2.8/p)^1/3  
                       driveStartRotations = rotations;
                     }
                     driveAngularVelocity = radSec;
