@@ -110,7 +110,7 @@ void setup()
   if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
     C2 = true;
-    I - 0.101;
+    I = 0.101;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
     Serial.println("Concept 2 detected on pin 3");
   }
