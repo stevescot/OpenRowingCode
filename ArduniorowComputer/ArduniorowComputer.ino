@@ -91,7 +91,7 @@ float I = 0.04;                             // moment of  interia of the wheel -
 void setup() 
 {
    pinMode(switchPin, INPUT_PULLUP);                // Set the switch pin as input
-   Serial.begin(115200);                      // Set up serial communication at 115200bps
+   Serial.begin(1000000);                      // Set up serial communication at 115200bps
    buttonState = digitalRead(switchPin);  // read the initial state
    // set up the LCD's number of columns and rows: 
    #ifdef UseLCD
