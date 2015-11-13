@@ -4,7 +4,7 @@
  * 
  */
 #include <LiquidCrystal.h>
-#define UseLCD // comment out this line to not use a 16x2 LCD
+//#define UseLCD // comment out this line to not use a 16x2 LCD
 
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
@@ -21,7 +21,7 @@ float C2lim = 10;                             // limit to detect a rotation from
 
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
-const short numrotationspercalc = 3;        // number of rotations to wait for before doing anything, if we need more time this will have to be reduced.
+const short numrotationspercalc = 2;        // number of rotations to wait for before doing anything, if we need more time this will have to be reduced.
 short currentrot = 0;
 
 unsigned long utime;                        // time of tick in microseconds
@@ -119,7 +119,7 @@ void setup()
   else
   {
     C2 = false;
-    I = 0.024;
+    I = 0.101;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
     Serial.println("No Concept 2 detected on Analog pin 3");
   }
@@ -158,6 +158,7 @@ void loop()
             currentrot ++;
             if(currentrot >= numrotationspercalc)
             {
+              currentrot = 0;
               //initialise the start time
               if(startTimems == 0) 
               {
@@ -170,7 +171,7 @@ void loop()
               rotations++;
               //Serial.print("TimeTaken(ms):");
               //Serial.println(timetakenms);
-              nextinstantaneousrpm = (float)60000000.0*numrotationspercalc/timetakenus;
+              nextinstantaneousrpm = (float)(60000000.0*numrotationspercalc)/timetakenus;
               float radSec = (6.283185307*numrotationspercalc)/((float)timetakenus/1000000.0);
               float prevradSec = (6.283185307*numrotationspercalc)/((float)lastrotationus/1000000.0);
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
@@ -189,6 +190,8 @@ void loop()
                       k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);  //nm/s/s == W/s/s
                       mPerRot = pow((k/c),(0.33333333333333333))*2*3.1415926535;//v= (2.8/p)^1/3  
                       driveStartRotations = rotations;
+                      //safest time to write a screen or to serial (slowest rpm)
+                      writeNextScreen();
                     }
                     driveAngularVelocity = radSec;
                     driveEndms = mtime;
@@ -197,7 +200,7 @@ void loop()
                     afterfirstdecrotation = false;
                     Accelerating = true;    
                 }
-                else if(nextinstantaneousrpm <= (instantaneousrpm*0.99))
+                else if(nextinstantaneousrpm <= (instantaneousrpm*0.98))
                 {
                     if(Accelerating)//previously accelerating
                     { //finished drive
@@ -208,6 +211,7 @@ void loop()
                       laststrokerotations = rotations;
                       laststroketimems = mtime;
                       split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
+                      //Serial.print(split);
                       driveLengthm = (float)(rotations - driveStartRotations) * mStrokePerRotation;
                     }
                     Accelerating = false;
@@ -223,9 +227,8 @@ void loop()
                 instantaneousrpm = nextinstantaneousrpm;
                 //watch out for integer math problems here
                 //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms); 
+                laststatechangeus=utime;
             } 
-            laststatechangeus=utime;
-            writeNextScreen();
           }
 //          microshistory[nextrpm] = micros()-utime;
   buttonState = val;                       // save the new state in our variable
@@ -247,24 +250,25 @@ void writeNextScreen()
     #endif
     break;
     case 1:
+    {
       splitmin = (int)(split/60);
-
+      int splits = (int)(((split-splitmin*60)));
         if(splitmin < 10)
         {//only display the split if it is less than 10 mins per 500m
           #ifdef UseLCD
             //lcd.print("S");
             lcd.print(splitmin);//minutes in split.
             lcd.print(":");
-            splits = (int)(((split-splitmin*60)));
             if(splits <10) lcd.print("0");
             lcd.print(splits);//seconds
             //lcd 0->5, 0  used
           #endif
+        }
         Serial.print("Split:\t");
         Serial.print(splitmin);
         Serial.print(":");
         Serial.println(splits);
-      }
+    }
     break;
     case 2:
       //lcd 10->16,0 used
