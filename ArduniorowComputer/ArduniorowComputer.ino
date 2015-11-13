@@ -24,23 +24,23 @@ int buttonState;                            // variable to hold the button state
 const short numrotationspercalc = 1;        // number of rotations to wait for before doing anything, if we need more time this will have to be reduced.
 short currentrot = 0;
 
-unsigned long utime;                        //time of tick in microseconds
-unsigned long mtime;                        //time of tick in milliseconds
+unsigned long utime;                        // time of tick in microseconds
+unsigned long mtime;                        // time of tick in milliseconds
 
-unsigned long laststatechangeus;            //time of last switch.
-unsigned long timetakenus;                  //time taken in milliseconds for a rotation of the flywheel
-unsigned long instantaneousrpm;             //rpm from the rotatiohn
+unsigned long laststatechangeus;            // time of last switch.
+unsigned long timetakenus;                  // time taken in milliseconds for a rotation of the flywheel
+unsigned long instantaneousrpm;             // rpm from the rotatiohn
 float nextinstantaneousrpm;                 // next rpm reading to compare with previous
 unsigned long lastrotationus;               // milliseconds taken for the last rotation of the flywheel
 unsigned long startTimems = 0;              // milliseconds from startup to first sample
 unsigned long rotations = 0;                // number of rotations since start
 unsigned long laststrokerotations = 0;      // number of rotations since last drive
 unsigned long laststroketimems = 0;         // milliseconds from startup to last stroke drive
-unsigned long strokems;                      // milliseconds from last stroke to this one
-unsigned long rotationsInDistance = 0;     // number of rotations already accounted for in the distance.
-float driveLengthm = 0;                    // last stroke length in meters
-float rpmhistory[100];                      //array of rpm per rotation for debugging
-unsigned long microshistory[100];           //array of the amount of time taken in calc/display for debugging.
+unsigned long strokems;                     // milliseconds from last stroke to this one
+unsigned long rotationsInDistance = 0;      // number of rotations already accounted for in the distance.
+float driveLengthm = 0;                     // last stroke length in meters
+float rpmhistory[100];                      // array of rpm per rotation for debugging
+unsigned long microshistory[100];           // array of the amount of time taken in calc/display for debugging.
 
 short nextrpm;                              // currently measured rpm, to compare to last.
 
@@ -50,6 +50,8 @@ int diffrotations;                         // rotations from last stroke to this
 
 int screenstep=0;                           // int - which part of the display to draw next.
 float k = 0.000185;                         //  drag factor nm/s/s (displayed *10^6 on a Concept 2) nm/s/s == W/s/s
+                                            //  The displayed drag factor equals the power dissipation (in Watts), at an angular velocity of the flywheel of 100 rad/sec.
+                                            
 float c = 2.8;                              //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power. c/p = (v)^3 where p = power in watts, v = velocity in m/s  so v = (c/p)^1/3 v= (2.8/p)^1/3
                                             //Concept used to quote a figure c=2.8, which, for a 2:00 per 500m split (equivalent to u=500/120=4.17m/s) gives 203 Watts. 
                                             
