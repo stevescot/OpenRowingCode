@@ -120,7 +120,7 @@ void setup()
   else
   {
     C2 = false;
-    I = 0.101;
+    //I = 0.101;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
     Serial.println("No Concept 2 detected on Analog pin 3");
   }
