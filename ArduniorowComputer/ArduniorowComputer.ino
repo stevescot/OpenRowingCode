@@ -156,8 +156,8 @@ void loop()
   }
        if (val != buttonState && val == LOW && (utime- laststatechangeus) >5000)            // the button state has changed!
           { 
-           
             currentrot ++;
+            rotations++;
             if(currentrot >= numrotationspercalc)
             {
               currentrot = 0;
@@ -170,7 +170,6 @@ void loop()
                  #endif
               }
               timetakenus = utime - laststatechangeus;
-              rotations++;
               //Serial.print("TimeTaken(ms):");
               //Serial.println(timetakenms);
               nextinstantaneousrpm = (float)(60000000.0*numrotationspercalc)/timetakenus;
@@ -184,9 +183,7 @@ void loop()
               if(nextrpm >=99) nextrpm = 0;
               //Serial.println(nextinstantaneousrpm);
               if(nextinstantaneousrpm >= instantaneousrpm)
-                {
-
-                    //lcd.print("Acc");        
+                { //lcd.print("Acc");        
                     if(!Accelerating)
                     {//beginning of drive /end recovery
                       Serial.println("acceleration");
