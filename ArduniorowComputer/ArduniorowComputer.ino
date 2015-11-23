@@ -112,6 +112,10 @@ void setup()
     clicksPerRotation = 3;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
     Serial.println("Concept 2 detected on pin 3");
+    lcd.setCursor(0,0);
+    lcd.print("Concept 2,");
+    lcd.setCursor(0,1);
+    lcd.print("IP Technology");
   }
   else
   {
@@ -120,6 +124,10 @@ void setup()
     clicksPerRotation = 1;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
     Serial.println("No Concept 2 detected on Analog pin 3");
+    lcd.setCursor(0,0);
+    lcd.print("V-Fit powered by");
+    lcd.setCursor(0,1);
+    lcd.print("IP Technology");
   }
   // Print a message to the LCD.
 }
