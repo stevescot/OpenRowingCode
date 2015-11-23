@@ -381,6 +381,10 @@ void writeNextScreen()
     #endif
        Serial.print("Drag factor \t");
        Serial.println(k*1000000);
+       Serial.print("anMin\t");
+       Serial.println(AnalogMin);
+       Serial.print("anMax\t");
+       Serial.println(AnalogMax);
       //lcd.setCursor(10,1);
       //lcd.print(" AvS:");
       //lcd.print(clicks/(millis()-startTime));     
