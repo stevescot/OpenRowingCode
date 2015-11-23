@@ -11,10 +11,10 @@
 
 //end of changes to resolution.
 
-int backLight = 13;
+//int backLight = 13;
 
-const int switchPin = 6;                    // switch is connected to pin 6
-const int analogPin = 3;                    // analog pin (Concept2)
+const int switchPin = 2;                    // switch is connected to pin 6
+const int analogPin = 0;                    // analog pin (Concept2)
 
 int peakrpm = 0;
 
@@ -81,7 +81,7 @@ float StrokeToDriveRatio = 0;                // the ratio of time taken for the 
 float I = 0.04;                             // moment of  interia of the wheel - 0.1001 for Concept2, ~0.05 for V-Fit air rower.*/;
 
 #ifdef UseLCD
-  LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+  LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 #endif
 
 void setup() 
@@ -92,12 +92,14 @@ void setup()
    // set up the LCD's number of columns and rows: 
    #ifdef UseLCD
     lcd.begin(16, 2);  
+    lcd.clear();
+    lcd.setCursor(0,0);
     lcd.print("V-Fit powered by");
     lcd.setCursor(0,1);
     lcd.print("IP Technology");
    #endif
-  pinMode(backLight, OUTPUT);
-  digitalWrite(backLight, HIGH); // turn backlight on. Replace 'HIGH' with 'LOW' to turn it off.
+  //pinMode(backLight, OUTPUT);
+  //digitalWrite(backLight, HIGH); // turn backlight on. Replace 'HIGH' with 'LOW' to turn it off.
   analogReference(DEFAULT);//analogReference(INTERNAL);
   delay(100);
   if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
@@ -150,10 +152,10 @@ void loop()
   }
   else
   {
-    mtime = millis();
-    utime = micros(); 
     val = digitalRead(switchPin);            // read input value and store it in val                       
   }
+  mtime = millis();
+  utime = micros(); 
        if (val != buttonState && val == LOW && (utime- laststatechangeus) >5000)            // the button state has changed!
           { 
             currentrot ++;
