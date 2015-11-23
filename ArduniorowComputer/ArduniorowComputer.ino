@@ -14,7 +14,7 @@
 //int backLight = 13;
 
 const int switchPin = 2;                    // switch is connected to pin 6
-const int analogPin = 0;                    // analog pin (Concept2)
+const int analogPin = 1;                    // analog pin (Concept2)
 
 int peakrpm = 0;
 
