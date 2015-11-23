@@ -4,7 +4,7 @@
  * 
  */
 #include <LiquidCrystal.h>
-//#define UseLCD // comment out this line to not use a 16x2 LCD
+#define UseLCD // comment out this line to not use a 16x2 LCD
 
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
@@ -30,7 +30,7 @@ int lastC2Value = 0;                        // the last value read from the C2
 
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
-const short numclickspercalc = 1;        // number of clicks to wait for before doing anything, if we need more time this will have to be reduced.
+short numclickspercalc = 3;        // number of clicks to wait for before doing anything, if we need more time this will have to be reduced.
 short currentrot = 0;
 
 unsigned long utime;                        // time of tick in microseconds
@@ -106,6 +106,9 @@ void setup()
   {//Concept 2 - set I and flag for analogRead.
     C2 = true;
     I = 0.101;
+    //do the calculations less often to allow inaccuracies to be averaged out.
+    numclickspercalc = 3;
+    //number of clicks per rotation is 3 as there are three magnets.
     clicksPerRotation = 3;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
     Serial.println("Concept 2 detected on pin 3");
@@ -119,7 +122,7 @@ void setup()
   else
   {
     C2 = false;
-    I = 0.101;
+    I = 0.0303;
     clicksPerRotation = 1;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
     Serial.println("No Concept 2 detected on Analog pin 3");
@@ -136,14 +139,15 @@ void setup()
 void loop()
 {
   mtime = millis();
+  utime = micros(); 
   if(C2)
   {
     //simulate a reed switch from the coil
     int analog = analogRead(analogPin);
     //make C2lim a running 4 second average of the sample.
-    if(micros() > utime && utime > 0)
-    {//if this isn't an overflow, and there has been at least one sample, start to tune the C2lim.
-      //C2lim = C2lim + ((float)val - C2lim)*((float)(micros()-utime)/4000000);
+//    if(micros() > utime && utime > 0)
+//    {//if this isn't an overflow, and there has been at least one sample, start to tune the C2lim.
+//      //C2lim = C2lim + ((float)val - C2lim)*((float)(micros()-utime)/4000000);
       if(analog > AnalogMax) AnalogMax = analog;
       if(analog < AnalogMin) AnalogMin = analog;
       if(millis() > lastlimittime + 1000)//tweak the limits each second
@@ -154,7 +158,7 @@ void loop()
         AnalogMin = analog;
         AnalogMax = analog;
       }
-    }
+//    }
     if(C2lim < 5) C2lim = 5;//don't let it get back to zero if nothing is happening...
     //if(analog > C2lim) 
     
@@ -168,7 +172,7 @@ void loop()
     }
     else
     {//ButtonState == HIGH
-      if(analog > (float)(lastC2Value+2)*1.1)
+      if(analog > (float)(lastC2Value+2))
       {
         val = LOW;//detected it starting to pass
       }
@@ -182,8 +186,7 @@ void loop()
   {
     val = digitalRead(switchPin);            // read input value and store it in val                       
   }
-  utime = micros(); 
-       if (val != buttonState && val == LOW && (utime- laststatechangeus) >5000)            // the button state has changed!
+       if (val != buttonState && val == LOW && (utime- laststatechangeus) >10000)            // the button state has changed!
           { 
             currentrot ++;
             clicks++;
@@ -220,8 +223,11 @@ void loop()
                       Serial.println(instantaneousrpm);
                       driveBeginms = mtime;
                       float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
-                      k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);  //nm/s/s == W/s/s
-                      mPerClick = pow((k/c),(0.33333333333333333))*2*3.1415926535/clicksPerRotation;//v= (2.8/p)^1/3  
+                      if(I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel) > 0)
+                      {//if drag factor detected is positive.
+                        k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);  //nm/s/s == W/s/s
+                        mPerClick = pow((k/c),(0.33333333333333333))*2*3.1415926535/clicksPerRotation;//v= (2.8/p)^1/3  
+                      }
                       driveStartclicks = clicks;
                       //safest time to write a screen or to serial (slowest rpm)
                     }
@@ -233,10 +239,20 @@ void loop()
                     Accelerating = true;    
                     instantaneousrpm = nextinstantaneousrpm;
                 }
-                else if(nextinstantaneousrpm <= instantaneousrpm *(1.0/(numclickspercalc+1)))
-                {        //looks like we missed a rotation
-                  Serial.println("missed a rotation");
+                else if(nextinstantaneousrpm <= ((float)instantaneousrpm *((((float)numclickspercalc-1)*1.2)/((float)numclickspercalc))))
+                {        //looks like we missed a click - add it in but skip calculations for this go
+                  Serial.println("missed a click");
                   clicks++;
+                  //reduce sampled instantaneousrpm to allow next sample to work if we were decelerating
+                  if(!Accelerating) 
+                  {
+                    instantaneousrpm *= 0.95;
+                  }
+                  else
+                  {//safe to reduce it faster
+                    instantaneousrpm = instantaneousrpm *0.7;
+                  }
+                  //don't store the previous rpm
                 }
                 else if(nextinstantaneousrpm <= (instantaneousrpm*0.98))
                 {
@@ -265,6 +281,7 @@ void loop()
                   distancem += (clicks-clicksInDistance)*mPerClick;
                   clicksInDistance = clicks;
                 }
+                //if we are spinning slower than 10ms per spin then write the next screen
                 if(timetakenus > 10000) writeNextScreen();
                 lastrotationus = timetakenus;
                 instantaneousrpm = nextinstantaneousrpm;
