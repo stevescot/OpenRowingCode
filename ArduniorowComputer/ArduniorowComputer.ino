@@ -20,13 +20,16 @@ int peakrpm = 0;
 
 bool C2 = false;                            // if we are connected to a concept2
 float C2lim = 10;                             // limit to detect a rotation from C2  (0.00107421875mV per 1, so 40 = 42mV
+
+int clicksPerRotation = 1;                  // number of magnets , or clicks detected per rotation.
+
 unsigned long lastlimittime = 0;
 float AnalogMax = 10;
 float AnalogMin = 0;
 
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
-const short numrotationspercalc = 1;        // number of rotations to wait for before doing anything, if we need more time this will have to be reduced.
+const short numclickspercalc = 1;        // number of clicks to wait for before doing anything, if we need more time this will have to be reduced.
 short currentrot = 0;
 
 unsigned long utime;                        // time of tick in microseconds
@@ -38,11 +41,11 @@ float instantaneousrpm;             // rpm from the rotatiohn
 float nextinstantaneousrpm;                 // next rpm reading to compare with previous
 unsigned long lastrotationus;               // milliseconds taken for the last rotation of the flywheel
 unsigned long startTimems = 0;              // milliseconds from startup to first sample
-unsigned long rotations = 0;                // number of rotations since start
-unsigned long laststrokerotations = 0;      // number of rotations since last drive
+unsigned long clicks = 0;                // number of clicks since start
+unsigned long laststrokeclicks = 0;      // number of clicks since last drive
 unsigned long laststroketimems = 0;         // milliseconds from startup to last stroke drive
 unsigned long strokems;                     // milliseconds from last stroke to this one
-unsigned long rotationsInDistance = 0;      // number of rotations already accounted for in the distance.
+unsigned long clicksInDistance = 0;      // number of clicks already accounted for in the distance.
 float driveLengthm = 0;                     // last stroke length in meters
 float rpmhistory[100];                      // array of rpm per rotation for debugging
 unsigned long microshistory[100];           // array of the amount of time taken in calc/display for debugging.
@@ -51,7 +54,7 @@ short nextrpm;                              // currently measured rpm, to compar
 
 float driveAngularVelocity;                // fastest angular velocity at end of drive
 bool afterfirstdecrotation = false;        // after the first deceleration rotation (to give good figures for drag factor);
-int diffrotations;                         // rotations from last stroke to this one
+int diffclicks;                         // clicks from last stroke to this one
 
 int screenstep=0;                           // int - which part of the display to draw next.
 float k = 0.000185;                         //  drag factor nm/s/s (displayed *10^6 on a Concept 2) nm/s/s == W/s/s
@@ -60,10 +63,10 @@ float k = 0.000185;                         //  drag factor nm/s/s (displayed *1
 float c = 2.8;                              //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power. c/p = (v)^3 where p = power in watts, v = velocity in m/s  so v = (c/p)^1/3 v= (2.8/p)^1/3
                                             //Concept used to quote a figure c=2.8, which, for a 2:00 per 500m split (equivalent to u=500/120=4.17m/s) gives 203 Watts. 
                                             
-float mPerRot = 0;                          // meters per rotation of the flywheel
+float mPerClick = 0;                          // meters per rotation of the flywheel
 
-unsigned long driveStartRotations;           // number of rotations at start of drive.
-float mStrokePerRotation = 0;               // meters of stroke per rotation of the flywheel to work out how long we have pulled the handle in meters from rotations.
+unsigned long driveStartclicks;           // number of clicks at start of drive.
+float mStrokePerRotation = 0;               // meters of stroke per rotation of the flywheel to work out how long we have pulled the handle in meters from clicks.
 
 bool Accelerating;                          //whether or not we were accelerating at the last tick
 
@@ -106,6 +109,7 @@ void setup()
   {//Concept 2 - set I and flag for analogRead.
     C2 = true;
     I = 0.101;
+    clicksPerRotation = 3;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
     Serial.println("Concept 2 detected on pin 3");
   }
@@ -113,6 +117,7 @@ void setup()
   {
     C2 = false;
     I = 0.101;
+    clicksPerRotation = 1;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
     Serial.println("No Concept 2 detected on Analog pin 3");
   }
@@ -159,8 +164,8 @@ void loop()
        if (val != buttonState && val == LOW && (utime- laststatechangeus) >5000)            // the button state has changed!
           { 
             currentrot ++;
-            rotations++;
-            if(currentrot >= numrotationspercalc)
+            clicks++;
+            if(currentrot >= numclickspercalc)
             {
               currentrot = 0;
               //initialise the start time
@@ -174,10 +179,10 @@ void loop()
               timetakenus = utime - laststatechangeus;
               //Serial.print("TimeTaken(ms):");
               //Serial.println(timetakenms);
-              nextinstantaneousrpm = (float)(60000000.0*numrotationspercalc)/timetakenus;
+              nextinstantaneousrpm = (float)(60000000.0*numclickspercalc/clicksPerRotation)/timetakenus;
               if(nextinstantaneousrpm > peakrpm) peakrpm = nextinstantaneousrpm;
-              float radSec = (6.283185307*numrotationspercalc)/((float)timetakenus/1000000.0);
-              float prevradSec = (6.283185307*numrotationspercalc)/((float)lastrotationus/1000000.0);
+              float radSec = (6.283185307*numclickspercalc/clicksPerRotation)/((float)timetakenus/1000000.0);
+              float prevradSec = (6.283185307*numclickspercalc/clicksPerRotation)/((float)lastrotationus/1000000.0);
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               nextrpm ++;
               rpmhistory[nextrpm] = nextinstantaneousrpm;
@@ -194,8 +199,8 @@ void loop()
                       driveBeginms = mtime;
                       float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
                       k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);  //nm/s/s == W/s/s
-                      mPerRot = pow((k/c),(0.33333333333333333))*2*3.1415926535;//v= (2.8/p)^1/3  
-                      driveStartRotations = rotations;
+                      mPerClick = pow((k/c),(0.33333333333333333))*2*3.1415926535/clicksPerRotation;//v= (2.8/p)^1/3  
+                      driveStartclicks = clicks;
                       //safest time to write a screen or to serial (slowest rpm)
                     }
                     driveAngularVelocity = radSec;
@@ -206,10 +211,10 @@ void loop()
                     Accelerating = true;    
                     instantaneousrpm = nextinstantaneousrpm;
                 }
-                else if(nextinstantaneousrpm <= instantaneousrpm *(1.0/(numrotationspercalc+1)))
+                else if(nextinstantaneousrpm <= instantaneousrpm *(1.0/(numclickspercalc+1)))
                 {        //looks like we missed a rotation
                   Serial.println("missed a rotation");
-                  rotations++;
+                  clicks++;
                 }
                 else if(nextinstantaneousrpm <= (instantaneousrpm*0.98))
                 {
@@ -220,23 +225,23 @@ void loop()
                     //Serial.print(" ");
                     Serial.println(instantaneousrpm);
                       //Serial.println("ACC");
-                      diffrotations = rotations - laststrokerotations;
+                      diffclicks = clicks - laststrokeclicks;
                       strokems = mtime - laststroketimems;
                       spm = 60000 /strokems;
-                      laststrokerotations = rotations;
+                      laststrokeclicks = clicks;
                       laststroketimems = mtime;
-                      split =  ((float)strokems)/((float)diffrotations*mPerRot*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
+                      split =  ((float)strokems)/((float)diffclicks*mPerClick*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
                       //Serial.print(split);
-                      driveLengthm = (float)(rotations - driveStartRotations) * mStrokePerRotation;
+                      driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
                     }
                     Accelerating = false;
                     instantaneousrpm = nextinstantaneousrpm;             
                 }
                 
-                if(mPerRot <= 20)
+                if(mPerClick <= 20)
                 {
-                  distancem += (rotations-rotationsInDistance)*mPerRot;
-                  rotationsInDistance = rotations;
+                  distancem += (clicks-clicksInDistance)*mPerClick;
+                  clicksInDistance = clicks;
                 }
                 if(timetakenus > 10000) writeNextScreen();
                 lastrotationus = timetakenus;
@@ -343,7 +348,7 @@ void writeNextScreen()
         //lcd.print(k);
         //Serial.println(k);
 //      lcd.print("s");
-//      lcd.print(diffrotations);
+//      lcd.print(diffclicks);
       break;
     case 5://next lime
     #ifdef UseLCD
@@ -356,7 +361,7 @@ void writeNextScreen()
        Serial.println(k*1000000);
       //lcd.setCursor(10,1);
       //lcd.print(" AvS:");
-      //lcd.print(rotations/(millis()-startTime));     
+      //lcd.print(clicks/(millis()-startTime));     
       break;
    case 6:
     //lcd 6->9 , 0
@@ -373,7 +378,7 @@ void writeNextScreen()
       Serial.println(peakrpm);
       //lcd.setCursor(10,1);
       //lcd.print(" AvS:");
-      //lcd.print(rotations/(millis()-startTime));   
+      //lcd.print(clicks/(millis()-startTime));   
     break;
 
     default:
