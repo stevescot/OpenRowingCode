@@ -26,6 +26,7 @@ int clicksPerRotation = 1;                  // number of magnets , or clicks det
 unsigned long lastlimittime = 0;
 float AnalogMax = 10;
 float AnalogMin = 0;
+int lastC2Value = 0;                        // the last value read from the C2
 
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
@@ -134,6 +135,7 @@ void setup()
 
 void loop()
 {
+  mtime = millis();
   if(C2)
   {
     //simulate a reed switch from the coil
@@ -154,20 +156,32 @@ void loop()
       }
     }
     if(C2lim < 5) C2lim = 5;//don't let it get back to zero if nothing is happening...
-    if(analog > C2lim) 
+    //if(analog > C2lim) 
+    
+    //detect rising side
+    if(buttonState == LOW)
     {
-      val = LOW;
+      if(analog < (float)lastC2Value*0.9 || analog == 0)
+      {
+        val = HIGH;
+      }
     }
     else
-    {
-      val = HIGH;
+    {//ButtonState == HIGH
+      if(analog > (float)lastC2Value+10)
+      {
+        val = LOW;//detected it starting to pass
+      }
     }
+
+    //detect dropping side
+    
+    lastC2Value = analog;
   }
   else
   {
     val = digitalRead(switchPin);            // read input value and store it in val                       
   }
-  mtime = millis();
   utime = micros(); 
        if (val != buttonState && val == LOW && (utime- laststatechangeus) >5000)            // the button state has changed!
           { 
