@@ -4,7 +4,7 @@
  * 
  */
 #include <LiquidCrystal.h>
-#define UseLCD // comment out this line to not use a 16x2 LCD
+//#define UseLCD // comment out this line to not use a 16x2 LCD
 
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
@@ -96,10 +96,6 @@ void setup()
    #ifdef UseLCD
     lcd.begin(16, 2);  
     lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("V-Fit powered by");
-    lcd.setCursor(0,1);
-    lcd.print("IP Technology");
    #endif
   //pinMode(backLight, OUTPUT);
   //digitalWrite(backLight, HIGH); // turn backlight on. Replace 'HIGH' with 'LOW' to turn it off.
@@ -112,10 +108,12 @@ void setup()
     clicksPerRotation = 3;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
     Serial.println("Concept 2 detected on pin 3");
+  #ifdef UseLCD
     lcd.setCursor(0,0);
     lcd.print("Concept 2,");
     lcd.setCursor(0,1);
     lcd.print("IP Technology");
+  #endif
   }
   else
   {
@@ -124,10 +122,12 @@ void setup()
     clicksPerRotation = 1;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
     Serial.println("No Concept 2 detected on Analog pin 3");
+  #ifdef UseLCD
     lcd.setCursor(0,0);
     lcd.print("V-Fit powered by");
     lcd.setCursor(0,1);
     lcd.print("IP Technology");
+  #endif
   }
   // Print a message to the LCD.
 }
