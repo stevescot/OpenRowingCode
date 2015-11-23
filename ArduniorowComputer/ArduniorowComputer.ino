@@ -168,7 +168,7 @@ void loop()
     }
     else
     {//ButtonState == HIGH
-      if(analog > (float)lastC2Value+10)
+      if(analog > (float)(lastC2Value+2)*1.1)
       {
         val = LOW;//detected it starting to pass
       }
