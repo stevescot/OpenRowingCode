@@ -1,14 +1,14 @@
 const int numvalues = 200;
 int values[numvalues];
 unsigned long times[numvalues];
-int currentvalue;
+int currentvalue = 0;
 int nextinsertedvalue= 0;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   //read the first 800 lines in.
-  for(int i = 0; i < 800; i++)
+  for(int i = 0; i < numvalues +1; i++)
   {
     readLine();
   }
@@ -31,7 +31,8 @@ void loop() {
 
 void readLine()
 {//read a line of serial input into the arrays
-  if (Serial.available() > 0) {
+  //if there is something to read, and we are not about to overwrite what we are reading from the arrays.
+  if (Serial.available() > 0 && (nextinsertedvalue+1 != currentvalue)) {
     String line = "";
     char c = Serial.read();
     while(c != 9)//until we get to the tab
