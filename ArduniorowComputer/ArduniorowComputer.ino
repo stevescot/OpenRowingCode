@@ -30,10 +30,15 @@ static int _threshold = 30;
 #define JUST_ROW 0
 #define DISTANCE 1
 #define TIME 2
+#define DRAGFACTOR 3
 
 
 long targetDistance = 2000;
-int targetTime = 20;
+
+int targethours = 0;
+int targetmins = 20;
+int targetseconds = 0;
+
 int sessionType = JUST_ROW;
 //end code for keypad
 
@@ -324,6 +329,16 @@ void loop()
 
 void writeNextScreen()
 {
+    #ifdef UseLCD
+        if(sessionType == DRAGFACTOR)
+        {
+          lcd.clear();
+          lcd.print("Drag Factor");
+          lcd.setCursor(0,1);
+          lcd.print(k*1000000);
+          return;//no need for other screen stuff.
+        }
+     #endif
   //Display Format:
   //2:16 r3  SPM:35
   //5000m     10:00
@@ -371,13 +386,25 @@ void writeNextScreen()
     break;
     case 3:
       #ifdef UseLCD
-        lcd.setCursor(0,1);
+       lcd.setCursor(0,1);
        //Distance in meters:
+      if(sessionType == DISTANCE)
+      {
+        long distanceleft = targetDistance - distancem;
+        if(distanceleft <1000) lcd.print("0");
+        if(distanceleft <100) lcd.print("0");
+        if(distanceleft <10) lcd.print("0");
+        lcd.print((int)distanceleft);
+        lcd.print("m");
+      }
+      else
+      {
         if(distancem <1000) lcd.print("0");
         if(distancem <100) lcd.print("0");
         if(distancem <10) lcd.print("0");
         lcd.print((int)distancem);
         lcd.print("m");
+      }
       #endif
       Serial.print("Distance:\t");
       Serial.print(distancem);
@@ -390,15 +417,26 @@ void writeNextScreen()
     break;
     case 4:
       //lcd 11->16 used
-      timemins = (mtime-startTimems)/60000;
+      
       #ifdef UseLCD
         lcd.setCursor(11,1);
-        if(timemins <10) lcd.print("0");
-        lcd.print(timemins);//total mins
-        lcd.print(":");
-        timeseconds = (long)((mtime)-startTimems)/1000 - timemins*60;
-        if(timeseconds < 10) lcd.print("0");
-        lcd.print(timeseconds);//total seconds.*/
+        if(sessionType == TIME)
+        {//count-down from the target time.
+          timemins = (targetmins*60 + targetseconds - (mtime-startTimems)/1000)/60;
+          if(timemins < 0) timemins = 0;
+          timeseconds = (targetmins*60 + targetseconds - (mtime-startTimems)/1000) - timemins * 60 ;
+          if(timeseconds < 0) timeseconds = 0;
+        }
+        else
+        {
+          timemins = (mtime-startTimems)/60000;
+          timeseconds = (long)((mtime)-startTimems)/1000 - timemins*60;
+        }
+          if(timemins <10) lcd.print("0");
+          lcd.print(timemins);//total mins
+          lcd.print(":");
+          if(timeseconds < 10) lcd.print("0");
+          lcd.print(timeseconds);//total seconds.*/
       #endif
         Serial.print("time:\t");
         Serial.print(timemins);
@@ -470,6 +508,8 @@ void startMenu()
 {
   menuType();
   lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Begin Rowing");
 }
 
 void menuType()
@@ -493,10 +533,10 @@ void menuType()
   while(c == SELECT_KEY) c = getKey();//wait until select is unpressed.
   switch(sessionType)
   {
-    case 1:
+    case DISTANCE:
       menuSelectDistance();
       break;
-    case 2: 
+    case TIME: 
       menuSelectTime();
       break;
     default:
@@ -516,6 +556,9 @@ void writeType()
       case TIME:
         menuTime();
       break;
+      case DRAGFACTOR:
+        menuDragFactor();
+        break;
       default:
         sessionType = JUST_ROW;
         menuJustRow();
@@ -595,21 +638,108 @@ void writeCurrentDistanceamount(int increment)
 
 void menuSelectTime()
 {
-  lcd.setCursor(0,1);
-  lcd.print(targetDistance);
-  lcd.setCursor(0,1);
+  int charpos = 3;
+  //charpos is the current selected character on the display, 
+  //0 = 10s of hours, 1 = hours, 3 = tens of minutes, 4 = minutes, 6 = tens of seconds, 7 = seconds.
+  writeTargetTime(charpos);
   int c = getKey();
   while(c!= SELECT_KEY)
   {
+    c = getKey();
+    short incrementhours = 0;
+    short incrementmins = 0;
+    short incrementseconds = 0;
+    switch (charpos)
+    {
+      case 0:
+        incrementhours = 10;
+        break;
+      case 1://hours
+        incrementhours = 1;
+        break;
+      case 3:
+        incrementmins = 10;
+        break;
+      case 4:
+        incrementmins = 1;
+        break;
+      case 6:
+        incrementseconds = 10;
+        break;
+      case 7:
+        incrementseconds = 1;
+        break;
+      default:
+        charpos = 0;
+        incrementhours = 10;
+    }
     if(c==UP_KEY)
     {
-      targetDistance += 1000;
+      targetmins += incrementmins;
+      targethours += incrementhours;
+      targetseconds += incrementseconds;
+      if(targetseconds > 59) 
+      {
+        targetseconds = 0;
+        targetmins ++;
+      }
+      if(targetmins >59) 
+      {
+        targetmins = 0;
+        targethours ++;
+      }
+      if(targethours > 24) 
+      {
+        targethours = 24;
+      }
+      writeTargetTime(charpos);
     }
     else if(c== DOWN_KEY)
     {
-      targetDistance -=1000;
+      
+      targetmins -= incrementmins;
+      targethours -= incrementhours;
+      targetseconds -= incrementseconds;
+      if(targetseconds < 0) 
+      {
+        targetseconds = 0;
+        targetmins --;
+      }
+      if(targetmins <0) 
+      {
+        targetmins = 0;
+        targethours --;
+      }
+      if(targethours < 0) targethours = 0;
+      writeTargetTime(charpos);
+    }
+    else if (c== RIGHT_KEY)
+    {
+      charpos ++;
+      if(charpos ==2 || charpos == 5) charpos ++;
+      writeTargetTime(charpos);
+    }
+    else if (c == LEFT_KEY)
+    {
+      charpos --;
+      if(charpos ==2 || charpos == 5) charpos --;
+      writeTargetTime(charpos);
     }
   }
+}
+
+void writeTargetTime(int charpos)
+{
+    lcd.setCursor(0,1);
+    if(targethours < 10) lcd.print("0");
+    lcd.print(targethours);
+    lcd.print(":");
+    if(targetmins < 10) lcd.print("0");
+    lcd.print(targetmins);
+    lcd.print(":");
+    if(targetseconds < 10) lcd.print("0");
+    lcd.print(targetseconds);
+    lcd.setCursor(0,charpos);
 }
 
 int getKey()
@@ -641,6 +771,13 @@ void menuDistance()
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Distance");
+}
+
+void menuDragFactor()
+{
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Drag Factor");
 }
 
 void menuTime()
