@@ -153,6 +153,7 @@ void setup()
     C2 = false;
     I = 0.0303;
     clicksPerRotation = 1;
+    numclickspercalc = 1;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
     Serial.println("No Concept 2 detected on Analog pin 3");
   }
