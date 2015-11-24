@@ -11,6 +11,34 @@
 
 //end of changes to resolution.
 
+//code for keypad:
+static int DEFAULT_KEY_PIN = 0; 
+static int UPKEY_ARV = 144; //that's read "analogue read value"
+static int DOWNKEY_ARV = 329;
+static int LEFTKEY_ARV = 505;
+static int RIGHTKEY_ARV = 0;
+static int SELKEY_ARV = 721;
+static int NOKEY_ARV = 1023;
+static int _threshold = 30;
+#define NO_KEY 0
+#define UP_KEY 3
+#define DOWN_KEY 4
+#define LEFT_KEY 2
+#define RIGHT_KEY 5
+#define SELECT_KEY 1
+
+#define JUST_ROW 0
+#define DISTANCE 1
+#define TIME 2
+
+
+long targetDistance = 2000;
+int targetTime = 20;
+int sessionType = JUST_ROW;
+//end code for keypad
+
+
+
 //int backLight = 13;
 
 const int switchPin = 2;                    // switch is connected to pin 6
@@ -112,12 +140,6 @@ void setup()
     clicksPerRotation = 3;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
     Serial.println("Concept 2 detected on pin 3");
-  #ifdef UseLCD
-    lcd.setCursor(0,0);
-    lcd.print("Concept 2,");
-    lcd.setCursor(0,1);
-    lcd.print("IP Technology");
-  #endif
   }
   else
   {
@@ -126,13 +148,11 @@ void setup()
     clicksPerRotation = 1;
     mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
     Serial.println("No Concept 2 detected on Analog pin 3");
-  #ifdef UseLCD
-    lcd.setCursor(0,0);
-    lcd.print("V-Fit powered by");
-    lcd.setCursor(0,1);
-    lcd.print("IP Technology");
-  #endif
   }
+
+  #ifdef UseLCD
+    startMenu();
+  #endif
   // Print a message to the LCD.
 }
 
@@ -444,4 +464,189 @@ void dumprpms()
   */
 }
 
+//Current selection (Distance, Time)
+#ifdef UseLCD
+void startMenu()
+{
+  menuType();
+  lcd.clear();
+}
 
+void menuType()
+{
+  int c = NO_KEY;
+  writeType();
+  while(c != SELECT_KEY)
+  {
+    c = getKey();
+    if(c == DOWN_KEY)
+    {
+      sessionType ++;
+      writeType();
+    }
+    else if (c == UP_KEY)
+    {
+      sessionType --;
+      writeType();
+    }
+  }
+  while(c == SELECT_KEY) c = getKey();//wait until select is unpressed.
+  switch(sessionType)
+  {
+    case 1:
+      menuSelectDistance();
+      break;
+    case 2: 
+      menuSelectTime();
+      break;
+    default:
+      //just row
+    break;
+      
+  }
+}
+
+void writeType()
+{
+    switch(sessionType)
+    {
+      case DISTANCE:
+        menuDistance();
+      break;
+      case TIME:
+        menuTime();
+      break;
+      default:
+        sessionType = JUST_ROW;
+        menuJustRow();
+        break;
+    }
+}
+
+void menuSelectDistance()
+{
+  int c = NO_KEY;
+  long increment = 1000;
+  writeCurrentDistanceamount(increment);
+  delay(600);
+  while(c!= SELECT_KEY)
+  {
+    c = getKey();
+    if(c==UP_KEY)
+    {
+      targetDistance += increment;
+      if(targetDistance < 0) targetDistance = 0;
+      writeCurrentDistanceamount(increment);
+    }
+    else if(c== DOWN_KEY)
+    {
+      targetDistance -= increment;
+      if(targetDistance < 0) targetDistance = 0;
+      writeCurrentDistanceamount(increment);
+    }
+    else if(c== RIGHT_KEY)
+    {
+      increment /=10;
+      if(increment == 0) increment = 1;
+      writeCurrentDistanceamount(increment);
+    }
+    else if(c==LEFT_KEY)
+    {
+      increment*=10;
+      if(increment >= 10000) increment = 10000;
+      writeCurrentDistanceamount(increment);
+    }
+  }
+}
+
+void writeCurrentDistanceamount(int increment)
+{
+    lcd.setCursor(0,1);
+    if(targetDistance < 10000) lcd.print("0");
+    if(targetDistance < 1000) lcd.print("0");
+    if(targetDistance < 100) lcd.print("0");
+    if(targetDistance < 10) lcd.print("0");
+    lcd.print(targetDistance);
+    switch(increment)
+    {
+       case 1:
+        lcd.setCursor(4,1);
+        break;
+      case 10:
+        lcd.setCursor(3,1);
+        break;
+      case 100:
+        lcd.setCursor(2,1);
+        break;
+      case 1000:
+        lcd.setCursor(1,1);
+        break;
+      case 10000:
+        lcd.setCursor(0,1);
+        break;
+       default:
+        lcd.setCursor(1,0);
+        lcd.print(increment);
+       break;
+    }
+    lcd.cursor();
+    delay(200);
+}
+
+void menuSelectTime()
+{
+  lcd.setCursor(0,1);
+  lcd.print(targetDistance);
+  lcd.setCursor(0,1);
+  int c = getKey();
+  while(c!= SELECT_KEY)
+  {
+    if(c==UP_KEY)
+    {
+      targetDistance += 1000;
+    }
+    else if(c== DOWN_KEY)
+    {
+      targetDistance -=1000;
+    }
+  }
+}
+
+int getKey()
+{
+  delay(100);
+  int _curInput = analogRead(0);
+  //Serial.println(_curInput);
+  int _curKey;
+  if (_curInput > UPKEY_ARV - _threshold && _curInput < UPKEY_ARV + _threshold ) _curKey = UP_KEY;
+      else if (_curInput > DOWNKEY_ARV - _threshold && _curInput < DOWNKEY_ARV + _threshold ) _curKey = DOWN_KEY;
+      else if (_curInput > RIGHTKEY_ARV - _threshold && _curInput < RIGHTKEY_ARV + _threshold ) _curKey = RIGHT_KEY;
+      else if (_curInput > LEFTKEY_ARV - _threshold && _curInput < LEFTKEY_ARV + _threshold ) _curKey = LEFT_KEY;
+      else if (_curInput > SELKEY_ARV - _threshold && _curInput < SELKEY_ARV + _threshold ) _curKey = SELECT_KEY;
+      else _curKey = NO_KEY;
+  return _curKey;
+}
+
+//
+
+void menuJustRow()
+{
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Just Row");
+}
+
+void menuDistance()
+{
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Distance");
+}
+
+void menuTime()
+{
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Time");
+}
+#endif
