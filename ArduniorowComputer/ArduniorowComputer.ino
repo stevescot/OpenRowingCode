@@ -1,10 +1,11 @@
 /* Arduino row Computer
  * Uses a 16x2 lcd to display rowing statistics on an ergometer
  * principles are here : http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7
- * 
+ * 13% memory used for LCD / menu
+ * 41% total
  */
 #include <LiquidCrystal.h>
-//#define UseLCD // comment out this line to not use a 16x2 LCD
+#define UseLCD // comment out this line to not use a 16x2 LCD
 
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
@@ -31,6 +32,7 @@ static int _threshold = 30;
 #define DISTANCE 1
 #define TIME 2
 #define DRAGFACTOR 3
+#define RPM 4
 
 
 long targetDistance = 2000;
@@ -337,6 +339,13 @@ void writeNextScreen()
           lcd.setCursor(0,1);
           lcd.print(k*1000000);
           return;//no need for other screen stuff.
+        }else if (sessionType == RPM)
+        {
+          lcd.clear();
+          lcd.print("RPM");
+          lcd.setCursor(0,1);
+          lcd.print(instantaneousrpm);
+          return;//no need for other screen stuff.
         }
      #endif
   //Display Format:
@@ -559,6 +568,9 @@ void writeType()
       case DRAGFACTOR:
         menuDragFactor();
         break;
+      case RPM:
+        menuRPM();
+        break;
       default:
         sessionType = JUST_ROW;
         menuJustRow();
@@ -771,6 +783,13 @@ void menuDistance()
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Distance");
+}
+
+void menuRPM()
+{
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("RPM");
 }
 
 void menuDragFactor()
