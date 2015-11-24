@@ -5,7 +5,7 @@
  * 41% total
  */
 #include <LiquidCrystal.h>
-#define UseLCD // comment out this line to not use a 16x2 LCD
+//#define UseLCD // comment out this line to not use a 16x2 LCD
 
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
