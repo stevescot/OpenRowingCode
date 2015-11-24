@@ -5,7 +5,7 @@
  * 41% total
  */
 #include <LiquidCrystal.h>
-//#define UseLCD // comment out this line to not use a 16x2 LCD
+#define UseLCD // comment out this line to not use a 16x2 LCD
 
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
@@ -33,6 +33,7 @@ static int _threshold = 30;
 #define TIME 2
 #define DRAGFACTOR 3
 #define RPM 4
+#define BACKLIGHT 5
 
 
 long targetDistance = 2000;
@@ -43,8 +44,6 @@ int targetseconds = 0;
 
 int sessionType = JUST_ROW;
 //end code for keypad
-
-
 
 //int backLight = 13;
 
@@ -114,7 +113,7 @@ unsigned int lastDriveTimems;               // time that the last drive took in 
 float split;                                // split time for last stroke in seconds
 unsigned long spm = 0;                      // current strokes per minute.  
 float distancem = 0;                        // distance rowed in meters.
-float StrokeToDriveRatio = 0;                // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
+float RecoveryToDriveRatio = 0;                // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
 
 //Constants that vary with machine:
 float I = 0.04;                             // moment of  interia of the wheel - 0.1001 for Concept2, ~0.05 for V-Fit air rower.*/;
@@ -262,7 +261,8 @@ void loop()
                     driveAngularVelocity = radSec;
                     driveEndms = mtime;
                     lastDriveTimems = driveEndms - driveBeginms;
-                    StrokeToDriveRatio = (strokems / lastDriveTimems);
+                    //recovery is the stroke minus the drive, drive is just drive
+                    RecoveryToDriveRatio = (strokems-lastDriveTimems) / lastDriveTimems;
                     afterfirstdecrotation = false;
                     Accelerating = true;    
                     instantaneousrpm = nextinstantaneousrpm;
@@ -350,7 +350,7 @@ void writeNextScreen()
         }
      #endif
   //Display Format:
-  //2:16 r3  SPM:35
+  // 2:16  r3.1SPM:35
   //5000m     10:00
   int timemins, timeseconds, splitmin, splits, dm;
   screenstep++;
@@ -460,9 +460,9 @@ void writeNextScreen()
     case 5://next lime
     #ifdef UseLCD
       //lcd 6->9 , 0
-       lcd.setCursor(4,0);
+       lcd.setCursor(5,0);
        lcd.print("r");
-       lcd.print(StrokeToDriveRatio);
+       lcd.print(RecoveryToDriveRatio,1);
     #endif
        Serial.print("Drag factor \t");
        Serial.println(k*1000000);
@@ -478,7 +478,7 @@ void writeNextScreen()
     //lcd 6->9 , 0
       // lcd.setCursor(4,0);
       // lcd.print("r");
-      // lcd.print(StrokeToDriveRatio);
+      // lcd.print(RecoveryToDriveRatio);
 
       Serial.print("Drive angularve: ");
       Serial.println(driveAngularVelocity);
@@ -549,6 +549,9 @@ void menuType()
     case TIME: 
       menuSelectTime();
       break;
+    case BACKLIGHT:
+      menuSelectBacklight();
+      break;
     default:
       //just row
     break;
@@ -572,11 +575,44 @@ void writeType()
       case RPM:
         menuRPM();
         break;
+      case BACKLIGHT:
+        menuBacklight();
+        break;
       default:
         sessionType = JUST_ROW;
         menuJustRow();
         break;
     }
+}
+
+void menuSelectBacklight()
+{
+  pinMode(10,OUTPUT);
+  int backlightState = HIGH;
+  lcd.setCursor(0,1);
+  lcd.print("On");
+  int c = NO_KEY;
+  while(c!=SELECT_KEY)
+  {
+    c = getKey();
+    if(c==UP_KEY || c==DOWN_KEY)
+    {
+      if(backlightState == LOW) 
+      {
+        backlightState = HIGH;
+        lcd.setCursor(0,1);
+        lcd.print("Off");
+      }
+      else
+      {
+        backlightState = LOW;
+        lcd.setCursor(0,1);
+        lcd.print("On ");
+      }
+      digitalWrite(10,backlightState);
+    }
+  }
+  menuType();
 }
 
 void menuSelectDistance()
@@ -798,6 +834,13 @@ void menuDragFactor()
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Drag Factor");
+}
+
+void menuBacklight()
+{
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Backlight");
 }
 
 void menuTime()
