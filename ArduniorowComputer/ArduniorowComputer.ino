@@ -618,6 +618,7 @@ void menuType()
 
 void writeType()
 {
+  lcd.clear();
   //rollback around.
   if(sessionType ==-1) sessionType = ERGTYPE;
     switch(sessionType)
@@ -659,14 +660,14 @@ void menuSelectErgType()
       ergType ++;
       if(ergType > ERGTYPEC2) ergType = ERGTYPEVFIT;
       menuDisplayErgType();
-      delay(1000);
+      delay(500);
     }
     if(c==DOWN_KEY) 
     {
       ergType --;
       if(ergType < ERGTYPEVFIT) ergType = ERGTYPEC2;
       menuDisplayErgType();
-      delay(1000);
+      delay(500);
     }
     setErgType(ergType);
   }
