@@ -21,6 +21,8 @@ static int RIGHTKEY_ARV = 0;
 static int SELKEY_ARV = 721;
 static int NOKEY_ARV = 1023;
 static int _threshold = 30;
+
+//KEY index definitions
 #define NO_KEY 0
 #define UP_KEY 3
 #define DOWN_KEY 4
@@ -28,6 +30,7 @@ static int _threshold = 30;
 #define RIGHT_KEY 5
 #define SELECT_KEY 1
 
+//session(menu) definitions
 #define JUST_ROW 0
 #define DISTANCE 1
 #define TIME 2
@@ -36,9 +39,11 @@ static int _threshold = 30;
 #define BACKLIGHT 5
 #define ERGTYPE 6
 
+//erg type definitions
 #define ERGTYPEVFIT 0 // V-Fit air rower.
 #define ERGTYPEC2 1 //Concept 2
 
+//boat type defintions.
 #define BOAT4 0
 #define BOAT8 1
 #define BOAT1 2
@@ -62,15 +67,15 @@ const int analogPin = 1;                    // analog pin (Concept2)
 
 int peakrpm = 0;
 
-bool C2 = false;                            // if we are connected to a concept2
-float C2lim = 10;                             // limit to detect a rotation from C2  (0.00107421875mV per 1, so 40 = 42mV
+bool AnalogSwitch = false;                            // if we are connected to a concept2
+float AnalogSwitchlim = 10;                             // limit to detect a rotation from C2  (0.00107421875mV per 1, so 40 = 42mV
 
 int clicksPerRotation = 1;                  // number of magnets , or clicks detected per rotation.
 
 unsigned long lastlimittime = 0;
-float AnalogMax = 10;
-float AnalogMin = 0;
-int lastC2Value = 0;                        // the last value read from the C2
+float AnalogSwitchMax = 10;
+float AnalogSwitchMin = 0;
+int lastAnalogSwitchValue = 0;                        // the last value read from the C2
 
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
@@ -186,14 +191,14 @@ void setErgType(short newErgType)
   switch(newErgType)
   {
     case ERGTYPEVFIT:
-        C2 = false;
+        AnalogSwitch = false;
         I = 0.0303;
         clicksPerRotation = 1;
         numclickspercalc = 1;
         mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
         break;
     default:
-        C2 = true;
+        AnalogSwitch = true;
         I = 0.101;
         //do the calculations less often to allow inaccuracies to be averaged out.
         numclickspercalc = 3;
@@ -210,39 +215,39 @@ void loop()
 {
   mtime = millis();
   utime = micros(); 
-  if(C2)
+  if(AnalogSwitch)
   {
     //simulate a reed switch from the coil
     int analog = analogRead(analogPin);
-    //make C2lim a running 4 second average of the sample.
+    //make AnalogSwitchlim a running 4 second average of the sample.
 //    if(micros() > utime && utime > 0)
 //    {//if this isn't an overflow, and there has been at least one sample, start to tune the C2lim.
 //      //C2lim = C2lim + ((float)val - C2lim)*((float)(micros()-utime)/4000000);
-      if(analog > AnalogMax) AnalogMax = analog;
-      if(analog < AnalogMin) AnalogMin = analog;
+      if(analog > AnalogSwitchMax) AnalogSwitchMax = analog;
+      if(analog < AnalogSwitchMin) AnalogSwitchMin = analog;
       if(millis() > lastlimittime + 1000)//tweak the limits each second
       {
         lastlimittime = millis();
-        C2lim = (AnalogMax + AnalogMin)/2;
+        AnalogSwitchlim = (AnalogSwitchMax + AnalogSwitchMin)/2;
         //reset the max/min
-        AnalogMin = analog;
-        AnalogMax = analog;
+        AnalogSwitchMin = analog;
+        AnalogSwitchMax = analog;
       }
 //    }
-    if(C2lim < 5) C2lim = 5;//don't let it get back to zero if nothing is happening...
-    //if(analog > C2lim) 
+    if(AnalogSwitchlim < 5) AnalogSwitchlim = 5;//don't let it get back to zero if nothing is happening...
+    //if(analog > AnalogSwitchlim) 
     
     //detect rising side
     if(buttonState == LOW)
     {
-      if(analog < (float)lastC2Value*0.9 || analog == 0)
+      if(analog < (float)lastAnalogSwitchValue*0.9 || analog == 0)
       {
         val = HIGH;
       }
     }
     else
     {//ButtonState == HIGH
-      if(analog > (float)(lastC2Value+2))
+      if(analog > (float)(lastAnalogSwitchValue+2))
       {
         val = LOW;//detected it starting to pass
       }
@@ -250,7 +255,7 @@ void loop()
 
     //detect dropping side
     
-    lastC2Value = analog;
+    lastAnalogSwitchValue = analog;
   }
   else
   {
@@ -510,9 +515,9 @@ void writeNextScreen()
        Serial.print("Drag factor \t");
        Serial.println(k*1000000);
        Serial.print("anMin\t");
-       Serial.println(AnalogMin);
+       Serial.println(AnalogSwitchMin);
        Serial.print("anMax\t");
-       Serial.println(AnalogMax);
+       Serial.println(AnalogSwitchMax);
       //lcd.setCursor(10,1);
       //lcd.print(" AvS:");
       //lcd.print(clicks/(millis()-startTime));     
