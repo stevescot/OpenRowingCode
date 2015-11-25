@@ -34,7 +34,17 @@ static int _threshold = 30;
 #define DRAGFACTOR 3
 #define RPM 4
 #define BACKLIGHT 5
+#define ERGTYPE 6
 
+#define ERGTYPEVFIT 0 // V-Fit air rower.
+#define ERGTYPEC2 1 //Concept 2
+
+#define BOAT4 0
+#define BOAT8 1
+#define BOAT1 2
+
+short ergType = ERGTYPEVFIT;
+short boatType = BOAT4;
 
 long targetDistance = 2000;
 
@@ -138,22 +148,12 @@ void setup()
   delay(100);
   if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
-    C2 = true;
-    I = 0.101;
-    //do the calculations less often to allow inaccuracies to be averaged out.
-    numclickspercalc = 3;
-    //number of clicks per rotation is 3 as there are three magnets.
-    clicksPerRotation = 3;
-    mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
+    setErgType(ERGTYPEC2);
     Serial.println("Concept 2 detected on pin 3");
   }
   else
   {
-    C2 = false;
-    I = 0.0303;
-    clicksPerRotation = 1;
-    numclickspercalc = 1;
-    mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
+    setErgType(ERGTYPEVFIT);
     Serial.println("No Concept 2 detected on Analog pin 3");
   }
 
@@ -161,6 +161,49 @@ void setup()
     startMenu();
   #endif
   // Print a message to the LCD.
+}
+
+void setBoatType(short BoatType)
+{
+  boatType = BoatType;
+  switch(BoatType)
+  {
+    case BOAT4:
+      c = 2.8;
+    break;
+    case BOAT8:
+      c = 2.8;
+    break;
+    case BOAT1:
+      c = 2.8;
+    break;
+  }
+}
+
+void setErgType(short newErgType)
+{
+  ergType = newErgType;
+  switch(newErgType)
+  {
+    case ERGTYPEVFIT:
+        C2 = false;
+        I = 0.0303;
+        clicksPerRotation = 1;
+        numclickspercalc = 1;
+        mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
+        break;
+    default:
+        C2 = true;
+        I = 0.101;
+        //do the calculations less often to allow inaccuracies to be averaged out.
+        numclickspercalc = 3;
+        //number of clicks per rotation is 3 as there are three magnets.
+        clicksPerRotation = 3;
+        mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
+        ergType = ERGTYPEC2;    
+        break;
+  }
+
 }
 
 void loop()
@@ -525,6 +568,7 @@ void startMenu()
 void menuType()
 {
   int c = NO_KEY;
+  while(getKey() == SELECT_KEY) delay(300);
   writeType();
   while(c != SELECT_KEY)
   {
@@ -533,14 +577,17 @@ void menuType()
     {
       sessionType ++;
       writeType();
+      delay(500);
     }
     else if (c == UP_KEY)
     {
       sessionType --;
       writeType();
+      delay(500);
     }
   }
   while(c == SELECT_KEY) c = getKey();//wait until select is unpressed.
+  delay(200);
   switch(sessionType)
   {
     case DISTANCE:
@@ -551,7 +598,12 @@ void menuType()
       break;
     case BACKLIGHT:
       menuSelectBacklight();
+      menuType();
       break;
+    case ERGTYPE:
+      menuSelectErgType();
+      menuType();
+      
     default:
       //just row
     break;
@@ -561,58 +613,112 @@ void menuType()
 
 void writeType()
 {
+  //rollback around.
+  if(sessionType ==-1) sessionType = ERGTYPE;
     switch(sessionType)
     {
       case DISTANCE:
-        menuDistance();
+        menuDisplay("Distance");
       break;
       case TIME:
-        menuTime();
+        menuDisplay("Time");
       break;
       case DRAGFACTOR:
-        menuDragFactor();
+        menuDisplay("DragFactor");
         break;
       case RPM:
-        menuRPM();
+        menuDisplay("RPM");
         break;
       case BACKLIGHT:
-        menuBacklight();
+        menuDisplay("BackLight");
+        break;
+      case ERGTYPE:
+        menuDisplay("Erg Type");
         break;
       default:
         sessionType = JUST_ROW;
-        menuJustRow();
+        menuDisplay("Just Row");
         break;
     }
+}
+
+void menuSelectErgType()
+{
+  menuDisplayErgType();
+  int c = NO_KEY;
+  while(c!=SELECT_KEY)
+  {
+    c = getKey();
+    if(c==UP_KEY) 
+    {
+      ergType ++;
+      if(ergType > ERGTYPEC2) ergType = ERGTYPEVFIT;
+      menuDisplayErgType();
+      delay(1000);
+    }
+    if(c==DOWN_KEY) 
+    {
+      ergType --;
+      if(ergType < ERGTYPEVFIT) ergType = ERGTYPEC2;
+      menuDisplayErgType();
+      delay(1000);
+    }
+    setErgType(ergType);
+  }
+}
+
+void menuDisplayErgType()
+{
+  lcd.setCursor(0,1);
+  switch(ergType)
+  {
+    case ERGTYPEC2:
+      lcd.print("Concept 2");
+      break;
+    case ERGTYPEVFIT:
+      lcd.print("V-Fit    ");
+      break;
+  }
 }
 
 void menuSelectBacklight()
 {
   pinMode(10,OUTPUT);
-  int backlightState = HIGH;
-  lcd.setCursor(0,1);
-  lcd.print("On");
+  int state = HIGH;
+  digitalWrite(10,state);
+  showBacklightState(state);
   int c = NO_KEY;
   while(c!=SELECT_KEY)
   {
     c = getKey();
     if(c==UP_KEY || c==DOWN_KEY)
     {
-      if(backlightState == LOW) 
+      if(state == LOW) 
       {
-        backlightState = HIGH;
-        lcd.setCursor(0,1);
-        lcd.print("Off");
+        state = HIGH;
       }
       else
       {
-        backlightState = LOW;
-        lcd.setCursor(0,1);
-        lcd.print("On ");
+        state = LOW;
       }
-      digitalWrite(10,backlightState);
+      showBacklightState(state);
+      digitalWrite(10,state);
+      delay(500);
     }
   }
-  menuType();
+}
+
+void showBacklightState(int state)
+{
+  lcd.setCursor(0,1);
+  if(state == LOW)
+  {
+      lcd.print("Off");
+  }
+  else
+  {
+      lcd.print("On ");
+  }
 }
 
 void menuSelectDistance()
@@ -793,7 +899,6 @@ void writeTargetTime(int charpos)
 
 int getKey()
 {
-  delay(100);
   int _curInput = analogRead(0);
   //Serial.println(_curInput);
   int _curKey;
@@ -804,49 +909,15 @@ int getKey()
       else if (_curInput > SELKEY_ARV - _threshold && _curInput < SELKEY_ARV + _threshold ) _curKey = SELECT_KEY;
       else _curKey = NO_KEY;
   return _curKey;
+  delay(100);
 }
 
 //
 
-void menuJustRow()
+void menuDisplay(char* text)
 {
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Just Row");
-}
-
-void menuDistance()
-{
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Distance");
-}
-
-void menuRPM()
-{
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("RPM");
-}
-
-void menuDragFactor()
-{
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Drag Factor");
-}
-
-void menuBacklight()
-{
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Backlight");
-}
-
-void menuTime()
-{
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Time");
+  lcd.print(text);
 }
 #endif
