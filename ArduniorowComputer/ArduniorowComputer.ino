@@ -36,8 +36,12 @@ static int _threshold = 30;
 #define TIME 2
 #define DRAGFACTOR 3
 #define RPM 4
-#define BACKLIGHT 5
-#define ERGTYPE 6
+#define SETTINGS 5
+#define BACKLIGHT 6
+#define ERGTYPE 7
+#define BOATTYPE 8
+#define WEIGHT 9
+#define BACK 10
 
 //erg type definitions
 #define ERGTYPEVFIT 0 // V-Fit air rower.
@@ -601,26 +605,97 @@ void menuType()
     case TIME: 
       menuSelectTime();
       break;
-    case BACKLIGHT:
-      menuSelectBacklight();
-      menuType();
-      break;
-    case ERGTYPE:
-      menuSelectErgType();
-      menuType();
-      
+    case SETTINGS:
+      menuSettings();    
+      menuType();  
     default:
-      //just row
+      //just row with that as a setting (rpm / drag factor etc..)
     break;
       
   }
+}
+
+void menuSettings()
+{
+  int c = NO_KEY;
+  while(getKey() == SELECT_KEY) delay(300);
+  writeSettingsMenu();
+  while(c != SELECT_KEY)
+  {
+    c = getKey();
+    if(c == DOWN_KEY)
+    {
+      sessionType ++;
+      writeSettingsMenu();
+      delay(500);
+    }
+    else if (c == UP_KEY)
+    {
+      sessionType --;
+      writeSettingsMenu();
+      delay(500);
+    }
+  }
+  while(c == SELECT_KEY) c = getKey();//wait until select is unpressed.
+  delay(200);
+  switch(sessionType)
+  {
+    case BACKLIGHT:
+      menuSelectBacklight();
+      menuSettings();
+      break;
+    case ERGTYPE:
+      menuSelectErgType();
+      menuSettings();
+      break;
+    case BOATTYPE:
+      menuSelectBoatType();
+      menuSettings();
+      break;
+    default:
+      //back to other menu
+    break;
+      
+  }
+}
+
+void menuSelectBoatType()
+{
+  
+}
+
+void writeSettingsMenu()
+{
+    lcd.clear();
+    while(getKey() == SELECT_KEY) delay(300);
+    if(sessionType <= SETTINGS) sessionType = BACK;
+    if(sessionType > BACK) sessionType = BACKLIGHT;
+    switch(sessionType)
+    {
+      case BACKLIGHT:
+        menuDisplay("Back Light");
+        break;
+      case ERGTYPE:
+        menuDisplay("Erg Type");
+        break;
+      case BOATTYPE:
+        menuDisplay("Boat Type");
+        break;
+      case WEIGHT:
+        menuDisplay("Weight");
+        break;
+      case BACK:
+        menuDisplay("Back");
+        break;
+    }
 }
 
 void writeType()
 {
   lcd.clear();
   //rollback around.
-  if(sessionType ==-1) sessionType = ERGTYPE;
+  if(sessionType <=-1) sessionType = SETTINGS;
+  if(sessionType > SETTINGS) sessionType = JUST_ROW;
     switch(sessionType)
     {
       case DISTANCE:
@@ -630,16 +705,13 @@ void writeType()
         menuDisplay("Time");
       break;
       case DRAGFACTOR:
-        menuDisplay("DragFactor");
+        menuDisplay("Drag Factor");
         break;
       case RPM:
         menuDisplay("RPM");
         break;
-      case BACKLIGHT:
-        menuDisplay("BackLight");
-        break;
-      case ERGTYPE:
-        menuDisplay("Erg Type");
+      case SETTINGS:
+        menuDisplay("Settings");
         break;
       default:
         sessionType = JUST_ROW;
