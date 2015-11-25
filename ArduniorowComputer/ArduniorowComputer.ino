@@ -1,6 +1,6 @@
 /* Arduino row Computer
- * Uses a 16x2 lcd to display rowing statistics on an ergometer
- * principles are here : http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7
+ * Uses an UNO + LCD keypad shield like this: http://www.lightinthebox.com/16-x-2-lcd-keypad-shield-for-arduino-uno-mega-duemilanove_p340888.html?currency=GBP&litb_from=paid_adwords_shopping
+ * principles behind calculations are here : http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7
  * 13% memory used for LCD / menu
  * 41% total
  */
@@ -91,24 +91,24 @@ unsigned long mtime;                        // time of tick in milliseconds
 
 unsigned long laststatechangeus;            // time of last switch.
 unsigned long timetakenus;                  // time taken in milliseconds for a rotation of the flywheel
-float instantaneousrpm;             // rpm from the rotatiohn
+float instantaneousrpm;                     // rpm from the rotatiohn
 float nextinstantaneousrpm;                 // next rpm reading to compare with previous
 unsigned long lastrotationus;               // milliseconds taken for the last rotation of the flywheel
 unsigned long startTimems = 0;              // milliseconds from startup to first sample
-unsigned long clicks = 0;                // number of clicks since start
-unsigned long laststrokeclicks = 0;      // number of clicks since last drive
+unsigned long clicks = 0;                   // number of clicks since start
+unsigned long laststrokeclicks = 0;         // number of clicks since last drive
 unsigned long laststroketimems = 0;         // milliseconds from startup to last stroke drive
 unsigned long strokems;                     // milliseconds from last stroke to this one
-unsigned long clicksInDistance = 0;      // number of clicks already accounted for in the distance.
+unsigned long clicksInDistance = 0;         // number of clicks already accounted for in the distance.
 float driveLengthm = 0;                     // last stroke length in meters
 float rpmhistory[100];                      // array of rpm per rotation for debugging
 unsigned long microshistory[100];           // array of the amount of time taken in calc/display for debugging.
 
 short nextrpm;                              // currently measured rpm, to compare to last.
 
-float driveAngularVelocity;                // fastest angular velocity at end of drive
-bool afterfirstdecrotation = false;        // after the first deceleration rotation (to give good figures for drag factor);
-int diffclicks;                         // clicks from last stroke to this one
+float driveAngularVelocity;                 // fastest angular velocity at end of drive
+bool afterfirstdecrotation = false;         // after the first deceleration rotation (to give good figures for drag factor);
+int diffclicks;                             // clicks from last stroke to this one
 
 int screenstep=0;                           // int - which part of the display to draw next.
 float k = 0.000185;                         //  drag factor nm/s/s (displayed *10^6 on a Concept 2) nm/s/s == W/s/s
@@ -117,9 +117,9 @@ float k = 0.000185;                         //  drag factor nm/s/s (displayed *1
 float c = 2.8;                              //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power. c/p = (v)^3 where p = power in watts, v = velocity in m/s  so v = (c/p)^1/3 v= (2.8/p)^1/3
                                             //Concept used to quote a figure c=2.8, which, for a 2:00 per 500m split (equivalent to u=500/120=4.17m/s) gives 203 Watts. 
                                             
-float mPerClick = 0;                          // meters per rotation of the flywheel
+float mPerClick = 0;                        // meters per rotation of the flywheel
 
-unsigned long driveStartclicks;           // number of clicks at start of drive.
+unsigned long driveStartclicks;             // number of clicks at start of drive.
 float mStrokePerRotation = 0;               // meters of stroke per rotation of the flywheel to work out how long we have pulled the handle in meters from clicks.
 
 bool Accelerating;                          //whether or not we were accelerating at the last tick
@@ -143,9 +143,9 @@ float I = 0.04;                             // moment of  interia of the wheel -
 
 void setup() 
 {
-   pinMode(switchPin, INPUT_PULLUP);                // Set the switch pin as input
-   Serial.begin(115200);                      // Set up serial communication at 115200bps
-   buttonState = digitalRead(switchPin);  // read the initial state
+   pinMode(switchPin, INPUT_PULLUP);        // Set the switch pin as input
+   Serial.begin(115200);                    // Set up serial communication at 115200bps
+   buttonState = digitalRead(switchPin);    // read the initial state
    // set up the LCD's number of columns and rows: 
    #ifdef UseLCD
     lcd.begin(16, 2);  
