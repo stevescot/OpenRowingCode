@@ -5,7 +5,7 @@
  * 41% total
  */
 #include <LiquidCrystal.h>
-#define UseLCD // comment out this line to not use a 16x2 LCD
+#define UseLCD // comment out this line to not use a 16x2 LCD keypad shield, and just do serial reporting.
 
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
@@ -198,21 +198,20 @@ void setErgType(short newErgType)
         AnalogSwitch = false;
         I = 0.0303;
         clicksPerRotation = 1;
-        numclickspercalc = 1;
+        numclickspercalc = 10;
         mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
         break;
     default:
         AnalogSwitch = true;
         I = 0.101;
         //do the calculations less often to allow inaccuracies to be averaged out.
-        numclickspercalc = 3;
+        numclickspercalc = 40;//take out a lot of noise before we detect drive / recovery.
         //number of clicks per rotation is 3 as there are three magnets.
         clicksPerRotation = 3;
         mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
         ergType = ERGTYPEC2;    
         break;
   }
-
 }
 
 void loop()
@@ -229,9 +228,9 @@ void loop()
 //      //C2lim = C2lim + ((float)val - C2lim)*((float)(micros()-utime)/4000000);
       if(analog > AnalogSwitchMax) AnalogSwitchMax = analog;
       if(analog < AnalogSwitchMin) AnalogSwitchMin = analog;
-      if(millis() > lastlimittime + 1000)//tweak the limits each second
+      if(mtime > lastlimittime + 1000)//tweak the limits each second
       {
-        lastlimittime = millis();
+        lastlimittime = mtime;
         AnalogSwitchlim = (AnalogSwitchMax + AnalogSwitchMin)/2;
         //reset the max/min
         AnalogSwitchMin = analog;
