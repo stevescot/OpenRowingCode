@@ -318,7 +318,7 @@ void loop()
                     Accelerating = true;    
                     instantaneousrpm = nextinstantaneousrpm;
                 }
-                else if(nextinstantaneousrpm <= ((float)instantaneousrpm *((((float)numclickspercalc-1)*1.2)/((float)numclickspercalc))))
+                else if(nextinstantaneousrpm <= ((float)instantaneousrpm *((((float)numclickspercalc-1)*1.2)/((float)numclickspercalc))) && numclickspercalc < 5)
                 {        //looks like we missed a click - add it in but skip calculations for this go
                   Serial.println("missed a click");
                   clicks++;
