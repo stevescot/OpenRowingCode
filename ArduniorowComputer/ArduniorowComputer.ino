@@ -198,14 +198,14 @@ void setErgType(short newErgType)
         AnalogSwitch = false;
         I = 0.0303;
         clicksPerRotation = 1;
-        numclickspercalc = 10;
+        numclickspercalc = 3;
         mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
         break;
     default:
         AnalogSwitch = true;
         I = 0.101;
         //do the calculations less often to allow inaccuracies to be averaged out.
-        numclickspercalc = 40;//take out a lot of noise before we detect drive / recovery.
+        numclickspercalc = 6;//take out a lot of noise before we detect drive / recovery.
         //number of clicks per rotation is 3 as there are three magnets.
         clicksPerRotation = 3;
         mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
