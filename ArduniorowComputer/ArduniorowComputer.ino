@@ -22,7 +22,7 @@ static int LEFTKEY_ARV = 505;
 static int RIGHTKEY_ARV = 0;
 static int SELKEY_ARV = 721;
 static int NOKEY_ARV = 1023;
-static int _threshold = 30;
+static int _threshold = 50;
 
 //KEY index definitions
 #define NO_KEY 0
@@ -201,7 +201,7 @@ void setErgType(short newErgType)
   {
     case ERGTYPEVFIT:
         AnalogSwitch = false;
-        I = 0.0303;
+        I = 0.05;
         clicksPerRotation = 1;
         numclickspercalc = 1;
         k3 = 85;
@@ -524,7 +524,7 @@ void writeNextScreen()
       //lcd 6->9 , 0
        lcd.setCursor(5,0);
        lcd.print("r");
-       lcd.print((int)RecoveryToDriveRatio,1);
+       lcd.print(RecoveryToDriveRatio,1);
     #endif
        Serial.print("Drag factor \t");
        Serial.println(k*1000000);
@@ -966,6 +966,7 @@ void menuSelectTime()
       {
         targethours = 24;
       }
+      delay(500);
       writeTargetTime(charpos);
     }
     else if(c== DOWN_KEY)
@@ -985,18 +986,21 @@ void menuSelectTime()
         targethours --;
       }
       if(targethours < 0) targethours = 0;
+      delay(500);
       writeTargetTime(charpos);
     }
     else if (c== RIGHT_KEY)
     {
       charpos ++;
       if(charpos ==2 || charpos == 5) charpos ++;
+      delay(500);
       writeTargetTime(charpos);
     }
     else if (c == LEFT_KEY)
     {
       charpos --;
       if(charpos ==2 || charpos == 5) charpos --;
+      delay(500);
       writeTargetTime(charpos);
     }
   }
@@ -1013,7 +1017,8 @@ void writeTargetTime(int charpos)
     lcd.print(":");
     if(targetseconds < 10) lcd.print("0");
     lcd.print(targetseconds);
-    lcd.setCursor(0,charpos);
+    lcd.setCursor(charpos,1);
+    lcd.cursor();
 }
 
 int getKey()
