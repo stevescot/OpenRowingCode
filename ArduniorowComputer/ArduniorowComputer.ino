@@ -113,6 +113,9 @@ bool afterfirstdecrotation = false;         // after the first deceleration rota
 int diffclicks;                             // clicks from last stroke to this one
 
 int screenstep=0;                           // int - which part of the display to draw next.
+int k3 = 185;
+int k2 = 185;
+int k1 = 185;
 float k = 0.000185;                         //  drag factor nm/s/s (displayed *10^6 on a Concept 2) nm/s/s == W/s/s
                                             //  The displayed drag factor equals the power dissipation (in Watts), at an angular velocity of the flywheel of 100 rad/sec.
                                             
@@ -200,14 +203,18 @@ void setErgType(short newErgType)
         AnalogSwitch = false;
         I = 0.0303;
         clicksPerRotation = 1;
-        numclickspercalc = 3;
+        numclickspercalc = 1;
+        k3 = 85;
+        k2 = 85;
+        k1 = 85;
+        k = 0.000085;  
         mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
         break;
     default:
         AnalogSwitch = true;
         I = 0.101;
         //do the calculations less often to allow inaccuracies to be averaged out.
-        numclickspercalc = 6;//take out a lot of noise before we detect drive / recovery.
+        numclickspercalc = 1;//take out a lot of noise before we detect drive / recovery.
         //number of clicks per rotation is 3 as there are three magnets.
         clicksPerRotation = 3;
         mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
@@ -295,7 +302,7 @@ void loop()
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               dumprpms();
               //Serial.println(nextinstantaneousrpm);
-              if(currentmedianrpm >= previousmedianrpm)
+              if(currentmedianrpm > previousmedianrpm*1.05)
                 { //lcd.print("Acc");        
                     if(!Accelerating)
                     {//beginning of drive /end recovery
@@ -306,7 +313,9 @@ void loop()
                       float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
                       if(I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel) > 0)
                       {//if drag factor detected is positive.
-                        k = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel);  //nm/s/s == W/s/s
+                        k3 = k2; k2 = k1;
+                        k1 = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
+                        k = (float)median_of_3(k1,k2,k3)/1000000;  //adjust k by half of the difference from the last k
                         mPerClick = pow((k/c),(0.33333333333333333))*2*3.1415926535/clicksPerRotation;//v= (2.8/p)^1/3  
                       }
                       driveStartclicks = clicks;
@@ -394,9 +403,11 @@ void writeNextScreen()
         }else if (sessionType == RPM)
         {
           lcd.clear();
-          lcd.print("RPM");
-          lcd.setCursor(0,1);
+          lcd.print("R");
           lcd.print(getRpm(0));
+          lcd.setCursor(0,1);
+          lcd.print("M:");
+          lcd.print(median_of_3(getRpm(0), getRpm(-1), getRpm(-2)));
           return;//no need for other screen stuff.
         }
      #endif
@@ -1039,7 +1050,7 @@ int median_of_3( int a, int b, int c ){       //Median filter
 
 int getRpm(short offset)
 {
-  int index = nextrpm - 1 - offset;
+  int index = nextrpm - 1 + offset;
     while (index >= numRpms)
     {
       index -= numRpms;
