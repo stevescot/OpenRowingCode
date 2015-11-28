@@ -4,6 +4,8 @@
  * 13% memory used for LCD / menu
  * 41% total
  */
+
+#include <avr/sleep.h>
 #include <LiquidCrystal.h>
 #define UseLCD // comment out this line to not use a 16x2 LCD keypad shield, and just do serial reporting.
 
@@ -41,7 +43,8 @@ static int _threshold = 30;
 #define ERGTYPE 7
 #define BOATTYPE 8
 #define WEIGHT 9
-#define BACK 10
+#define POWEROFF 10
+#define BACK 11
 
 //erg type definitions
 #define ERGTYPEVFIT 0 // V-Fit air rower.
@@ -91,8 +94,6 @@ unsigned long mtime;                        // time of tick in milliseconds
 
 unsigned long laststatechangeus;            // time of last switch.
 unsigned long timetakenus;                  // time taken in milliseconds for a rotation of the flywheel
-float instantaneousrpm;                     // rpm from the rotatiohn
-float nextinstantaneousrpm;                 // next rpm reading to compare with previous
 unsigned long lastrotationus;               // milliseconds taken for the last rotation of the flywheel
 unsigned long startTimems = 0;              // milliseconds from startup to first sample
 unsigned long clicks = 0;                   // number of clicks since start
@@ -101,10 +102,11 @@ unsigned long laststroketimems = 0;         // milliseconds from startup to last
 unsigned long strokems;                     // milliseconds from last stroke to this one
 unsigned long clicksInDistance = 0;         // number of clicks already accounted for in the distance.
 float driveLengthm = 0;                     // last stroke length in meters
-float rpmhistory[100];                      // array of rpm per rotation for debugging
-unsigned long microshistory[100];           // array of the amount of time taken in calc/display for debugging.
+static const short numRpms = 100;
+int rpmhistory[numRpms];                      // array of rpm per rotation for debugging
+unsigned long microshistory[numRpms];           // array of the amount of time taken in calc/display for debugging.
 
-short nextrpm;                              // currently measured rpm, to compare to last.
+short nextrpm = 0;                              // currently measured rpm, to compare to last.
 
 float driveAngularVelocity;                 // fastest angular velocity at end of drive
 bool afterfirstdecrotation = false;         // after the first deceleration rotation (to give good figures for drag factor);
@@ -282,23 +284,24 @@ void loop()
               timetakenus = utime - laststatechangeus;
               //Serial.print("TimeTaken(ms):");
               //Serial.println(timetakenms);
-              nextinstantaneousrpm = (float)(60000000.0*numclickspercalc/clicksPerRotation)/timetakenus;
-              if(nextinstantaneousrpm > peakrpm) peakrpm = nextinstantaneousrpm;
-              float radSec = (6.283185307*numclickspercalc/clicksPerRotation)/((float)timetakenus/1000000.0);
-              float prevradSec = (6.283185307*numclickspercalc/clicksPerRotation)/((float)lastrotationus/1000000.0);
-              float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
+              rpmhistory[nextrpm] = (60000000.0*numclickspercalc/clicksPerRotation)/timetakenus;
               nextrpm ++;
-              rpmhistory[nextrpm] = nextinstantaneousrpm;
+              if(nextrpm >=numRpms) nextrpm = 0;//wrap around to the start again.
+              int currentmedianrpm = median_of_3(getRpm(0), getRpm(-1), getRpm(-2));
+              int previousmedianrpm = median_of_3(getRpm(-1), getRpm(-2), getRpm(-3));
+              if(currentmedianrpm > peakrpm) peakrpm = currentmedianrpm;
+              float radSec = currentmedianrpm/60*6.283185307;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)timetakenus/1000000.0);
+              float prevradSec = previousmedianrpm/60*6.283185307;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)lastrotationus/1000000.0);
+              float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               dumprpms();
-              if(nextrpm >=99) nextrpm = 0;
               //Serial.println(nextinstantaneousrpm);
-              if(nextinstantaneousrpm >= instantaneousrpm)
+              if(currentmedianrpm >= previousmedianrpm)
                 { //lcd.print("Acc");        
                     if(!Accelerating)
                     {//beginning of drive /end recovery
                       Serial.println("acceleration");
-                      Serial.println(nextinstantaneousrpm);
-                      Serial.println(instantaneousrpm);
+                      Serial.println(previousmedianrpm);
+                      Serial.println(currentmedianrpm);
                       driveBeginms = mtime;
                       float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
                       if(I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel) > 0)
@@ -316,31 +319,30 @@ void loop()
                     RecoveryToDriveRatio = (strokems-lastDriveTimems) / lastDriveTimems;
                     afterfirstdecrotation = false;
                     Accelerating = true;    
-                    instantaneousrpm = nextinstantaneousrpm;
                 }
-                else if(nextinstantaneousrpm <= ((float)instantaneousrpm *((((float)numclickspercalc-1)*1.2)/((float)numclickspercalc))) && numclickspercalc < 5)
-                {        //looks like we missed a click - add it in but skip calculations for this go
-                  Serial.println("missed a click");
-                  clicks++;
-                  //reduce sampled instantaneousrpm to allow next sample to work if we were decelerating
-                  if(!Accelerating) 
-                  {
-                    instantaneousrpm *= 0.95;
-                  }
-                  else
-                  {//safe to reduce it faster
-                    instantaneousrpm = instantaneousrpm *0.7;
-                  }
-                  //don't store the previous rpm
-                }
-                else if(nextinstantaneousrpm <= (instantaneousrpm*0.98))
+//                else if(currentmedianrpm <= ((float)previousmedianrpm *((((float)numclickspercalc-1)*1.2)/((float)numclickspercalc))) && numclickspercalc < 5)
+//                {        //looks like we missed a click - add it in but skip calculations for this go
+//                  Serial.println("missed a click");
+//                  clicks++;
+//                  //reduce sampled instantaneousrpm to allow next sample to work if we were decelerating
+//                  if(!Accelerating) 
+//                  {
+//                    instantaneousrpm *= 0.95;
+//                  }
+//                  else
+//                  {//safe to reduce it faster
+//                    instantaneousrpm = instantaneousrpm *0.7;
+//                  }
+//                  //don't store the previous rpm
+//                }
+                else if(currentmedianrpm <= (previousmedianrpm*0.98))
                 {
                     if(Accelerating)//previously accelerating
                     { //finished drive
                     Serial.println("Decel");
-                    Serial.println(nextinstantaneousrpm);
+                    Serial.println(previousmedianrpm);
                     //Serial.print(" ");
-                    Serial.println(instantaneousrpm);
+                    Serial.println(currentmedianrpm);
                       //Serial.println("ACC");
                       diffclicks = clicks - laststrokeclicks;
                       strokems = mtime - laststroketimems;
@@ -351,8 +353,7 @@ void loop()
                       //Serial.print(split);
                       driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
                     }
-                    Accelerating = false;
-                    instantaneousrpm = nextinstantaneousrpm;             
+                    Accelerating = false;           
                 }
                 
                 if(mPerClick <= 20)
@@ -363,7 +364,6 @@ void loop()
                 //if we are spinning slower than 10ms per spin then write the next screen
                 if(timetakenus > 10000) writeNextScreen();
                 lastrotationus = timetakenus;
-                instantaneousrpm = nextinstantaneousrpm;
                 //watch out for integer math problems here
                 //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms); 
                 laststatechangeus=utime;
@@ -396,7 +396,7 @@ void writeNextScreen()
           lcd.clear();
           lcd.print("RPM");
           lcd.setCursor(0,1);
-          lcd.print(instantaneousrpm);
+          lcd.print(getRpm(0));
           return;//no need for other screen stuff.
         }
      #endif
@@ -513,7 +513,7 @@ void writeNextScreen()
       //lcd 6->9 , 0
        lcd.setCursor(5,0);
        lcd.print("r");
-       lcd.print(RecoveryToDriveRatio,1);
+       lcd.print((int)RecoveryToDriveRatio,1);
     #endif
        Serial.print("Drag factor \t");
        Serial.println(k*1000000);
@@ -535,7 +535,7 @@ void writeNextScreen()
       Serial.println(driveAngularVelocity);
 
       Serial.print("rpm\t");
-      Serial.println(instantaneousrpm);
+      Serial.println(getRpm(0));
       Serial.print("peakrpm:\t");
       Serial.println(peakrpm);
       //lcd.setCursor(10,1);
@@ -651,6 +651,10 @@ void menuSettings()
       menuSelectBoatType();
       menuSettings();
       break;
+    case POWEROFF:
+      menuSleep();
+      menuSettings();
+      break;
     default:
       //back to other menu
     break;
@@ -682,6 +686,9 @@ void writeSettingsMenu()
         break;
       case WEIGHT:
         menuDisplay("Weight");
+        break;
+      case POWEROFF:
+        menuDisplay("Sleep");
         break;
       case BACK:
         menuDisplay("Back");
@@ -756,6 +763,30 @@ void menuDisplayErgType()
       lcd.print("V-Fit    ");
       break;
   }
+}
+
+//go to sleep
+void menuSleep()
+{
+  sleep_enable();
+  digitalWrite(10,LOW);
+  attachInterrupt(0, pin2_isr, LOW);
+  /* 0, 1, or many lines of code here */
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  cli();
+  sleep_bod_disable();
+  sei();
+  sleep_cpu();
+  /* wake up here */
+  sleep_disable();
+}
+
+//interrupt sleep routine
+void pin2_isr()
+{
+  sleep_disable();
+  detachInterrupt(0);
+ // pin2_interrupt_flag = 1;
 }
 
 void menuSelectBacklight()
@@ -998,3 +1029,25 @@ void menuDisplay(char* text)
   lcd.print(text);
 }
 #endif
+
+int median_of_3( int a, int b, int c ){       //Median filter
+  int the_max = max( max( a, b ), c );
+  int the_min = min( min( a, b ), c );
+  int the_median = the_max ^ the_min ^ a ^ b ^ c;
+  return( the_median );
+}
+
+int getRpm(short offset)
+{
+  int index = nextrpm - 1 - offset;
+    while (index >= numRpms)
+    {
+      index -= numRpms;
+    }
+    while(index < 0) 
+    {
+      index += numRpms;
+    }
+  return rpmhistory[index];
+}
+
