@@ -231,6 +231,7 @@ void setErgType(short newErgType)
         ergType = ERGTYPEC2;    
         break;
   }
+  mPerClick = pow((k/c),(0.33333333333333333))*2*3.1415926535/clicksPerRotation;
 }
 
 void loop()
