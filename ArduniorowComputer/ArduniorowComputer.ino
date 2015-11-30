@@ -105,6 +105,7 @@ unsigned long clicks = 0;                   // number of clicks since start
 unsigned long laststrokeclicks = 0;         // number of clicks since last drive
 unsigned long laststroketimems = 0;         // milliseconds from startup to last stroke drive
 unsigned long strokems;                     // milliseconds from last stroke to this one
+int totalStroke = 0;
 unsigned long clicksInDistance = 0;         // number of clicks already accounted for in the distance.
 float driveLengthm = 0;                     // last stroke length in meters
 static const short numRpms = 100;
@@ -222,7 +223,11 @@ void setErgType(short newErgType)
         numclickspercalc = 1;//take out a lot of noise before we detect drive / recovery.
         //number of clicks per rotation is 3 as there are three magnets.
         clicksPerRotation = 3;
-        mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - C2.
+        k3 = 125;
+        k2 = 125;
+        k1 = 125;
+        k = 0.000125;
+        mStrokePerRotation = 0.08;//meters of stroke per rotation of the flywheel - C2.
         ergType = ERGTYPEC2;    
         break;
   }
@@ -307,20 +312,27 @@ void loop()
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               dumprpms();
               //Serial.println(nextinstantaneousrpm);
-              if(currentmedianrpm > previousmedianrpm*1.001)
+              if(currentmedianrpm > previousmedianrpm*1.01)
                 { //lcd.print("Acc");        
                     if(!Accelerating)
+              
                     {//beginning of drive /end recovery
-                      Serial.println("acceleration");
-                      Serial.println(previousmedianrpm);
-                      Serial.println(currentmedianrpm);
+                      totalStroke++;
+                      Serial.println("\n");
+                      Serial.print("Total strokes:");
+                      Serial.print(totalStroke);
+                      Serial.print("\tdriveEndms:\t");
+                      
                       driveBeginms = mtime;
                       float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
+                      Serial.println(float(secondsdecel));
                       if(I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel) > 0)
                       {//if drag factor detected is positive.
                         k3 = k2; k2 = k1;
                         k1 = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
                         k = (float)median_of_3(k1,k2,k3)/1000000;  //adjust k by half of the difference from the last k
+                        //k = (float)k1/1000000;  //adjust k by half of the difference from the last k
+         
                         mPerClick = pow((k/c),(0.33333333333333333))*2*3.1415926535/clicksPerRotation;//v= (2.8/p)^1/3  
                       }
                       driveStartclicks = clicks;
@@ -353,10 +365,10 @@ void loop()
                 {
                     if(Accelerating)//previously accelerating
                     { //finished drive
-                    Serial.println("Decel");
-                    Serial.println(previousmedianrpm);
-                    //Serial.print(" ");
-                    Serial.println(currentmedianrpm);
+                    //Serial.print("Decel");
+                    //Serial.print(previousmedianrpm);
+                    //Serial.print("\t<\t");
+                    //Serial.print(currentmedianrpm);
                       //Serial.println("ACC");
                       diffclicks = clicks - laststrokeclicks;
                       strokems = mtime - laststroketimems;
@@ -444,10 +456,10 @@ void writeNextScreen()
             //lcd 0->5, 0  used
           #endif
         }
-        Serial.print("Split:\t");
+        Serial.print("\tSplit:\t");
         Serial.print(splitmin);
         Serial.print(":");
-        Serial.println(splits);
+        Serial.print(splits);
     }
     break;
     case 2:
@@ -458,8 +470,8 @@ void writeNextScreen()
         lcd.print(spm);
         lcd.print("  ");
       #endif
-    Serial.print("SPM:\t");
-    Serial.println(spm);
+    Serial.print("\tSPM:\t");
+    Serial.print(spm);
     break;
     case 3:
       #ifdef UseLCD
@@ -483,9 +495,9 @@ void writeNextScreen()
         lcd.print("m");
       }
       #endif
-      Serial.print("Distance:\t");
+      Serial.print("\tDistance:\t");
       Serial.print(distancem);
-      Serial.println("m");
+      Serial.print("m");
       
       //lcd 0->5, 1 used
       //Drag factor
@@ -515,10 +527,10 @@ void writeNextScreen()
           if(timeseconds < 10) lcd.print("0");
           lcd.print(timeseconds);//total seconds.*/
       #endif
-        Serial.print("time:\t");
+        Serial.print("\tTime:\t");
         Serial.print(timemins);
         Serial.print(":");
-        Serial.println(timeseconds);
+        Serial.print(timeseconds);
         //lcd.print(k);
         //Serial.println(k);
 //      lcd.print("s");
@@ -542,12 +554,12 @@ void writeNextScreen()
         }       
        //lcd.print(RecoveryToDriveRatio,1);
     #endif
-       Serial.print("Drag factor \t");
-       Serial.println(k*1000000);
-       Serial.print("anMin\t");
-       Serial.println(AnalogSwitchMin);
-       Serial.print("anMax\t");
-       Serial.println(AnalogSwitchMax);
+       Serial.print("\tDrag factor:\t");
+       Serial.print(k*1000000);
+       //Serial.print("anMin\t");
+       //Serial.println(AnalogSwitchMin);
+       //Serial.print("anMax\t");
+       //Serial.println(AnalogSwitchMax);
       //lcd.setCursor(10,1);
       //lcd.print(" AvS:");
       //lcd.print(clicks/(millis()-startTime));     
@@ -558,12 +570,12 @@ void writeNextScreen()
       // lcd.print("r");
       // lcd.print(RecoveryToDriveRatio);
 
-      Serial.print("Drive angularve: ");
-      Serial.println(driveAngularVelocity);
+      Serial.print("\tDrive angularve: ");
+      Serial.print(driveAngularVelocity);
 
-      Serial.print("rpm\t");
-      Serial.println(getRpm(0));
-      Serial.print("peakrpm:\t");
+      Serial.print("\tRPM:\t");
+      Serial.print(getRpm(0));
+      Serial.print("\tPeakrpm:\t");
       Serial.println(peakrpm);
       //lcd.setCursor(10,1);
       //lcd.print(" AvS:");
