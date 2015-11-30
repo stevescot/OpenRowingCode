@@ -7,7 +7,7 @@
 
 #include <avr/sleep.h>
 #include <LiquidCrystal.h>
-#define UseLCD // comment out this line to not use a 16x2 LCD keypad shield, and just do serial reporting.
+//#define UseLCD // comment out this line to not use a 16x2 LCD keypad shield, and just do serial reporting.
 
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
@@ -36,15 +36,20 @@ static int _threshold = 50;
 #define JUST_ROW 0
 #define DISTANCE 1
 #define TIME 2
-#define DRAGFACTOR 3
-#define RPM 4
-#define SETTINGS 5
-#define BACKLIGHT 6
-#define ERGTYPE 7
-#define BOATTYPE 8
-#define WEIGHT 9
-#define POWEROFF 10
-#define BACK 11
+#define INTERVAL 3
+#define DRAGFACTOR 4
+#define RPM 5
+#define SETTINGS 6
+#define BACKLIGHT 7
+#define ERGTYPE 8
+#define BOATTYPE 9
+#define WEIGHT 10
+#define POWEROFF 11
+#define BACK 12
+
+#define LCDSlowDown 0
+#define LCDSpeedUp 1
+#define LCDJustFine 3
 
 //erg type definitions
 #define ERGTYPEVFIT 0 // V-Fit air rower.
@@ -252,14 +257,14 @@ void loop()
     //detect rising side
     if(buttonState == LOW)
     {
-      if(analog < (float)lastAnalogSwitchValue*0.9 || analog == 0)
+      if(analog <= 0)//(float)lastAnalogSwitchValue*0.9 || analog == 0)
       {
         val = HIGH;
       }
     }
     else
     {//ButtonState == HIGH
-      if(analog > (float)(lastAnalogSwitchValue+2))
+      if(analog > 0)//(float)(lastAnalogSwitchValue+2))
       {
         val = LOW;//detected it starting to pass
       }
@@ -522,9 +527,20 @@ void writeNextScreen()
     case 5://next lime
     #ifdef UseLCD
       //lcd 6->9 , 0
-       lcd.setCursor(5,0);
-       lcd.print("r");
-       lcd.print(RecoveryToDriveRatio,1);
+       lcd.setCursor(6,0);
+       if(RecoveryToDriveRatio > 2.1)
+       {
+        lcd.print(LCDSpeedUp);
+       }
+       else if (RecoveryToDriveRatio < 1.9)
+        {
+          lcd.print(LCDSlowDown);
+        }
+        else
+        {
+          lcd.print(LCDJustFine);
+        }       
+       //lcd.print(RecoveryToDriveRatio,1);
     #endif
        Serial.print("Drag factor \t");
        Serial.println(k*1000000);
@@ -614,6 +630,9 @@ void menuType()
       break;
     case TIME: 
       menuSelectTime();
+      break;
+    case INTERVAL:
+     // menuInterval();
       break;
     case SETTINGS:
       menuSettings();    
@@ -721,6 +740,9 @@ void writeType()
       case TIME:
         menuDisplay("Time");
       break;
+      case INTERVAL:
+        menuDisplay("Interval");
+        break;
       case DRAGFACTOR:
         menuDisplay("Drag Factor");
         break;
@@ -1044,6 +1066,43 @@ void menuDisplay(char* text)
   lcd.setCursor(0,0);
   lcd.print(text);
 }
+
+void graphics() {
+  byte SlowDown[8] = {
+                    B00100,
+                    B00100,
+                    B10101,
+                    B01110,
+                    B00100,
+                    B00000,
+                    B00000,
+                    B00000
+                    };
+  byte SpeedUp[8] = {
+                    B00100,
+                    B01110,
+                    B10101,
+                    B00100,
+                    B00100,
+                    B00000,
+                    B00000,
+                    B00000
+                    };
+  byte JustFine[8] = {
+                    B00000,
+                    B00100,
+                    B00100,
+                    B11111,
+                    B00100,
+                    B00100,
+                    B00000,
+                    B00000
+                    };
+  lcd.createChar(LCDSlowDown, SlowDown);
+  lcd.createChar(LCDSpeedUp, SpeedUp);
+  lcd.createChar(LCDJustFine, JustFine);
+}
+
 #endif
 
 int median_of_3( int a, int b, int c ){       //Median filter
