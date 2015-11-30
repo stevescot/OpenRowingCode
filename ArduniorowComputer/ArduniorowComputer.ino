@@ -307,7 +307,7 @@ void loop()
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               dumprpms();
               //Serial.println(nextinstantaneousrpm);
-              if(currentmedianrpm > previousmedianrpm*1.05)
+              if(currentmedianrpm > previousmedianrpm*1.001)
                 { //lcd.print("Acc");        
                     if(!Accelerating)
                     {//beginning of drive /end recovery
@@ -349,7 +349,7 @@ void loop()
 //                  }
 //                  //don't store the previous rpm
 //                }
-                else if(currentmedianrpm <= (previousmedianrpm*0.98))
+                else if(currentmedianrpm <= (previousmedianrpm*0.999))
                 {
                     if(Accelerating)//previously accelerating
                     { //finished drive
