@@ -312,7 +312,6 @@ void loop()
               float radSec = currentmedianrpm/60*6.283185307;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)timetakenus/1000000.0);
               float prevradSec = previousmedianrpm/60*6.283185307;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)lastrotationus/1000000.0);
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
-              dumprpms();
               //Serial.println(nextinstantaneousrpm);
               if(currentmedianrpm > previousmedianrpm*1.01)
                 { //lcd.print("Acc");        
@@ -334,7 +333,11 @@ void loop()
                         k1 = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
                         k = (float)median_of_3(k1,k2,k3)/1000000;  //adjust k by half of the difference from the last k
                         //k = (float)k1/1000000;  //adjust k by half of the difference from the last k
-         
+                        dumprpms();
+                        Serial.print("k:"); Serial.println(k1);
+                        Serial.print("radSec:"); Serial.println(radSec);
+                        Serial.print("driveAngularVelocity"); Serial.println(driveAngularVelocity);
+                        Serial.print("secondsdecel"); Serial.println(secondsdecel);
                         mPerClick = pow((k/c),(0.33333333333333333))*2*3.1415926535/clicksPerRotation;//v= (2.8/p)^1/3  
                       }
                       driveStartclicks = clicks;
@@ -648,17 +651,12 @@ void writeNextScreen()
 
 void dumprpms()
 {
-  /*
-  if(nextrpm > 97)
-  {
     Serial.println("Rpm dump");
     for(int i = 0; i < 190; i++)
     {
       Serial.println(rpmhistory[i]);
     }
     nextrpm = 0;
-  }
-  */
 }
 
 //Current selection (Distance, Time)
@@ -805,7 +803,44 @@ void menuSettings()
 
 void menuSelectBoatType()
 {
-  
+    menuDisplayBoatType();
+  int c = NO_KEY;
+  while(c!=SELECT_KEY)
+  {
+    c = getKey();
+    if(c==UP_KEY) 
+    {
+      boatType ++;
+      if(boatType > BOAT1) boatType = BOAT4;
+      menuDisplayErgType();
+      delay(500);
+    }
+    if(c==DOWN_KEY) 
+    {
+      boatType --;
+      if(boatType < ERGTYPEVFIT) ergType = ERGTYPEC2;
+      menuDisplayErgType();
+      delay(500);
+    }
+    setBoatType(boatType);
+  }
+}
+
+void menuDisplayBoatType()
+{
+  lcd.setCursor(0,1);
+  switch(boatType)
+  {
+    case BOAT1:
+      lcd.print("Single  ");
+      break;
+    case BOAT4:
+      lcd.print("Four    ");
+      break;
+    case BOAT8:
+      lcd.print("Eight   ");
+      break;
+  }
 }
 
 void writeSettingsMenu()
