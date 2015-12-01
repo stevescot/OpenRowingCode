@@ -404,8 +404,36 @@ void loop()
             Serial.print("screen:");
             Serial.println(screenstep);
           }
+          if(
 //          microshistory[nextrpm] = micros()-utime;
   buttonState = val;                       // save the new state in our variable
+}
+
+//take time and display how long remains on the screen.
+void Interval(long numSeconds)
+{
+  Serial.println("Interval ");
+  long startTime = millis()/1000;
+  long currentTime = millis()/1000;
+  while(startTime + numSeconds > currentTime)
+  {
+    delay(100);
+    currentTime = millis()/1000;
+    writeTimeLeft(startTime+numSeconds-currentTime);
+  }
+}
+
+void writeTimeLeft(long totalSeconds)
+{
+  #ifdef UseLCD
+    lcd.clear();
+    lcd.print("Interval");
+    lcd.setCursor(0,1);
+    int minutes = totalSeconds/60;
+    if(minutes <10) lcd.print ("0");
+    lcd.print(minutes);
+    int seconds = totalSeconds - (minutes*60);
+  #endif
 }
 
 void writeNextScreen()
