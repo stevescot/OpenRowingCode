@@ -418,12 +418,14 @@ void loop()
                 }
                 else
                 {//stop.
+                  Serial.println("Done");
                   while(true);
                 }
                 
                 intervals ++;
                 break;
               case TIME:
+                Serial.println("Done");
                 while(true);
                 break;
               default:
