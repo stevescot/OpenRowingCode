@@ -309,8 +309,8 @@ void loop()
               int currentmedianrpm = median_of_3(getRpm(0), getRpm(-1), getRpm(-2));
               int previousmedianrpm = median_of_3(getRpm(-1), getRpm(-2), getRpm(-3));
               if(currentmedianrpm > peakrpm) peakrpm = currentmedianrpm;
-              float radSec = currentmedianrpm/60*6.283185307;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)timetakenus/1000000.0);
-              float prevradSec = previousmedianrpm/60*6.283185307;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)lastrotationus/1000000.0);
+              float radSec = currentmedianrpm/60*2;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)timetakenus/1000000.0);
+              float prevradSec = previousmedianrpm/60*2;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)lastrotationus/1000000.0);
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               //Serial.println(nextinstantaneousrpm);
               if(currentmedianrpm > previousmedianrpm*1.01)
@@ -333,11 +333,11 @@ void loop()
                         k1 = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
                         k = (float)median_of_3(k1,k2,k3)/1000000;  //adjust k by half of the difference from the last k
                         //k = (float)k1/1000000;  //adjust k by half of the difference from the last k
-                        dumprpms();
-                        Serial.print("k:"); Serial.println(k1);
-                        Serial.print("radSec:"); Serial.println(radSec);
-                        Serial.print("driveAngularVelocity"); Serial.println(driveAngularVelocity);
-                        Serial.print("secondsdecel"); Serial.println(secondsdecel);
+//                        dumprpms();
+//                        Serial.print("k:"); Serial.println(k1);
+//                        Serial.print("radSec:"); Serial.println(radSec);
+//                        Serial.print("driveAngularVelocity"); Serial.println(driveAngularVelocity);
+//                        Serial.print("secondsdecel"); Serial.println(secondsdecel);
                         mPerClick = pow((k/c),(0.33333333333333333))*2*3.1415926535/clicksPerRotation;//v= (2.8/p)^1/3  
                       }
                       driveStartclicks = clicks;
