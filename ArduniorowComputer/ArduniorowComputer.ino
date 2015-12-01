@@ -7,7 +7,7 @@
 
 #include <avr/sleep.h>
 #include <LiquidCrystal.h>
-//#define UseLCD // comment out this line to not use a 16x2 LCD keypad shield, and just do serial reporting.
+#define UseLCD // comment out this line to not use a 16x2 LCD keypad shield, and just do serial reporting.
 
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
@@ -65,9 +65,10 @@ short boatType = BOAT4;
 
 long targetDistance = 2000;
 
-int targethours = 0;
-int targetmins = 20;
-int targetseconds = 0;
+long targetSeconds = 20*60;
+long intervalSeconds = 60;
+int numIntervals = 5;
+int intervals = 0;//number of intervals we have done.
 
 int sessionType = JUST_ROW;
 //end code for keypad
@@ -404,20 +405,46 @@ void loop()
             Serial.print("screen:");
             Serial.println(screenstep);
           }
-          if(
+          if((mtime-startTimems)/1000 > targetSeconds)
+          {
+            switch(sessionType)
+            {
+              case INTERVAL:
+                if(intervals <= numIntervals)
+                {
+                  showInterval(intervalSeconds); 
+                  //then reset the start time for count down to now for the next interval.
+                  startTimems = millis();
+                }
+                else
+                {//stop.
+                  while(true);
+                }
+                
+                intervals ++;
+                break;
+              case TIME:
+                while(true);
+                break;
+              default:
+              //default = = do nothing.
+              break;
+            }
+          }
 //          microshistory[nextrpm] = micros()-utime;
   buttonState = val;                       // save the new state in our variable
 }
 
 //take time and display how long remains on the screen.
-void Interval(long numSeconds)
+void showInterval(long numSeconds)
 {
-  Serial.println("Interval ");
+  Serial.print("Interval ");
+  Serial.println(intervals);
   long startTime = millis()/1000;
   long currentTime = millis()/1000;
   while(startTime + numSeconds > currentTime)
   {
-    delay(100);
+    delay(200);
     currentTime = millis()/1000;
     writeTimeLeft(startTime+numSeconds-currentTime);
   }
@@ -427,7 +454,8 @@ void writeTimeLeft(long totalSeconds)
 {
   #ifdef UseLCD
     lcd.clear();
-    lcd.print("Interval");
+    lcd.print("Interval ");
+    lcd.print(intervals);
     lcd.setCursor(0,1);
     int minutes = totalSeconds/60;
     if(minutes <10) lcd.print ("0");
@@ -540,9 +568,9 @@ void writeNextScreen()
         lcd.setCursor(11,1);
         if(sessionType == TIME)
         {//count-down from the target time.
-          timemins = (targetmins*60 + targetseconds - (mtime-startTimems)/1000)/60;
+          timemins = (targetSeconds - (mtime-startTimems)/1000)/60;
           if(timemins < 0) timemins = 0;
-          timeseconds = (targetmins*60 + targetseconds - (mtime-startTimems)/1000) - timemins * 60 ;
+          timeseconds = (targetSeconds - (mtime-startTimems)/1000) - timemins * 60 ;
           if(timeseconds < 0) timeseconds = 0;
         }
         else
@@ -670,10 +698,18 @@ void menuType()
       menuSelectDistance();
       break;
     case TIME: 
-      menuSelectTime();
+      targetSeconds = menuSelectTime(targetSeconds);
       break;
     case INTERVAL:
-     // menuInterval();
+     targetSeconds = menuSelectTime(targetSeconds);
+     lcd.clear();
+     lcd.setCursor(0,0);
+     lcd.print("Rest");
+     intervalSeconds = menuSelectTime(intervalSeconds);
+     lcd.clear();
+     lcd.setCursor(0,0);
+     lcd.print("Repeats");
+     numIntervals = menuSelectNumber(numIntervals);
       break;
     case SETTINGS:
       menuSettings();    
@@ -683,6 +719,38 @@ void menuType()
     break;
       
   }
+}
+
+long menuSelectNumber(long initialValue)
+{
+  int c = NO_KEY;
+  while(getKey() == SELECT_KEY) delay(300);
+  c = getKey();
+  printNumber(initialValue);
+  while(c != SELECT_KEY)
+  {
+    c = getKey();
+      if(c == DOWN_KEY)
+    {
+      initialValue--;
+      printNumber(initialValue);
+      delay(500);
+    }
+    else if (c == UP_KEY)
+    {
+      initialValue ++;
+      printNumber(initialValue);
+      delay(500);
+    }
+  }
+  return initialValue;
+}
+
+void printNumber(long num)
+{
+  lcd.setCursor(0,1);
+  lcd.print(num);
+  lcd.print(" ");
 }
 
 void menuSettings()
@@ -973,34 +1041,37 @@ void writeCurrentDistanceamount(int increment)
     delay(200);
 }
 
-void menuSelectTime()
+long menuSelectTime(long initialSeconds)
 {
   int charpos = 3;
   //charpos is the current selected character on the display, 
   //0 = 10s of hours, 1 = hours, 3 = tens of minutes, 4 = minutes, 6 = tens of seconds, 7 = seconds.
-  writeTargetTime(charpos);
+  writeTargetTime(charpos, initialSeconds);
   int c = getKey();
+  while(c == SELECT_KEY) 
+  {
+    c = getKey();
+    delay(200);
+  }
   while(c!= SELECT_KEY)
   {
     c = getKey();
-    short incrementhours = 0;
-    short incrementmins = 0;
-    short incrementseconds = 0;
+    long incrementseconds = 0;
     switch (charpos)
     {
-      case 0:
-        incrementhours = 10;
+      case 0://10s of hours.
+        incrementseconds = 36000;
         break;
       case 1://hours
-        incrementhours = 1;
+        incrementseconds = 3600;
         break;
-      case 3:
-        incrementmins = 10;
+      case 3://ten mins
+        incrementseconds = 600;
         break;
-      case 4:
-        incrementmins = 1;
+      case 4://mins
+        incrementseconds = 60;
         break;
-      case 6:
+      case 6://ten seconds
         incrementseconds = 10;
         break;
       case 7:
@@ -1008,78 +1079,56 @@ void menuSelectTime()
         break;
       default:
         charpos = 0;
-        incrementhours = 10;
+        incrementseconds= 36000;
     }
     if(c==UP_KEY)
     {
-      targetmins += incrementmins;
-      targethours += incrementhours;
-      targetseconds += incrementseconds;
-      if(targetseconds > 59) 
-      {
-        targetseconds = 0;
-        targetmins ++;
-      }
-      if(targetmins >59) 
-      {
-        targetmins = 0;
-        targethours ++;
-      }
-      if(targethours > 24) 
-      {
-        targethours = 24;
-      }
+      initialSeconds += incrementseconds;
       delay(500);
-      writeTargetTime(charpos);
+      writeTargetTime(charpos, initialSeconds);
     }
     else if(c== DOWN_KEY)
     {
-      
-      targetmins -= incrementmins;
-      targethours -= incrementhours;
-      targetseconds -= incrementseconds;
-      if(targetseconds < 0) 
+      initialSeconds -= incrementseconds;
+      if(targetSeconds < 0) 
       {
-        targetseconds = 0;
-        targetmins --;
+        targetSeconds = 0;
       }
-      if(targetmins <0) 
-      {
-        targetmins = 0;
-        targethours --;
-      }
-      if(targethours < 0) targethours = 0;
       delay(500);
-      writeTargetTime(charpos);
+      writeTargetTime(charpos, initialSeconds);
     }
     else if (c== RIGHT_KEY)
     {
       charpos ++;
       if(charpos ==2 || charpos == 5) charpos ++;
       delay(500);
-      writeTargetTime(charpos);
+      writeTargetTime(charpos, initialSeconds);
     }
     else if (c == LEFT_KEY)
     {
       charpos --;
       if(charpos ==2 || charpos == 5) charpos --;
       delay(500);
-      writeTargetTime(charpos);
+      writeTargetTime(charpos, initialSeconds);
     }
   }
+  return initialSeconds;
 }
 
-void writeTargetTime(int charpos)
+void writeTargetTime(int charpos, long numSeconds)
 {
+  int targetHours= numSeconds /60/60;
     lcd.setCursor(0,1);
-    if(targethours < 10) lcd.print("0");
-    lcd.print(targethours);
+    if(targetHours < 10) lcd.print("0");
+    lcd.print(targetHours);
     lcd.print(":");
-    if(targetmins < 10) lcd.print("0");
-    lcd.print(targetmins);
+    int targetMins = numSeconds /60 - (targetHours *60);
+    if(targetMins < 10) lcd.print("0");
+    lcd.print(targetMins);
     lcd.print(":");
-    if(targetseconds < 10) lcd.print("0");
-    lcd.print(targetseconds);
+    int Seconds = numSeconds - (targetMins*60) - (targetHours*60*60);;
+    if(Seconds < 10) lcd.print("0");
+    lcd.print(Seconds);
     lcd.setCursor(charpos,1);
     lcd.cursor();
 }
