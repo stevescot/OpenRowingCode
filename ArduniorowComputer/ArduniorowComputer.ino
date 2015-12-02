@@ -313,7 +313,7 @@ void loop()
               float prevradSec = previousmedianrpm/60*2;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)lastrotationus/1000000.0);
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               //Serial.println(nextinstantaneousrpm);
-              if(currentmedianrpm > previousmedianrpm*1.01)
+              if(radSec > driveAngularVelocity *1.01)
                 { //lcd.print("Acc");        
                     if(!Accelerating)
               
