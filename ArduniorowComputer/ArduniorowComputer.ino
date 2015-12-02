@@ -383,6 +383,7 @@ void loop()
                       split =  ((float)strokems)/((float)diffclicks*mPerClick*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
                       //Serial.print(split);
                       driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
+                      driveAngularVelocity = 0;//reinitialise drive angular velocity.
                     }
                     Accelerating = false;           
                 }
