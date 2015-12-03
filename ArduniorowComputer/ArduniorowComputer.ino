@@ -115,6 +115,7 @@ unsigned long microshistory[numRpms];           // array of the amount of time t
 
 short nextrpm = 0;                              // currently measured rpm, to compare to last.
 
+float previousDriveAngularVelocity;         // fastest angular velocity at end of previous drive
 float driveAngularVelocity;                 // fastest angular velocity at end of drive
 bool afterfirstdecrotation = false;         // after the first deceleration rotation (to give good figures for drag factor);
 int diffclicks;                             // clicks from last stroke to this one
@@ -330,7 +331,7 @@ void loop()
                       if(I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel) > 0)
                       {//if drag factor detected is positive.
                         k3 = k2; k2 = k1;
-                        k1 = I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
+                        k1 = I * ((1.0/radSec)-(1.0/previousDriveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
                         k = (float)median_of_3(k1,k2,k3)/1000000;  //adjust k by half of the difference from the last k
                         //k = (float)k1/1000000;  //adjust k by half of the difference from the last k
 //                        dumprpms();
@@ -383,7 +384,10 @@ void loop()
                       split =  ((float)strokems)/((float)diffclicks*mPerClick*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
                       //Serial.print(split);
                       driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
-                      driveAngularVelocity = 0;//reinitialise drive angular velocity.
+                      //store the drive speed
+                      previousDriveAngularVelocity = driveAngularVelocity;
+                      //and start monitoring the next drive.
+                      driveAngularVelocity = radSec;
                     }
                     Accelerating = false;           
                 }
