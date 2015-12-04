@@ -356,7 +356,7 @@ void loop()
                     }
                     else if(accelerations > consecutiveaccelerations)
                     {
-                      driveAngularVelocity = radSec;
+                      if(radSec > driveAngularVelocity) driveAngularVelocity = radSec;
                       driveEndms = mtime;
                       lastDriveTimems = driveEndms - driveBeginms;
                       //recovery is the stroke minus the drive, drive is just drive
@@ -368,13 +368,7 @@ void loop()
                     decelerations ++;
                     if(decelerations == consecutivedecelerations)
                     {//still decelerating (more than three decelerations in a row).
-                                            previousDriveAngularVelocity = driveAngularVelocity;
-                      //and start monitoring the next drive.
-                      driveAngularVelocity = radSec;
-                      accelerations = 0;
-
-                    }else if(decelerations > consecutivedecelerations)
-                    {
+                      previousDriveAngularVelocity = driveAngularVelocity;    //store the previous deceleration
                       diffclicks = clicks - laststrokeclicks;
                       strokems = mtime - laststroketimems;
                       spm = 60000 /strokems;
@@ -382,9 +376,14 @@ void loop()
                       laststroketimems = mtime;
                       split =  ((float)strokems)/((float)diffclicks*mPerClick*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
                       //Serial.print(split);
-                      driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
                       //store the drive speed
-                      accelerations = 0;
+                      accelerations = 0;//reset accelerations counter
+                    }
+                    else if(decelerations > consecutivedecelerations)
+                    {
+                      driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
+                      driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
+                      accelerations = 0;//reset accelerations counter
                     }
                 }
                 
