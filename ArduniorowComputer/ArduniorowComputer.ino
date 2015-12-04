@@ -307,8 +307,6 @@ void loop()
                  #endif
               }
               timetakenus = utime - laststatechangeus;
-              //Serial.print("TimeTaken(ms):");
-              //Serial.println(timetakenms);
               rpmhistory[nextrpm] = (60000000.0*numclickspercalc/clicksPerRotation)/timetakenus;
               nextrpm ++;
               const int rpmarraycount = 5;
@@ -318,8 +316,8 @@ void loop()
               int rpms2[rpmarraycount] = {getRpm(-5), getRpm(-6),getRpm(-7),getRpm(-8),getRpm(-9)};
               int previousmedianrpm = median(rpms2, rpmarraycount);
               if(currentmedianrpm > peakrpm) peakrpm = currentmedianrpm;
-              float radSec = currentmedianrpm/60*2*PI;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)timetakenus/1000000.0);
-              float prevradSec = previousmedianrpm/60*2*PI;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)lastrotationus/1000000.0);
+              float radSec = currentmedianrpm/60*2*PI;
+              float prevradSec = previousmedianrpm/60*2*PI;
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               //Serial.println(nextinstantaneousrpm);
               if(radSec > prevradSec)//if speed stays the same - that takes power too...
@@ -339,9 +337,9 @@ void loop()
                       if(I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel) > 0)
                       {//if drag factor detected is positive.
                         k3 = k2; k2 = k1;
-                        float decelrpm = median_of_3(getRpm(-1-consecutiveaccelerations), getRpm(0-consecutiveaccelerations), getRpm(1-consecutiveaccelerations));
                         k1 = I * ((1.0/prevradSec)-(1.0/previousDriveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
-                        k = (float)median_of_3(k1,k2,k3)/1000000;  //adjust k by half of the difference from the last k
+                        int karr[3] = {k1,k2,k3};
+                        k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
                         //k = (float)k1/1000000;  //adjust k by half of the difference from the last k
 //                        dumprpms();
 //                        Serial.print("k:"); Serial.println(k1);
@@ -485,7 +483,8 @@ void writeNextScreen()
           lcd.print(getRpm(0));
           lcd.setCursor(0,1);
           lcd.print("M:");
-          lcd.print(median_of_3(getRpm(0), getRpm(-1), getRpm(-2)));
+          int rpms2[5] = {getRpm(0), getRpm(-1), getRpm(-2),getRpm(-3),getRpm(-4)};
+          lcd.print(median(rpms2,5));
           return;//no need for other screen stuff.
         }
      #endif
@@ -635,7 +634,10 @@ void writeNextScreen()
       Serial.print(driveAngularVelocity);
 
       Serial.print("\tRPM:\t");
-      Serial.print(median_of_3(getRpm(0), getRpm(-1), getRpm(-2)));
+      {
+        int rpms1[5] = {getRpm(0), getRpm(-1), getRpm(-2),getRpm(-3),getRpm(-4)};
+        Serial.print(median(rpms1,5));
+      }
       Serial.print("\tPeakrpm:\t");
       Serial.println(peakrpm);
       //lcd.setCursor(10,1);
@@ -1230,13 +1232,6 @@ void graphics() {
 }
 
 #endif
-
-int median_of_3( int a, int b, int c ){       //Median filter
-  int the_max = max( max( a, b ), c );
-  int the_min = min( min( a, b ), c );
-  int the_median = the_max ^ the_min ^ a ^ b ^ c;
-  return( the_median );
-}
 
 int getRpm(short offset)
 {
