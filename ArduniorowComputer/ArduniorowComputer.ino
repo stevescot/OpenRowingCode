@@ -311,15 +311,18 @@ void loop()
               //Serial.println(timetakenms);
               rpmhistory[nextrpm] = (60000000.0*numclickspercalc/clicksPerRotation)/timetakenus;
               nextrpm ++;
+              const int rpmarraycount = 7;
+              int rpms[rpmarraycount] = {getRpm(0), getRpm(-1), getRpm(-2),getRpm(-3),getRpm(-4),getRpm(-5), getRpm(-6)};
               if(nextrpm >=numRpms) nextrpm = 0;//wrap around to the start again.
-              int currentmedianrpm = median_of_3(getRpm(0), getRpm(-1), getRpm(-2));
-              int previousmedianrpm = median_of_3(getRpm(-1), getRpm(-2), getRpm(-3));
+              int currentmedianrpm = median(rpms,rpmarraycount);
+              int rpms2[rpmarraycount] = {getRpm(-1), getRpm(-2),getRpm(-3),getRpm(-4),getRpm(-5), getRpm(-6),getRpm(-7)};
+              int previousmedianrpm = median(rpms2, rpmarraycount);
               if(currentmedianrpm > peakrpm) peakrpm = currentmedianrpm;
               float radSec = currentmedianrpm/60*2;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)timetakenus/1000000.0);
               float prevradSec = previousmedianrpm/60*2;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)lastrotationus/1000000.0);
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               //Serial.println(nextinstantaneousrpm);
-              if(radSec >= driveAngularVelocity)
+              if(radSec >= prevradSec)//if speed stays the same - that takes power too...
                 { //lcd.print("Acc");        
                   accelerations ++;
                     if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
@@ -360,7 +363,7 @@ void loop()
                       RecoveryToDriveRatio = (strokems-lastDriveTimems) / lastDriveTimems;
                     }
                 }
-                else if(currentmedianrpm <= previousmedianrpm)
+                else
                 {
                     decelerations ++;
                     if(decelerations > consecutivedecelerations)
@@ -1245,5 +1248,28 @@ int getRpm(short offset)
       index += numRpms;
     }
   return rpmhistory[index];
+}
+
+int median(int new_array[], int num){
+     //ARRANGE VALUES
+    for(int x=0; x<num; x++){
+         for(int y=0; y<num-1; y++){
+             if(new_array[y]>new_array[y+1]){
+                 int temp = new_array[y+1];
+                 new_array[y+1] = new_array[y];
+                 new_array[y] = temp;
+             }
+         }
+     }
+    //CALCULATE THE MEDIAN (middle number)
+    if(num % 2 != 0){// is the # of elements odd?
+        int temp = ((num+1)/2)-1;
+        //cout << "The median is " << new_array[temp] << endl;
+  return new_array[temp];
+    }
+    else{// then it's even! :)
+        //cout << "The median is "<< new_array[(num/2)-1] << " and " << new_array[num/2] << endl;
+  return ((new_array[(num/2)-1] + new_array[num/2]) / 2); 
+    }
 }
 
