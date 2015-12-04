@@ -215,7 +215,7 @@ void setErgType(short newErgType)
   {
     case ERGTYPEVFIT:
         AnalogSwitch = false;
-        I = 0.05;
+        I = 0.03;
         clicksPerRotation = 1;
         numclickspercalc = 1;
         k3 = 85;
