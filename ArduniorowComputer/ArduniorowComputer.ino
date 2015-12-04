@@ -238,7 +238,7 @@ void setErgType(short newErgType)
         ergType = ERGTYPEC2;    
         break;
   }
-  mPerClick = pow((k/c),(0.33333333333333333))*2*3.1415926535/clicksPerRotation;
+  mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;
 }
 
 void loop()
@@ -348,7 +348,7 @@ void loop()
 //                        Serial.print("radSec:"); Serial.println(radSec);
 //                        Serial.print("driveAngularVelocity"); Serial.println(driveAngularVelocity);
 //                        Serial.print("secondsdecel"); Serial.println(secondsdecel);
-                        mPerClick = pow((k/c),(0.33333333333333333))*2*3.1415926535/clicksPerRotation;//v= (2.8/p)^1/3  
+                        mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
                       }
                       decelerations = 0;
                       driveStartclicks = clicks;
