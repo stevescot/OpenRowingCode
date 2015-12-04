@@ -375,7 +375,7 @@ void loop()
                       laststrokeclicks = clicks;
                       laststroketimems = mtime;
                       split =  ((float)strokems)/((float)diffclicks*mPerClick*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
-                      power = 2.8 / (split / 500)^3;//watts = 2.8/(split/500)³ (from concept2 site)
+                      power = 2.8 / pow((split / 500),3.0);//watts = 2.8/(split/500)³ (from concept2 site)
                       //Serial.print(split);
                       //store the drive speed
                       accelerations = 0;//reset accelerations counter
