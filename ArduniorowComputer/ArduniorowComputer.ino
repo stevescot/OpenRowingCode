@@ -134,11 +134,13 @@ float mPerClick = 0;                        // meters per rotation of the flywhe
 unsigned long driveStartclicks;             // number of clicks at start of drive.
 float mStrokePerRotation = 0;               // meters of stroke per rotation of the flywheel to work out how long we have pulled the handle in meters from clicks.
 
-unsigned int decelerations = 0;             // number of decelerations detected.
-unsigned int accelerations = 0;             // number of acceleration rotations;
-
 const unsigned int consecutivedecelerations = 3;//number of consecutive decelerations before we are decelerating
 const unsigned int consecutiveaccelerations = 3;// number of consecutive accelerations before detecting that we are accelerating.
+
+unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
+unsigned int accelerations = 0;             // number of acceleration rotations;
+
+
 
 unsigned long driveEndms;                   // time of the end of the last drive
 unsigned long driveBeginms;                 // time of the start of the last drive
@@ -320,8 +322,8 @@ void loop()
               if(radSec >= driveAngularVelocity)
                 { //lcd.print("Acc");        
                   accelerations ++;
-                    if(accelerations = consecutiveaccelerations)
-                    {//beginning of drive /end recovery
+                    if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
+                    {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                       totalStroke++;
                       Serial.println("\n");
                       Serial.print("Total strokes:");
