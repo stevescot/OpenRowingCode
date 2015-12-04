@@ -148,6 +148,7 @@ unsigned int lastDriveTimems;               // time that the last drive took in 
 
 //Stats for display
 float split;                                // split time for last stroke in seconds
+float power;                                // last stroke power in watts
 unsigned long spm = 0;                      // current strokes per minute.  
 float distancem = 0;                        // distance rowed in meters.
 float RecoveryToDriveRatio = 0;                // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
@@ -334,9 +335,10 @@ void loop()
                       driveBeginms = mtime;
                       float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
                       Serial.println(float(secondsdecel));
-                      if(I * ((1.0/radSec)-(1.0/driveAngularVelocity))/(secondsdecel) > 0)
+                      if(I * ((1.0/prevradSec)-(1.0/driveAngularVelocity))/(secondsdecel) > 0)
                       {//if drag factor detected is positive.
-                        k3 = k2; k2 = k1;
+                        k3 = k2; 
+                        k2 = k1;
                         k1 = I * ((1.0/prevradSec)-(1.0/previousDriveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
                         int karr[3] = {k1,k2,k3};
                         k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
@@ -373,6 +375,7 @@ void loop()
                       laststrokeclicks = clicks;
                       laststroketimems = mtime;
                       split =  ((float)strokems)/((float)diffclicks*mPerClick*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
+                      power = 2.8 / (split / 500)^3;//watts = 2.8/(split/500)³ (from concept2 site)
                       //Serial.print(split);
                       //store the drive speed
                       accelerations = 0;//reset accelerations counter
