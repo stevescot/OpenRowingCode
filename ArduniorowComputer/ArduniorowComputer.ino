@@ -134,8 +134,8 @@ float mPerClick = 0;                        // meters per rotation of the flywhe
 unsigned long driveStartclicks;             // number of clicks at start of drive.
 float mStrokePerRotation = 0;               // meters of stroke per rotation of the flywheel to work out how long we have pulled the handle in meters from clicks.
 
-const unsigned int consecutivedecelerations = 3;//number of consecutive decelerations before we are decelerating
-const unsigned int consecutiveaccelerations = 3;// number of consecutive accelerations before detecting that we are accelerating.
+const unsigned int consecutivedecelerations = 4;//number of consecutive decelerations before we are decelerating
+const unsigned int consecutiveaccelerations = 4;// number of consecutive accelerations before detecting that we are accelerating.
 
 unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
 unsigned int accelerations = 0;             // number of acceleration rotations;
@@ -311,18 +311,18 @@ void loop()
               //Serial.println(timetakenms);
               rpmhistory[nextrpm] = (60000000.0*numclickspercalc/clicksPerRotation)/timetakenus;
               nextrpm ++;
-              const int rpmarraycount = 7;
-              int rpms[rpmarraycount] = {getRpm(0), getRpm(-1), getRpm(-2),getRpm(-3),getRpm(-4),getRpm(-5), getRpm(-6)};
+              const int rpmarraycount = 5;
+              int rpms[rpmarraycount] = {getRpm(0), getRpm(-1), getRpm(-2),getRpm(-3),getRpm(-4)};
               if(nextrpm >=numRpms) nextrpm = 0;//wrap around to the start again.
               int currentmedianrpm = median(rpms,rpmarraycount);
-              int rpms2[rpmarraycount] = {getRpm(-1), getRpm(-2),getRpm(-3),getRpm(-4),getRpm(-5), getRpm(-6),getRpm(-7)};
+              int rpms2[rpmarraycount] = {getRpm(-5), getRpm(-6),getRpm(-7),getRpm(-8),getRpm(-9)};
               int previousmedianrpm = median(rpms2, rpmarraycount);
               if(currentmedianrpm > peakrpm) peakrpm = currentmedianrpm;
-              float radSec = currentmedianrpm/60*2;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)timetakenus/1000000.0);
-              float prevradSec = previousmedianrpm/60*2;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)lastrotationus/1000000.0);
+              float radSec = currentmedianrpm/60*2*PI;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)timetakenus/1000000.0);
+              float prevradSec = previousmedianrpm/60*2*PI;//(6.283185307*numclickspercalc/clicksPerRotation)/((float)lastrotationus/1000000.0);
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               //Serial.println(nextinstantaneousrpm);
-              if(radSec >= prevradSec)//if speed stays the same - that takes power too...
+              if(radSec > prevradSec)//if speed stays the same - that takes power too...
                 { //lcd.print("Acc");        
                   accelerations ++;
                     if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
@@ -340,7 +340,7 @@ void loop()
                       {//if drag factor detected is positive.
                         k3 = k2; k2 = k1;
                         float decelrpm = median_of_3(getRpm(-1-consecutiveaccelerations), getRpm(0-consecutiveaccelerations), getRpm(1-consecutiveaccelerations));
-                        k1 = I * ((1.0/decelrpm)-(1.0/previousDriveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
+                        k1 = I * ((1.0/prevradSec)-(1.0/previousDriveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
                         k = (float)median_of_3(k1,k2,k3)/1000000;  //adjust k by half of the difference from the last k
                         //k = (float)k1/1000000;  //adjust k by half of the difference from the last k
 //                        dumprpms();
@@ -366,8 +366,15 @@ void loop()
                 else
                 {
                     decelerations ++;
-                    if(decelerations > consecutivedecelerations)
+                    if(decelerations == consecutivedecelerations)
                     {//still decelerating (more than three decelerations in a row).
+                                            previousDriveAngularVelocity = driveAngularVelocity;
+                      //and start monitoring the next drive.
+                      driveAngularVelocity = radSec;
+                      accelerations = 0;
+
+                    }else if(decelerations > consecutivedecelerations)
+                    {
                       diffclicks = clicks - laststrokeclicks;
                       strokems = mtime - laststroketimems;
                       spm = 60000 /strokems;
@@ -377,9 +384,6 @@ void loop()
                       //Serial.print(split);
                       driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
                       //store the drive speed
-                      previousDriveAngularVelocity = driveAngularVelocity;
-                      //and start monitoring the next drive.
-                      driveAngularVelocity = radSec;
                       accelerations = 0;
                     }
                 }
@@ -471,10 +475,9 @@ void writeNextScreen()
     #ifdef UseLCD
         if(sessionType == DRAGFACTOR)
         {
-          lcd.clear();
-          lcd.print("Drag Factor");
+          lcd.print("Drag");
           lcd.setCursor(0,1);
-          lcd.print(k*1000000);
+          lcd.print(k*1000000,0);
           return;//no need for other screen stuff.
         }else if (sessionType == RPM)
         {
@@ -525,7 +528,7 @@ void writeNextScreen()
       //lcd 10->16,0 used
       #ifdef UseLCD
         lcd.setCursor(10,0);
-        lcd.print("SPM:");
+        lcd.print("S:");
         lcd.print(spm);
         lcd.print("  ");
       #endif
