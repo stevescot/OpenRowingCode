@@ -216,7 +216,7 @@ void setErgType(short newErgType)
   {
     case ERGTYPEVFIT:
         AnalogSwitch = false;
-        I = 0.03;
+        I = 0.05;
         clicksPerRotation = 1;
         numclickspercalc = 1;
         k3 = 85;
@@ -336,8 +336,9 @@ void loop()
                       driveBeginms = mtime;
                       float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
                       Serial.println(float(secondsdecel));
-                      if(I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsdecel) > 0)
-                      {//if drag factor detected is positive.
+                      float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsdecel);
+                      if(nextk > 0 && nextk < 300)
+                      {//if drag factor detected is positive and reasonable
                         //k3 = k2; 
                         //k2 = k1;
                         //k1 = I * ((1.0/prevradSec)-(1.0/previousDriveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
