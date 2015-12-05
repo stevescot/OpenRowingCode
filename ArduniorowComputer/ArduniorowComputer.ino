@@ -336,7 +336,7 @@ void loop()
                       driveBeginms = mtime;
                       float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
                       Serial.println(float(secondsdecel));
-                      if(I * ((1.0/prevradSec)-(1.0/driveAngularVelocity))/(secondsdecel) > 0)
+                      if(I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsdecel) > 0)
                       {//if drag factor detected is positive.
                         //k3 = k2; 
                         //k2 = k1;
@@ -344,13 +344,22 @@ void loop()
                         //int karr[3] = {k1,k2,k3};
                         //k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
                         //k = (float)k1/1000000;  //adjust k by half of the difference from the last k
-                          k = I * ((1.0/recoveryAngularVelocity)-(1.0/previousDriveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
+                          k = I * ((1.0/recoveryAngularVelocity)-(1.0/previousDriveAngularVelocity))/(secondsdecel);  //nm/s/s == W/s/s
 //                        dumprpms();
 //                        Serial.print("k:"); Serial.println(k1);
 //                        Serial.print("radSec:"); Serial.println(radSec);
 //                        Serial.print("driveAngularVelocity"); Serial.println(driveAngularVelocity);
 //                        Serial.print("secondsdecel"); Serial.println(secondsdecel);
                         mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
+                      }
+                      else
+                      {
+                        Serial.print("recoveryrad");
+                        Serial.print(recoveryAngularVelocity);
+                        Serial.print("driverad");
+                        Serial.print(driveAngularVelocity);
+                        Serial.print("recoverySeconds");
+                        Serial.print(secondsdecel);
                       }
                       decelerations = 0;
                       driveStartclicks = clicks;
@@ -363,6 +372,7 @@ void loop()
                       lastDriveTimems = driveEndms - driveBeginms;
                       //recovery is the stroke minus the drive, drive is just drive
                       RecoveryToDriveRatio = (strokems-lastDriveTimems) / lastDriveTimems;
+                      driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
                     }
                 }
                 else
@@ -384,7 +394,6 @@ void loop()
                     }
                     else if(decelerations > consecutivedecelerations)
                     {
-                      driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
                       driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
                       accelerations = 0;//reset accelerations counter
                       recoveryAngularVelocity=radSec;
