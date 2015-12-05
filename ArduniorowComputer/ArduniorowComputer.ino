@@ -117,6 +117,7 @@ short nextrpm = 0;                              // currently measured rpm, to co
 
 float previousDriveAngularVelocity;         // fastest angular velocity at end of previous drive
 float driveAngularVelocity;                 // fastest angular velocity at end of drive
+float recoveryAngularVelocity;              // angular velocity at the end of the recovery  (before drive)
 int diffclicks;                             // clicks from last stroke to this one
 
 int screenstep=0;                           // int - which part of the display to draw next.
@@ -134,8 +135,8 @@ float mPerClick = 0;                        // meters per rotation of the flywhe
 unsigned long driveStartclicks;             // number of clicks at start of drive.
 float mStrokePerRotation = 0;               // meters of stroke per rotation of the flywheel to work out how long we have pulled the handle in meters from clicks.
 
-const unsigned int consecutivedecelerations = 4;//number of consecutive decelerations before we are decelerating
-const unsigned int consecutiveaccelerations = 4;// number of consecutive accelerations before detecting that we are accelerating.
+const unsigned int consecutivedecelerations = 6;//number of consecutive decelerations before we are decelerating
+const unsigned int consecutiveaccelerations = 6;// number of consecutive accelerations before detecting that we are accelerating.
 
 unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
 unsigned int accelerations = 0;             // number of acceleration rotations;
@@ -228,7 +229,7 @@ void setErgType(short newErgType)
         AnalogSwitch = true;
         I = 0.101;
         //do the calculations less often to allow inaccuracies to be averaged out.
-        numclickspercalc = 1;//take out a lot of noise before we detect drive / recovery.
+        numclickspercalc = 3;//take out a lot of noise before we detect drive / recovery.
         //number of clicks per rotation is 3 as there are three magnets.
         clicksPerRotation = 3;
         k3 = 125;
@@ -310,11 +311,11 @@ void loop()
               timetakenus = utime - laststatechangeus;
               rpmhistory[nextrpm] = (60000000.0*numclickspercalc/clicksPerRotation)/timetakenus;
               nextrpm ++;
-              const int rpmarraycount = 5;
-              int rpms[rpmarraycount] = {getRpm(0), getRpm(-1), getRpm(-2),getRpm(-3),getRpm(-4)};
+              const int rpmarraycount = 3;
+              int rpms[rpmarraycount] = {getRpm(0), getRpm(-1), getRpm(-2)};//,getRpm(-3),getRpm(-4)};
               if(nextrpm >=numRpms) nextrpm = 0;//wrap around to the start again.
               int currentmedianrpm = median(rpms,rpmarraycount);
-              int rpms2[rpmarraycount] = {getRpm(-5), getRpm(-6),getRpm(-7),getRpm(-8),getRpm(-9)};
+              int rpms2[rpmarraycount] = {getRpm(-3), getRpm(-4),getRpm(-5)};//,getRpm(-8),getRpm(-9)};
               int previousmedianrpm = median(rpms2, rpmarraycount);
               if(currentmedianrpm > peakrpm) peakrpm = currentmedianrpm;
               float radSec = currentmedianrpm/60*2*PI;
@@ -337,12 +338,13 @@ void loop()
                       Serial.println(float(secondsdecel));
                       if(I * ((1.0/prevradSec)-(1.0/driveAngularVelocity))/(secondsdecel) > 0)
                       {//if drag factor detected is positive.
-                        k3 = k2; 
-                        k2 = k1;
-                        k1 = I * ((1.0/prevradSec)-(1.0/previousDriveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
-                        int karr[3] = {k1,k2,k3};
-                        k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
+                        //k3 = k2; 
+                        //k2 = k1;
+                        //k1 = I * ((1.0/prevradSec)-(1.0/previousDriveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
+                        //int karr[3] = {k1,k2,k3};
+                        //k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
                         //k = (float)k1/1000000;  //adjust k by half of the difference from the last k
+                          k = I * ((1.0/recoveryAngularVelocity)-(1.0/previousDriveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
 //                        dumprpms();
 //                        Serial.print("k:"); Serial.println(k1);
 //                        Serial.print("radSec:"); Serial.println(radSec);
@@ -385,6 +387,7 @@ void loop()
                       driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
                       driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
                       accelerations = 0;//reset accelerations counter
+                      recoveryAngularVelocity=radSec;
                     }
                 }
                 
