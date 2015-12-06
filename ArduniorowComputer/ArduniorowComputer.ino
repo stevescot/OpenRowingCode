@@ -293,7 +293,7 @@ void loop()
   {
     val = digitalRead(switchPin);            // read input value and store it in val                       
   }
-       if (val != buttonState && val == LOW && (utime- laststatechangeus) >10000)            // the button state has changed!
+       if (val != buttonState && val == LOW && (utime- laststatechangeus) >5000)            // the button state has changed!
           { 
             currentrot ++;
             clicks++;
@@ -411,8 +411,8 @@ void loop()
                 lastrotationus = timetakenus;
                 //watch out for integer math problems here
                 //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms); 
-                laststatechangeus=utime;
             } 
+            laststatechangeus=utime;
           }
 
           if((millis()-mtime) >=6)
