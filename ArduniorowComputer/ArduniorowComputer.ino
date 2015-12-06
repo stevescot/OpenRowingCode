@@ -135,8 +135,8 @@ float mPerClick = 0;                        // meters per rotation of the flywhe
 unsigned long driveStartclicks;             // number of clicks at start of drive.
 float mStrokePerRotation = 0;               // meters of stroke per rotation of the flywheel to work out how long we have pulled the handle in meters from clicks.
 
-const unsigned int consecutivedecelerations = 6;//number of consecutive decelerations before we are decelerating
-const unsigned int consecutiveaccelerations = 6;// number of consecutive accelerations before detecting that we are accelerating.
+const unsigned int consecutivedecelerations = 9;//number of consecutive decelerations before we are decelerating
+const unsigned int consecutiveaccelerations = 9;// number of consecutive accelerations before detecting that we are accelerating.
 
 unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
 unsigned int accelerations = 0;             // number of acceleration rotations;
@@ -229,7 +229,7 @@ void setErgType(short newErgType)
         AnalogSwitch = true;
         I = 0.101;
         //do the calculations less often to allow inaccuracies to be averaged out.
-        numclickspercalc = 3;//take out a lot of noise before we detect drive / recovery.
+        numclickspercalc = 1;//take out a lot of noise before we detect drive / recovery.
         //number of clicks per rotation is 3 as there are three magnets.
         clicksPerRotation = 3;
         k3 = 125;
