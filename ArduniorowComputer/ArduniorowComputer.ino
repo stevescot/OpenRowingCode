@@ -39,13 +39,14 @@ static int _threshold = 50;
 #define INTERVAL 3
 #define DRAGFACTOR 4
 #define RPM 5
-#define SETTINGS 6
-#define BACKLIGHT 7
-#define ERGTYPE 8
-#define BOATTYPE 9
-#define WEIGHT 10
-#define POWEROFF 11
-#define BACK 12
+#define WATTS 6
+#define SETTINGS 7
+#define BACKLIGHT 8
+#define ERGTYPE 9
+#define BOATTYPE 10
+#define WEIGHT 11
+#define POWEROFF 12
+#define BACK 13
 
 #define LCDSlowDown 0
 #define LCDSpeedUp 1
@@ -219,7 +220,7 @@ void setErgType(short newErgType)
   {
     case ERGTYPEVFIT:
         AnalogSwitch = false;
-        I = 0.05;
+        I = 0.032;
         clicksPerRotation = 1;
         numclickspercalc = 1;
         k3 = 85;
@@ -333,10 +334,10 @@ void loop()
                         k1 = nextk;  //nm/s/s == W/s/s
                         int karr[3] = {k1,k2,k3};
                         k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
-                        //Serial.print("k:"); Serial.println(nextk);
-                        //Serial.print("recw:"); Serial.println(recoveryAngularVelocity);
-                        //Serial.print("dw"); Serial.println(driveAngularVelocity);
-                        //Serial.print("sdecel"); Serial.println(secondsdecel);
+//                        Serial.print("k:"); Serial.println(nextk);
+//                        Serial.print("recw:"); Serial.println(recoveryAngularVelocity);
+//                        Serial.print("dw"); Serial.println(driveAngularVelocity);
+//                        Serial.print("sdecel"); Serial.println(secondsdecel);
                         mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
                       }
                       else
@@ -497,6 +498,11 @@ void writeNextScreen()
             dumprpms();
           }
           return;//no need for other screen stuff.
+        }
+        else if(sessionType == WATTS)
+        {
+          lcd.clear();
+          lcd.print(power);
         }
      #endif
   //Display Format:
@@ -909,6 +915,10 @@ void writeType()
         break;
       case SETTINGS:
         menuDisplay("Settings");
+        break;
+
+      case WATTS:
+        menuDisplay("Watts");
         break;
       default:
         sessionType = JUST_ROW;
