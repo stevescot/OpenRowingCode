@@ -89,6 +89,7 @@ unsigned long lastlimittime = 0;
 float AnalogSwitchMax = 10;
 float AnalogSwitchMin = 0;
 int lastAnalogSwitchValue = 0;                        // the last value read from the C2
+bool AnalogDropping = false;
 
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
@@ -135,8 +136,8 @@ float mPerClick = 0;                        // meters per rotation of the flywhe
 unsigned long driveStartclicks;             // number of clicks at start of drive.
 float mStrokePerRotation = 0;               // meters of stroke per rotation of the flywheel to work out how long we have pulled the handle in meters from clicks.
 
-const unsigned int consecutivedecelerations = 9;//number of consecutive decelerations before we are decelerating
-const unsigned int consecutiveaccelerations = 9;// number of consecutive accelerations before detecting that we are accelerating.
+const unsigned int consecutivedecelerations = 6;//number of consecutive decelerations before we are decelerating
+const unsigned int consecutiveaccelerations = 6;// number of consecutive accelerations before detecting that we are accelerating.
 
 unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
 unsigned int accelerations = 0;             // number of acceleration rotations;
@@ -252,42 +253,17 @@ void loop()
   {
     //simulate a reed switch from the coil
     int analog = analogRead(analogPin);
-    //make AnalogSwitchlim a running 4 second average of the sample.
-//    if(micros() > utime && utime > 0)
-//    {//if this isn't an overflow, and there has been at least one sample, start to tune the C2lim.
-//      //C2lim = C2lim + ((float)val - C2lim)*((float)(micros()-utime)/4000000);
-      if(analog > AnalogSwitchMax) AnalogSwitchMax = analog;
-      if(analog < AnalogSwitchMin) AnalogSwitchMin = analog;
-      if(mtime > lastlimittime + 1000)//tweak the limits each second
-      {
-        lastlimittime = mtime;
-        AnalogSwitchlim = (AnalogSwitchMax + AnalogSwitchMin)/2;
-        //reset the max/min
-        AnalogSwitchMin = analog;
-        AnalogSwitchMax = analog;
-      }
-//    }
-    if(AnalogSwitchlim < 5) AnalogSwitchlim = 5;//don't let it get back to zero if nothing is happening...
-    //if(analog > AnalogSwitchlim) 
-    
-    //detect rising side
-    if(buttonState == LOW)
+    val = HIGH;
+    if(!AnalogDropping)
     {
-      if(analog <= 0)//(float)lastAnalogSwitchValue*0.9 || analog == 0)
+      if(analog < lastAnalogSwitchValue)
       {
-        val = HIGH;
+        val = LOW;
+        AnalogDropping = true;
       }
     }
-    else
-    {//ButtonState == HIGH
-      if(analog > 0)//(float)(lastAnalogSwitchValue+2))
-      {
-        val = LOW;//detected it starting to pass
-      }
-    }
-
+    if(analog== 0) AnalogDropping = false;
     //detect dropping side
-    
     lastAnalogSwitchValue = analog;
   }
   else
