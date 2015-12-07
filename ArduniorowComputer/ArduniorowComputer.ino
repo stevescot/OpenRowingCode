@@ -310,7 +310,6 @@ void loop()
                       secondsdecel = (float)((float)mtime- driveEndms - singleaccelrotationms -singledecelrotationms)/1000;
                     }
                   accelerations ++;
-                  
                   if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
                     {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                       totalStroke++;
@@ -359,6 +358,7 @@ void loop()
                       //recovery is the stroke minus the drive, drive is just drive
                       RecoveryToDriveRatio = (strokems-lastDriveTimems) / lastDriveTimems;
                       driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
+                      decelerations = 0;
                     }
                 }
                 else
