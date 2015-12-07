@@ -301,7 +301,9 @@ void loop()
               //Serial.println(nextinstantaneousrpm);
               if(radSec >= prevradSec)//if speed stays the same - that takes power too...
                 { //lcd.print("Acc");        
-                  accelerations ++;
+                  //on first acceleration - work out the total time decelerating.
+                  if(accelerations == 0) secondsdecel = ((float)mtime-(float)driveEndms;
+                    accelerations ++;
                     if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
                     {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                       totalStroke++;
@@ -311,7 +313,6 @@ void loop()
                       Serial.print("\tSecondsDecelerating:\t");
                       //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
                       driveBeginms = mtime;
-                      float secondsdecel = ((float)recoveryEndms-(float)driveEndms)/1000;
                       Serial.println(float(secondsdecel));
                       float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsdecel);
                       if(nextk > 0 && nextk < 300)
@@ -322,7 +323,7 @@ void loop()
                         //int karr[3] = {k1,k2,k3};
                         //k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
                         //k = (float)k1/1000000;  //adjust k by half of the difference from the last k
-                          k = I * ((1.0/recoveryAngularVelocity)-(1.0/previousDriveAngularVelocity))/(secondsdecel);  //nm/s/s == W/s/s
+                          k = nextk;  //nm/s/s == W/s/s
 //                        dumprpms();
 //                        Serial.print("k:"); Serial.println(k1);
 //                        Serial.print("radSec:"); Serial.println(radSec);
