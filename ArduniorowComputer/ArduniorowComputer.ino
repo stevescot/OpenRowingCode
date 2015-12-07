@@ -136,8 +136,8 @@ float mPerClick = 0;                        // meters per rotation of the flywhe
 unsigned long driveStartclicks;             // number of clicks at start of drive.
 float mStrokePerRotation = 0;               // meters of stroke per rotation of the flywheel to work out how long we have pulled the handle in meters from clicks.
 
-const unsigned int consecutivedecelerations = 6;//number of consecutive decelerations before we are decelerating
-const unsigned int consecutiveaccelerations = 6;// number of consecutive accelerations before detecting that we are accelerating.
+const unsigned int consecutivedecelerations = 10;//number of consecutive decelerations before we are decelerating
+const unsigned int consecutiveaccelerations = 10;// number of consecutive accelerations before detecting that we are accelerating.
 
 unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
 unsigned int accelerations = 0;             // number of acceleration rotations;
@@ -148,6 +148,7 @@ unsigned long driveEndms;                   // time of the end of the last drive
 unsigned long recoveryEndms;                // time of the end of the recovery
 unsigned long driveBeginms;                 // time of the start of the last drive
 unsigned int lastDriveTimems;               // time that the last drive took in milliseconds
+float secondsdecel =0;                      // number of seconds spent decelerating.
 
 //Stats for display
 float split;                                // split time for last stroke in seconds
@@ -297,7 +298,6 @@ void loop()
               if(currentmedianrpm > peakrpm) peakrpm = currentmedianrpm;
               float radSec = currentmedianrpm/60*2*PI;
               float prevradSec = previousmedianrpm/60*2*PI;
-              float secondsdecel =0;
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               //Serial.println(nextinstantaneousrpm);
               if(radSec > prevradSec || (accelerations > consecutiveaccelerations && radSec == prevradSec))//faster, or previously going faster and the same rpm
