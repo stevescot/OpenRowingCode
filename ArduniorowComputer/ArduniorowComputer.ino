@@ -303,10 +303,10 @@ void loop()
               if(radSec > prevradSec || (accelerations > consecutiveaccelerations && radSec == prevradSec))//faster, or previously going faster and the same rpm
                 { //lcd.print("Acc");        
                   //on first acceleration - work out the total time decelerating.
+                  accelerations ++;accelerations ++;
                   if(accelerations == 0) 
-                    {
+                    {//first acceleration - capture the seconds decelerating and 
                       secondsdecel = ((float)mtime-(float)driveEndms);
-                      accelerations ++;
                     }
                   if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
                     {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
