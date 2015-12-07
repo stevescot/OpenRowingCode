@@ -136,8 +136,8 @@ float mPerClick = 0;                        // meters per rotation of the flywhe
 unsigned long driveStartclicks;             // number of clicks at start of drive.
 float mStrokePerRotation = 0;               // meters of stroke per rotation of the flywheel to work out how long we have pulled the handle in meters from clicks.
 
-const unsigned int consecutivedecelerations = 10;//number of consecutive decelerations before we are decelerating
-const unsigned int consecutiveaccelerations = 10;// number of consecutive accelerations before detecting that we are accelerating.
+const unsigned int consecutivedecelerations = 3;//number of consecutive decelerations before we are decelerating
+const unsigned int consecutiveaccelerations = 3;// number of consecutive accelerations before detecting that we are accelerating.
 
 unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
 unsigned int accelerations = 0;             // number of acceleration rotations;
@@ -320,31 +320,31 @@ void loop()
                       //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
                       driveBeginms = mtime;
                       Serial.println(float(secondsdecel));
-                      float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsdecel);
+                      float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsdecel)*1000000;
+                      driveAngularVelocity = radSec;
                       if(nextk > 0 && nextk < 300)
                       {//if drag factor detected is positive and reasonable
-                        //k3 = k2; 
-                        //k2 = k1;
-                        //k1 = I * ((1.0/prevradSec)-(1.0/previousDriveAngularVelocity))/(secondsdecel)*1000000;  //nm/s/s == W/s/s
-                        //int karr[3] = {k1,k2,k3};
-                        //k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
-                        //k = (float)k1/1000000;  //adjust k by half of the difference from the last k
-                          k = nextk;  //nm/s/s == W/s/s
-//                        dumprpms();
-//                        Serial.print("k:"); Serial.println(k1);
-//                        Serial.print("radSec:"); Serial.println(radSec);
-//                        Serial.print("driveAngularVelocity"); Serial.println(driveAngularVelocity);
-//                        Serial.print("secondsdecel"); Serial.println(secondsdecel);
+                        k3 = k2; 
+                        k2 = k1;
+                        k1 = nextk;  //nm/s/s == W/s/s
+                        int karr[3] = {k1,k2,k3};
+                        k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
+                        //Serial.print("k:"); Serial.println(nextk);
+                        //Serial.print("recw:"); Serial.println(recoveryAngularVelocity);
+                        //Serial.print("dw"); Serial.println(driveAngularVelocity);
+                        //Serial.print("sdecel"); Serial.println(secondsdecel);
                         mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
                       }
                       else
                       {
-                        Serial.print("recoveryrad");
-                        Serial.print(recoveryAngularVelocity);
-                        Serial.print("driverad");
-                        Serial.print(driveAngularVelocity);
-                        Serial.print("recoverySeconds");
-                        Serial.print(secondsdecel);
+                        //Serial.print("k:");
+                        //Serial.print(nextk);
+                        //Serial.print("recoveryrad");
+                        //Serial.print(recoveryAngularVelocity);
+                        //Serial.print("driverad");
+                        //Serial.print(driveAngularVelocity);
+                        //Serial.print("recoverySeconds");
+                        //Serial.print(secondsdecel);
                       }
                       decelerations = 0;
                       driveStartclicks = clicks;
@@ -357,7 +357,7 @@ void loop()
                       lastDriveTimems = driveEndms - driveBeginms;
                       //recovery is the stroke minus the drive, drive is just drive
                       RecoveryToDriveRatio = (strokems-lastDriveTimems) / lastDriveTimems;
-                      driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
+                      //driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
                       decelerations = 0;
                     }
                 }
@@ -474,9 +474,9 @@ void writeNextScreen()
     #ifdef UseLCD
         if(sessionType == DRAGFACTOR)
         {
-          lcd.print("Drag");
           lcd.setCursor(0,1);
           lcd.print(k*1000000,0);
+          lcd.print("  ");
           return;//no need for other screen stuff.
         }else if (sessionType == RPM)
         {
