@@ -257,14 +257,13 @@ void loop()
     val = HIGH;
     if(!AnalogDropping)
     {
-      if(analog < lastAnalogSwitchValue)
-      {
+      if(analog < lastAnalogSwitchValue && (utime- laststatechangeus) >5000)
+      {//we are starting to drop - mark the value as low, and analog as dropping.
         val = LOW;
         AnalogDropping = true;
       }
     }
-    if(analog== 0) AnalogDropping = false;
-    //detect dropping side
+    if(analog== 0) AnalogDropping = false;//we have reached 0 - reset analog dropping so we can monitor for it once analog starts to drop.
     lastAnalogSwitchValue = analog;
   }
   else
