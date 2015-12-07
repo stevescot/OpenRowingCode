@@ -295,8 +295,8 @@ void loop()
               int rpms2[rpmarraycount] = {getRpm(-3), getRpm(-4),getRpm(-5)};//,getRpm(-8),getRpm(-9)};
               int previousmedianrpm = median(rpms2, rpmarraycount);
               if(currentmedianrpm > peakrpm) peakrpm = currentmedianrpm;
-              float radSec = currentmedianrpm/60*2*PI;
-              float prevradSec = previousmedianrpm/60*2*PI;
+              float radSec = (float)currentmedianrpm/60*2*PI;
+              float prevradSec = (float)previousmedianrpm/60*2*PI;
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               //Serial.println(nextinstantaneousrpm);
               if(radSec > prevradSec || (accelerations > consecutiveaccelerations && radSec == prevradSec))//faster, or previously going faster and the same rpm
@@ -313,6 +313,10 @@ void loop()
                   if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
                     {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                       totalStroke++;
+//                      if(totalStroke >9)
+//                      {
+//                        dumprpms();
+//                      }
                       Serial.println("\n");
                       Serial.print("Total strokes:");
                       Serial.print(totalStroke);
