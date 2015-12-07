@@ -177,9 +177,11 @@ void setup()
     setErgType(ERGTYPEVFIT);
     Serial.println("No Concept 2 detected on Analog pin 3");
   }
-  Serial.println("Stroke\tSplit\tWatts\tDistance\tTime\tDragFactor");
+  Serial.println("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor");
   #ifdef UseLCD
     startMenu();
+    //register graphics for up/down
+     graphics();
   #endif
   // Print a message to the LCD.
 }
@@ -443,11 +445,12 @@ void loop()
 void writeStrokeRow()
 {
   Serial.print(totalStroke); Serial.print("\t");
+  Serial.print(spm); Serial.print("\t");
   Serial.print(getSplitString()); Serial.print("\t");
   Serial.print(power); Serial.print("\t");
   Serial.print(distancem); Serial.print("\t");
   Serial.print(getTime()); Serial.print("\t");
-  Serial.print(k*1000000);
+  Serial.print(k*1000000); 
   Serial.println();
 }
 
@@ -509,10 +512,13 @@ String getSplitString()
   String splitString = "";
   int splitmin = (int)(split/60);
   int splits = (int)(((split-splitmin*60)));
+  int splittenths = (int)((((split-splitmin*60)-splits))*10);
   splitString += splitmin;
   splitString += ":";
   if(splits <10) splitString += "0";
   splitString += splits;
+  splitString +=".";
+  splitString +=splittenths;
   return splitString;
 }
 
@@ -567,26 +573,20 @@ void writeNextScreen()
         if(splitmin < 10)
         {//only display the split if it is less than 10 mins per 500m
           #ifdef UseLCD
-            //lcd.print("S");
-            lcd.print(splitmin);//minutes in split.
-            lcd.print(":");
-            if(splits <10) lcd.print("0");
-            lcd.print(splits);//seconds
+            lcd.print(getSplitString());
             //lcd 0->5, 0  used
           #endif
         }
 #ifdef debug
         Serial.print("\tSplit:\t");
-        Serial.print(splitmin);
-        Serial.print(":");
-        Serial.print(splits);
+        Serial.print(getSplitString());
 #endif
     }
     break;
     case 2:
       //lcd 10->16,0 used
       #ifdef UseLCD
-        lcd.setCursor(10,0);
+        lcd.setCursor(12,0);
         lcd.print("S:");
         lcd.print(spm);
         lcd.print("  ");
@@ -649,7 +649,7 @@ void writeNextScreen()
     case 5://next lime
     #ifdef UseLCD
       //lcd 6->9 , 0
-       lcd.setCursor(6,0);
+       lcd.setCursor(7,0);
        if(RecoveryToDriveRatio > 2.1)
        {
         lcd.print(LCDSpeedUp);
