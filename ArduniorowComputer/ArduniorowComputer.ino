@@ -135,7 +135,6 @@ unsigned int accelerations = 0;             // number of acceleration rotations;
 
 unsigned long driveEndms = 0;                 // time of the end of the last drive (beginning of recovery.
 unsigned long recoveryEndms = 0;              // time of the end of the recovery
-unsigned long driveBeginms = 0;               // time of the start of the last drive
 unsigned int lastDriveTimems = 0;             // time that the last drive took in milliseconds
 float secondsdecel =  0;                      // number of seconds spent decelerating.
 
@@ -311,7 +310,6 @@ void loop()
                 Serial.println(float(secondsdecel));
 #endif
                 //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
-                driveBeginms = mtime;
                 float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsdecel)*1000000;
                 driveAngularVelocity = radSec;
                 if(nextk > 0 && nextk < 300)
@@ -350,15 +348,21 @@ void loop()
                 }
                 decelerations = 0;
                 driveStartclicks = clicks;
+                                //recovery is the stroke minus the drive, drive is just drive
+                RecoveryToDriveRatio = (float)(secondsdecel) / ((float)lastDriveTimems/1000);
+            #ifdef debug
+                Serial.println();
+                Serial.println(secondsdecel);
+                Serial.println(((float)strokems/1000)-secondsdecel);
+                Serial.println(RecoveryToDriveRatio);
+            #endif
                 //safest time to write a screen or to serial (slowest rpm)
               }
               else if(accelerations > consecutiveaccelerations)
               {
                 if(radSec > driveAngularVelocity) driveAngularVelocity = radSec;
                 driveEndms = mtime;
-                lastDriveTimems = driveEndms - driveBeginms;
-                //recovery is the stroke minus the drive, drive is just drive
-                RecoveryToDriveRatio = (strokems-lastDriveTimems) / lastDriveTimems;
+                lastDriveTimems = driveEndms - recoveryEndms;
                 //driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
                 decelerations = 0;
               }
@@ -641,10 +645,6 @@ void writeNextScreen()
         Serial.print("\tTime:\t");
         Serial.print(getTime());
       #endif
-        //lcd.print(k);
-        //Serial.println(k);
-//      lcd.print("s");
-//      lcd.print(diffclicks);
       break;
     case 5://next lime
     #ifdef UseLCD
@@ -652,15 +652,15 @@ void writeNextScreen()
        lcd.setCursor(7,0);
        if(RecoveryToDriveRatio > 2.1)
        {
-        lcd.print(LCDSpeedUp);
+        lcd.print((char)(int)LCDSpeedUp);
        }
        else if (RecoveryToDriveRatio < 1.9)
         {
-          lcd.print(LCDSlowDown);
+          lcd.print((char)(int)LCDSlowDown);
         }
         else
         {
-          lcd.print(LCDJustFine);
+          lcd.print((char)(int)LCDJustFine);
         }       
        //lcd.print(RecoveryToDriveRatio,1);
     #endif
