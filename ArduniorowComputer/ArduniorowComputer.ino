@@ -54,7 +54,7 @@ static int _threshold = 50;
 
 //erg type definitions
 #define ERGTYPEVFIT 0 // V-Fit air rower.
-#define ERGTYPEC2 1 //Concept 2
+#define ERGTYPEC2 1   // Concept 2
 
 //boat type defintions.
 #define BOAT4 0
@@ -72,37 +72,31 @@ int numIntervals = 5;
 int intervals = 0;//number of intervals we have done.
 
 int sessionType = JUST_ROW;
-//end code for keypad
 
-//int backLight = 13;
-
-const int switchPin = 2;                    // switch is connected to pin 6
+const int switchPin = 2;                    // switch is connected to pin 2
 const int analogPin = 1;                    // analog pin (Concept2)
 
 int peakrpm = 0;
 
 bool AnalogSwitch = false;                            // if we are connected to a concept2
-float AnalogSwitchlim = 10;                             // limit to detect a rotation from C2  (0.00107421875mV per 1, so 40 = 42mV
 
 int clicksPerRotation = 1;                  // number of magnets , or clicks detected per rotation.
 
 unsigned long lastlimittime = 0;
-float AnalogSwitchMax = 10;
-float AnalogSwitchMin = 0;
 int lastAnalogSwitchValue = 0;                        // the last value read from the C2
 bool AnalogDropping = false;
 
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
-short numclickspercalc = 3;        // number of clicks to wait for before doing anything, if we need more time this will have to be reduced.
-short currentrot = 0;
+short numclickspercalc = 3;                 // number of clicks to wait for before doing anything, if we need more time this will have to be reduced.
+short currentrot = 0;                       // current rotation (for number of clicks per calculation)
 
 unsigned long utime;                        // time of tick in microseconds
 unsigned long mtime;                        // time of tick in milliseconds
 
-unsigned long laststatechangeus;            // time of last switch.
-unsigned long timetakenus;                  // time taken in milliseconds for a rotation of the flywheel
-unsigned long lastrotationus;               // milliseconds taken for the last rotation of the flywheel
+unsigned long laststatechangeus;            // time of last click
+unsigned long timetakenus;                  // time taken in milliseconds for a click from the flywheel
+unsigned long lastrotationus;               // milliseconds taken for the last click of the flywheel
 unsigned long startTimems = 0;              // milliseconds from startup to first sample
 unsigned long clicks = 0;                   // number of clicks since start
 unsigned long laststrokeclicks = 0;         // number of clicks since last drive
@@ -123,15 +117,11 @@ float recoveryAngularVelocity;              // angular velocity at the end of th
 int diffclicks;                             // clicks from last stroke to this one
 
 int screenstep=0;                           // int - which part of the display to draw next.
-int k3 = 185;
-int k2 = 185;
-int k1 = 185;
-float k = 0.000185;                         //  drag factor nm/s/s (displayed *10^6 on a Concept 2) nm/s/s == W/s/s
-                                            //  The displayed drag factor equals the power dissipation (in Watts), at an angular velocity of the flywheel of 100 rad/sec.
-                                            
+int k3 = 0, k2 = 0, k1 = 0;                 // previous k values for smoothing
+float k = 0.000185;                         // drag factor nm/s/s (displayed *10^6 on a Concept 2) nm/s/s == W/s/s
+                                            // The displayed drag factor equals the power dissipation (in Watts), at an angular velocity of the flywheel of 100 rad/sec.                               
 float c = 2.8;                              //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power. c/p = (v)^3 where p = power in watts, v = velocity in m/s  so v = (c/p)^1/3 v= (2.8/p)^1/3
                                             //Concept used to quote a figure c=2.8, which, for a 2:00 per 500m split (equivalent to u=500/120=4.17m/s) gives 203 Watts. 
-                                            
 float mPerClick = 0;                        // meters per rotation of the flywheel
 
 unsigned long driveStartclicks;             // number of clicks at start of drive.
@@ -143,17 +133,15 @@ const unsigned int consecutiveaccelerations = 3;// number of consecutive acceler
 unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
 unsigned int accelerations = 0;             // number of acceleration rotations;
 
-
-
-unsigned long driveEndms;                   // time of the end of the last drive (beginning of recovery.
-unsigned long recoveryEndms;                // time of the end of the recovery
-unsigned long driveBeginms;                 // time of the start of the last drive
-unsigned int lastDriveTimems;               // time that the last drive took in milliseconds
-float secondsdecel =0;                      // number of seconds spent decelerating.
+unsigned long driveEndms = 0;                 // time of the end of the last drive (beginning of recovery.
+unsigned long recoveryEndms = 0;              // time of the end of the recovery
+unsigned long driveBeginms = 0;               // time of the start of the last drive
+unsigned int lastDriveTimems = 0;             // time that the last drive took in milliseconds
+float secondsdecel =  0;                      // number of seconds spent decelerating.
 
 //Stats for display
-float split;                                // split time for last stroke in seconds
-float power;                                // last stroke power in watts
+float split = 0;                                // split time for last stroke in seconds
+float power = 0;                                // last stroke power in watts
 unsigned long spm = 0;                      // current strokes per minute.  
 float distancem = 0;                        // distance rowed in meters.
 float RecoveryToDriveRatio = 0;                // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
@@ -223,9 +211,6 @@ void setErgType(short newErgType)
         I = 0.032;
         clicksPerRotation = 1;
         numclickspercalc = 1;
-        k3 = 0;
-        k2 = 0;
-        k1 = 0;
         k = 0.000085;  
         mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
         break;
@@ -236,9 +221,6 @@ void setErgType(short newErgType)
         numclickspercalc = 1;//take out a lot of noise before we detect drive / recovery.
         //number of clicks per rotation is 3 as there are three magnets.
         clicksPerRotation = 3;
-        k3 = 0;
-        k2 = 0;
-        k1 = 0;
         k = 0.000125;
         mStrokePerRotation = 0.08;//meters of stroke per rotation of the flywheel - C2.
         ergType = ERGTYPEC2;    
@@ -271,182 +253,182 @@ void loop()
   {
     val = digitalRead(switchPin);            // read input value and store it in val                       
   }
-       if (val != buttonState && val == LOW && (utime- laststatechangeus) >5000)            // the button state has changed!
-          { 
-            currentrot ++;
-            clicks++;
-            if(currentrot >= numclickspercalc)
-            {
-              currentrot = 0;
-              //initialise the start time
-              if(startTimems == 0) 
-              {
-                startTimems = mtime;
-                 #ifdef UseLCD
-                    lcd.clear();
-                 #endif
+   if (val != buttonState && val == LOW && (utime- laststatechangeus) >5000)            // the button state has changed!
+    { 
+      currentrot ++;
+      clicks++;
+      if(currentrot >= numclickspercalc)
+      {
+        currentrot = 0;
+        //initialise the start time
+        if(startTimems == 0) 
+        {
+          startTimems = mtime;
+           #ifdef UseLCD
+              lcd.clear();
+           #endif
+        }
+        timetakenus = utime - laststatechangeus;
+        rpmhistory[nextrpm] = (60000000.0*numclickspercalc/clicksPerRotation)/timetakenus;
+        nextrpm ++;
+        const int rpmarraycount = 3;
+        int rpms[rpmarraycount] = {getRpm(0), getRpm(-1), getRpm(-2)};//,getRpm(-3),getRpm(-4)};
+        if(nextrpm >=numRpms) nextrpm = 0;//wrap around to the start again.
+        int currentmedianrpm = median(rpms,rpmarraycount);
+        int rpms2[rpmarraycount] = {getRpm(-3), getRpm(-4),getRpm(-5)};//,getRpm(-8),getRpm(-9)};
+        int previousmedianrpm = median(rpms2, rpmarraycount);
+        if(currentmedianrpm > peakrpm) peakrpm = currentmedianrpm;
+        float radSec = (float)currentmedianrpm/60*2*PI;
+        float prevradSec = (float)previousmedianrpm/60*2*PI;
+        float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
+        //Serial.println(nextinstantaneousrpm);
+        if(radSec > prevradSec || (accelerations > consecutiveaccelerations && radSec == prevradSec))//faster, or previously going faster and the same rpm
+          { //lcd.print("Acc");        
+            //on first acceleration - work out the total time decelerating.
+            if(accelerations == 0 && decelerations > consecutivedecelerations) 
+              {//first acceleration - capture the seconds decelerating and #
+                float singleaccelrotationms = 1000.0/(driveAngularVelocity/(2.0*PI));  
+                float singledecelrotationms = 1000.0/(radSec/(2.0*PI));
+                //time for a single rotation at drive (which we will have included in secondsdecel but shouldn't have.
+                secondsdecel = (float)((float)mtime- driveEndms - singleaccelrotationms -singledecelrotationms)/1000;
               }
-              timetakenus = utime - laststatechangeus;
-              rpmhistory[nextrpm] = (60000000.0*numclickspercalc/clicksPerRotation)/timetakenus;
-              nextrpm ++;
-              const int rpmarraycount = 3;
-              int rpms[rpmarraycount] = {getRpm(0), getRpm(-1), getRpm(-2)};//,getRpm(-3),getRpm(-4)};
-              if(nextrpm >=numRpms) nextrpm = 0;//wrap around to the start again.
-              int currentmedianrpm = median(rpms,rpmarraycount);
-              int rpms2[rpmarraycount] = {getRpm(-3), getRpm(-4),getRpm(-5)};//,getRpm(-8),getRpm(-9)};
-              int previousmedianrpm = median(rpms2, rpmarraycount);
-              if(currentmedianrpm > peakrpm) peakrpm = currentmedianrpm;
-              float radSec = (float)currentmedianrpm/60*2*PI;
-              float prevradSec = (float)previousmedianrpm/60*2*PI;
-              float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
-              //Serial.println(nextinstantaneousrpm);
-              if(radSec > prevradSec || (accelerations > consecutiveaccelerations && radSec == prevradSec))//faster, or previously going faster and the same rpm
-                { //lcd.print("Acc");        
-                  //on first acceleration - work out the total time decelerating.
-                  if(accelerations == 0 && decelerations > consecutivedecelerations) 
-                    {//first acceleration - capture the seconds decelerating and #
-                      float singleaccelrotationms = 1000.0/(driveAngularVelocity/(2.0*PI));  
-                      float singledecelrotationms = 1000.0/(radSec/(2.0*PI));
-                      //time for a single rotation at drive (which we will have included in secondsdecel but shouldn't have.
-                      secondsdecel = (float)((float)mtime- driveEndms - singleaccelrotationms -singledecelrotationms)/1000;
-                    }
-                  accelerations ++;
-                  if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
-                    {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
-                      totalStroke++;
+            accelerations ++;
+            if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
+              {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
+                totalStroke++;
 //                      if(totalStroke >9)
 //                      {
 //                        dumprpms();
 //                      }
-                      Serial.println("\n");
-                      Serial.print("Total strokes:");
-                      Serial.print(totalStroke);
-                      Serial.print("\tSecondsDecelerating:\t");
-                      //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
-                      driveBeginms = mtime;
-                      Serial.println(float(secondsdecel));
-                      float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsdecel)*1000000;
-                      driveAngularVelocity = radSec;
-                      if(nextk > 0 && nextk < 300)
-                      {//if drag factor detected is positive and reasonable
-                        if(k3 ==0) 
-                        {//reset all ks
-                          k3 = nextk;
-                          k2 = nextk;
-                          k1 = nextk;
-                        }
-                        k3 = k2; 
-                        k2 = k1;
-                        k1 = nextk;  //nm/s/s == W/s/s
-                        int karr[3] = {k1,k2,k3};
-                        k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
-//                        Serial.print("k:"); Serial.println(nextk);
-//                        Serial.print("recw:"); Serial.println(recoveryAngularVelocity);
-//                        Serial.print("dw"); Serial.println(driveAngularVelocity);
-//                        Serial.print("sdecel"); Serial.println(secondsdecel);
-                        mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
-                      }
-                      else
-                      {
-                        //Serial.print("k:");
-                        //Serial.print(nextk);
-                        //Serial.print("recoveryrad");
-                        //Serial.print(recoveryAngularVelocity);
-                        //Serial.print("driverad");
-                        //Serial.print(driveAngularVelocity);
-                        //Serial.print("recoverySeconds");
-                        //Serial.print(secondsdecel);
-                      }
-                      decelerations = 0;
-                      driveStartclicks = clicks;
-                      //safest time to write a screen or to serial (slowest rpm)
-                    }
-                    else if(accelerations > consecutiveaccelerations)
-                    {
-                      if(radSec > driveAngularVelocity) driveAngularVelocity = radSec;
-                      driveEndms = mtime;
-                      lastDriveTimems = driveEndms - driveBeginms;
-                      //recovery is the stroke minus the drive, drive is just drive
-                      RecoveryToDriveRatio = (strokems-lastDriveTimems) / lastDriveTimems;
-                      //driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
-                      decelerations = 0;
-                    }
+                Serial.println("\n");
+                Serial.print("Total strokes:");
+                Serial.print(totalStroke);
+                Serial.print("\tSecondsDecelerating:\t");
+                //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
+                driveBeginms = mtime;
+                Serial.println(float(secondsdecel));
+                float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsdecel)*1000000;
+                driveAngularVelocity = radSec;
+                if(nextk > 0 && nextk < 300)
+                {//if drag factor detected is positive and reasonable
+                  if(k3 ==0) 
+                  {//reset all ks
+                    k3 = nextk;
+                    k2 = nextk;
+                    k1 = nextk;
+                  }
+                  k3 = k2; 
+                  k2 = k1;
+                  k1 = nextk;  //nm/s/s == W/s/s
+                  int karr[3] = {k1,k2,k3};
+                  k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
+                  Serial.print("k:"); Serial.println(nextk);
+                  Serial.print("recw:"); Serial.println(recoveryAngularVelocity);
+                  Serial.print("dw"); Serial.println(driveAngularVelocity);
+                  Serial.print("sdecel"); Serial.println(secondsdecel);
+                  mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
                 }
                 else
                 {
-                    decelerations ++;
-                    if(decelerations == consecutivedecelerations)
-                    {//still decelerating (more than three decelerations in a row).
-                      previousDriveAngularVelocity = driveAngularVelocity;    //store the previous deceleration
-                      diffclicks = clicks - laststrokeclicks;
-                      strokems = mtime - laststroketimems;
-                      spm = 60000 /strokems;
-                      laststrokeclicks = clicks;
-                      laststroketimems = mtime;
-                      split =  ((float)strokems)/((float)diffclicks*mPerClick*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
-                      power = 2.8 / pow((split / 500),3.0);//watts = 2.8/(split/500)³ (from concept2 site)
-                      //Serial.print(split);
-                      //store the drive speed
-                      accelerations = 0;//reset accelerations counter
-                    }
-                    else if(decelerations > consecutivedecelerations)
-                    {
-                      driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
-                      accelerations = 0;//reset accelerations counter
-                      recoveryAngularVelocity=radSec;
-                      recoveryEndms = mtime;
-                    }
+                  //Serial.print("k:");
+                  //Serial.print(nextk);
+                  //Serial.print("recoveryrad");
+                  //Serial.print(recoveryAngularVelocity);
+                  //Serial.print("driverad");
+                  //Serial.print(driveAngularVelocity);
+                  //Serial.print("recoverySeconds");
+                  //Serial.print(secondsdecel);
                 }
-                
-                if(mPerClick <= 20)
-                {
-                  distancem += (clicks-clicksInDistance)*mPerClick;
-                  clicksInDistance = clicks;
-                }
-                //if we are spinning slower than 10ms per spin then write the next screen
-                if(timetakenus > 10000) writeNextScreen();
-                lastrotationus = timetakenus;
-                //watch out for integer math problems here
-                //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms); 
-            } 
-            laststatechangeus=utime;
+                decelerations = 0;
+                driveStartclicks = clicks;
+                //safest time to write a screen or to serial (slowest rpm)
+              }
+              else if(accelerations > consecutiveaccelerations)
+              {
+                if(radSec > driveAngularVelocity) driveAngularVelocity = radSec;
+                driveEndms = mtime;
+                lastDriveTimems = driveEndms - driveBeginms;
+                //recovery is the stroke minus the drive, drive is just drive
+                RecoveryToDriveRatio = (strokems-lastDriveTimems) / lastDriveTimems;
+                //driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
+                decelerations = 0;
+              }
           }
+          else
+          {
+              decelerations ++;
+              if(decelerations == consecutivedecelerations)
+              {//still decelerating (more than three decelerations in a row).
+                previousDriveAngularVelocity = driveAngularVelocity;    //store the previous deceleration
+                diffclicks = clicks - laststrokeclicks;
+                strokems = mtime - laststroketimems;
+                spm = 60000 /strokems;
+                laststrokeclicks = clicks;
+                laststroketimems = mtime;
+                split =  ((float)strokems)/((float)diffclicks*mPerClick*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
+                power = 2.8 / pow((split / 500),3.0);//watts = 2.8/(split/500)³ (from concept2 site)
+                //Serial.print(split);
+                //store the drive speed
+                accelerations = 0;//reset accelerations counter
+              }
+              else if(decelerations > consecutivedecelerations)
+              {
+                driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
+                accelerations = 0;//reset accelerations counter
+                recoveryAngularVelocity=radSec;
+                recoveryEndms = mtime;
+              }
+          }
+          
+          if(mPerClick <= 20)
+          {
+            distancem += (clicks-clicksInDistance)*mPerClick;
+            clicksInDistance = clicks;
+          }
+          //if we are spinning slower than 10ms per spin then write the next screen
+          if(timetakenus > 10000) writeNextScreen();
+          lastrotationus = timetakenus;
+          //watch out for integer math problems here
+          //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms); 
+      } 
+      laststatechangeus=utime;
+    }
 
-          if((millis()-mtime) >=6)
+    if((millis()-mtime) >=6)
+    {
+      Serial.print("warning - loop took (ms):");
+      Serial.println(millis()-mtime);
+      Serial.print("screen:");
+      Serial.println(screenstep);
+    }
+    if((mtime-startTimems)/1000 > targetSeconds)
+    {
+      switch(sessionType)
+      {
+        case INTERVAL:
+          if(intervals <= numIntervals)
           {
-            Serial.print("warning - loop took (ms):");
-            Serial.println(millis()-mtime);
-            Serial.print("screen:");
-            Serial.println(screenstep);
+            showInterval(intervalSeconds); 
+            //then reset the start time for count down to now for the next interval.
+            startTimems = millis();
           }
-          if((mtime-startTimems)/1000 > targetSeconds)
-          {
-            switch(sessionType)
-            {
-              case INTERVAL:
-                if(intervals <= numIntervals)
-                {
-                  showInterval(intervalSeconds); 
-                  //then reset the start time for count down to now for the next interval.
-                  startTimems = millis();
-                }
-                else
-                {//stop.
-                  Serial.println("Done");
-                  while(true);
-                }
-                
-                intervals ++;
-                break;
-              case TIME:
-                Serial.println("Done");
-                while(true);
-                break;
-              default:
-              //default = = do nothing.
-              break;
-            }
+          else
+          {//stop.
+            Serial.println("Done");
+            while(true);
           }
+          
+          intervals ++;
+          break;
+        case TIME:
+          Serial.println("Done");
+          while(true);
+          break;
+        default:
+        //default = = do nothing.
+        break;
+      }
+  }
 //          microshistory[nextrpm] = micros()-utime;
   buttonState = val;                       // save the new state in our variable
 }
