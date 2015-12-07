@@ -299,7 +299,7 @@ void loop()
               float prevradSec = previousmedianrpm/60*2*PI;
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               //Serial.println(nextinstantaneousrpm);
-              if(radSec >= prevradSec)//if speed stays the same - that takes power too...
+              if(radSec > prevradSec)//
                 { //lcd.print("Acc");        
                   //on first acceleration - work out the total time decelerating.
                   if(accelerations == 0) secondsdecel = ((float)mtime-(float)driveEndms;
