@@ -8,7 +8,7 @@
 #include <avr/sleep.h>
 #include <LiquidCrystal.h>
 #define UseLCD // comment out this line to not use a 16x2 LCD keypad shield, and just do serial reporting.
-
+//#define debug  // uncomment this to get more verbose serial output
 // when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
 // initialize the library with the numbers of the interface pins
 
@@ -177,7 +177,7 @@ void setup()
     setErgType(ERGTYPEVFIT);
     Serial.println("No Concept 2 detected on Analog pin 3");
   }
-
+  Serial.println("Stroke\tSplit\tWatts\tDistance\tTime\tDragFactor");
   #ifdef UseLCD
     startMenu();
   #endif
@@ -296,17 +296,20 @@ void loop()
             if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
               {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                 totalStroke++;
+                writeStrokeRow();
 //                      if(totalStroke >9)
 //                      {
 //                        dumprpms();
 //                      }
+#ifdef debug
                 Serial.println("\n");
                 Serial.print("Total strokes:");
                 Serial.print(totalStroke);
                 Serial.print("\tSecondsDecelerating:\t");
+                Serial.println(float(secondsdecel));
+#endif
                 //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
                 driveBeginms = mtime;
-                Serial.println(float(secondsdecel));
                 float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsdecel)*1000000;
                 driveAngularVelocity = radSec;
                 if(nextk > 0 && nextk < 300)
@@ -322,22 +325,26 @@ void loop()
                   k1 = nextk;  //nm/s/s == W/s/s
                   int karr[3] = {k1,k2,k3};
                   k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
+       #ifdef debug
                   Serial.print("k:"); Serial.println(nextk);
                   Serial.print("recw:"); Serial.println(recoveryAngularVelocity);
                   Serial.print("dw"); Serial.println(driveAngularVelocity);
                   Serial.print("sdecel"); Serial.println(secondsdecel);
+       #endif
                   mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
                 }
                 else
                 {
-                  //Serial.print("k:");
-                  //Serial.print(nextk);
-                  //Serial.print("recoveryrad");
-                  //Serial.print(recoveryAngularVelocity);
-                  //Serial.print("driverad");
-                  //Serial.print(driveAngularVelocity);
-                  //Serial.print("recoverySeconds");
-                  //Serial.print(secondsdecel);
+            #ifdef debug
+                  Serial.print("k:");
+                  Serial.print(nextk);
+                  Serial.print("recoveryrad");
+                  Serial.print(recoveryAngularVelocity);
+                  Serial.print("driverad");
+                  Serial.print(driveAngularVelocity);
+                  Serial.print("recoverySeconds");
+                  Serial.print(secondsdecel);
+            #endif
                 }
                 decelerations = 0;
                 driveStartclicks = clicks;
@@ -394,7 +401,7 @@ void loop()
       laststatechangeus=utime;
     }
 
-    if((millis()-mtime) >=6)
+    if((millis()-mtime) >=10)
     {
       Serial.print("warning - loop took (ms):");
       Serial.println(millis()-mtime);
@@ -433,6 +440,41 @@ void loop()
   buttonState = val;                       // save the new state in our variable
 }
 
+void writeStrokeRow()
+{
+  Serial.print(totalStroke); Serial.print("\t");
+  Serial.print(getSplitString()); Serial.print("\t");
+  Serial.print(power); Serial.print("\t");
+  Serial.print(distancem); Serial.print("\t");
+  Serial.print(getTime()); Serial.print("\t");
+  Serial.print(k*1000000);
+  Serial.println();
+}
+
+String getTime()
+{
+  int timemins, timeseconds;
+  String timeString = "";
+        if(sessionType == TIME)
+        {//count-down from the target time.
+          timemins = (targetSeconds - (mtime-startTimems)/1000)/60;
+          if(timemins < 0) timemins = 0;
+          timeseconds = (targetSeconds - (mtime-startTimems)/1000) - timemins * 60 ;
+          if(timeseconds < 0) timeseconds = 0;
+        }
+        else
+        {
+          timemins = (mtime-startTimems)/60000;
+          timeseconds = (long)((mtime)-startTimems)/1000 - timemins*60;
+        }
+          if(timemins <10) timeString += "0";
+          timeString += timemins;//total mins
+          timeString += ":";
+          if(timeseconds < 10) timeString +="0";
+          timeString += timeseconds;//total seconds.*/
+          return timeString;
+}
+
 //take time and display how long remains on the screen.
 void showInterval(long numSeconds)
 {
@@ -460,6 +502,18 @@ void writeTimeLeft(long totalSeconds)
     lcd.print(minutes);
     int seconds = totalSeconds - (minutes*60);
   #endif
+}
+
+String getSplitString()
+{
+  String splitString = "";
+  int splitmin = (int)(split/60);
+  int splits = (int)(((split-splitmin*60)));
+  splitString += splitmin;
+  splitString += ":";
+  if(splits <10) splitString += "0";
+  splitString += splits;
+  return splitString;
 }
 
 void writeNextScreen()
@@ -521,10 +575,12 @@ void writeNextScreen()
             //lcd 0->5, 0  used
           #endif
         }
+#ifdef debug
         Serial.print("\tSplit:\t");
         Serial.print(splitmin);
         Serial.print(":");
         Serial.print(splits);
+#endif
     }
     break;
     case 2:
@@ -535,8 +591,10 @@ void writeNextScreen()
         lcd.print(spm);
         lcd.print("  ");
       #endif
+#ifdef debug
     Serial.print("\tSPM:\t");
     Serial.print(spm);
+#endif
     break;
     case 3:
       #ifdef UseLCD
@@ -560,10 +618,12 @@ void writeNextScreen()
         lcd.print("m");
       }
       #endif
+      
+      #ifdef debug
       Serial.print("\tDistance:\t");
       Serial.print(distancem);
       Serial.print("m");
-      
+      #endif
       //lcd 0->5, 1 used
       //Drag factor
       /*lcd.print("D:");
@@ -574,28 +634,13 @@ void writeNextScreen()
       
       #ifdef UseLCD
         lcd.setCursor(11,1);
-        if(sessionType == TIME)
-        {//count-down from the target time.
-          timemins = (targetSeconds - (mtime-startTimems)/1000)/60;
-          if(timemins < 0) timemins = 0;
-          timeseconds = (targetSeconds - (mtime-startTimems)/1000) - timemins * 60 ;
-          if(timeseconds < 0) timeseconds = 0;
-        }
-        else
-        {
-          timemins = (mtime-startTimems)/60000;
-          timeseconds = (long)((mtime)-startTimems)/1000 - timemins*60;
-        }
-          if(timemins <10) lcd.print("0");
-          lcd.print(timemins);//total mins
-          lcd.print(":");
-          if(timeseconds < 10) lcd.print("0");
-          lcd.print(timeseconds);//total seconds.*/
+        lcd.print(getTime());
       #endif
+      
+      #ifdef debug
         Serial.print("\tTime:\t");
-        Serial.print(timemins);
-        Serial.print(":");
-        Serial.print(timeseconds);
+        Serial.print(getTime());
+      #endif
         //lcd.print(k);
         //Serial.println(k);
 //      lcd.print("s");
@@ -619,22 +664,13 @@ void writeNextScreen()
         }       
        //lcd.print(RecoveryToDriveRatio,1);
     #endif
+    #ifdef debug
        Serial.print("\tDrag factor:\t");
        Serial.print(k*1000000);
-       //Serial.print("anMin\t");
-       //Serial.println(AnalogSwitchMin);
-       //Serial.print("anMax\t");
-       //Serial.println(AnalogSwitchMax);
-      //lcd.setCursor(10,1);
-      //lcd.print(" AvS:");
-      //lcd.print(clicks/(millis()-startTime));     
+    #endif
       break;
    case 6:
-    //lcd 6->9 , 0
-      // lcd.setCursor(4,0);
-      // lcd.print("r");
-      // lcd.print(RecoveryToDriveRatio);
-
+   #ifdef debug
       Serial.print("\tDrive angularve: ");
       Serial.print(driveAngularVelocity);
 
@@ -645,9 +681,7 @@ void writeNextScreen()
       }
       Serial.print("\tPeakrpm:\t");
       Serial.println(peakrpm);
-      //lcd.setCursor(10,1);
-      //lcd.print(" AvS:");
-      //lcd.print(clicks/(millis()-startTime));   
+   #endif 
     break;
 
     default:
