@@ -297,14 +297,18 @@ void loop()
               if(currentmedianrpm > peakrpm) peakrpm = currentmedianrpm;
               float radSec = currentmedianrpm/60*2*PI;
               float prevradSec = previousmedianrpm/60*2*PI;
+              float secondsdecel =0;
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               //Serial.println(nextinstantaneousrpm);
-              if(radSec > prevradSec)//
+              if(radSec > prevradSec || (accelerations > consecutiveaccelerations && radSec == prevradSec))//faster, or previously going faster and the same rpm
                 { //lcd.print("Acc");        
                   //on first acceleration - work out the total time decelerating.
-                  if(accelerations == 0) secondsdecel = ((float)mtime-(float)driveEndms;
-                    accelerations ++;
-                    if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
+                  if(accelerations == 0) 
+                    {
+                      secondsdecel = ((float)mtime-(float)driveEndms);
+                      accelerations ++;
+                    }
+                  if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
                     {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                       totalStroke++;
                       Serial.println("\n");
