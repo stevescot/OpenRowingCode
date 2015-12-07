@@ -223,9 +223,9 @@ void setErgType(short newErgType)
         I = 0.032;
         clicksPerRotation = 1;
         numclickspercalc = 1;
-        k3 = 85;
-        k2 = 85;
-        k1 = 85;
+        k3 = 0;
+        k2 = 0;
+        k1 = 0;
         k = 0.000085;  
         mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
         break;
@@ -236,9 +236,9 @@ void setErgType(short newErgType)
         numclickspercalc = 1;//take out a lot of noise before we detect drive / recovery.
         //number of clicks per rotation is 3 as there are three magnets.
         clicksPerRotation = 3;
-        k3 = 125;
-        k2 = 125;
-        k1 = 125;
+        k3 = 0;
+        k2 = 0;
+        k1 = 0;
         k = 0.000125;
         mStrokePerRotation = 0.08;//meters of stroke per rotation of the flywheel - C2.
         ergType = ERGTYPEC2;    
@@ -329,6 +329,12 @@ void loop()
                       driveAngularVelocity = radSec;
                       if(nextk > 0 && nextk < 300)
                       {//if drag factor detected is positive and reasonable
+                        if(k3 ==0) 
+                        {//reset all ks
+                          k3 = nextk;
+                          k2 = nextk;
+                          k1 = nextk;
+                        }
                         k3 = k2; 
                         k2 = k1;
                         k1 = nextk;  //nm/s/s == W/s/s
