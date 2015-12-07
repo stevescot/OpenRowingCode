@@ -7,16 +7,15 @@ int a;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(1000000);
   
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
   a = analogRead(analogPin);
-  if(abs(a-preva) > 2)//where the value has changed by more than 2, 
+  if(preva!=a)//where the value has changed by more than 2, 
   {//print it out.
-    Serial.print(micros());
+    Serial.println(micros());
     Serial.print("\t");
     Serial.println(a);
     preva = a;

@@ -143,7 +143,8 @@ unsigned int accelerations = 0;             // number of acceleration rotations;
 
 
 
-unsigned long driveEndms;                   // time of the end of the last drive
+unsigned long driveEndms;                   // time of the end of the last drive (beginning of recovery.
+unsigned long recoveryEndms;                // time of the end of the recovery
 unsigned long driveBeginms;                 // time of the start of the last drive
 unsigned int lastDriveTimems;               // time that the last drive took in milliseconds
 
@@ -322,7 +323,7 @@ void loop()
               float prevradSec = previousmedianrpm/60*2*PI;
               float angulardeceleration = (prevradSec-radSec)/((float)timetakenus/1000000.0);
               //Serial.println(nextinstantaneousrpm);
-              if(radSec > prevradSec)//if speed stays the same - that takes power too...
+              if(radSec >= prevradSec)//if speed stays the same - that takes power too...
                 { //lcd.print("Acc");        
                   accelerations ++;
                     if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
@@ -332,9 +333,9 @@ void loop()
                       Serial.print("Total strokes:");
                       Serial.print(totalStroke);
                       Serial.print("\tSecondsDecelerating:\t");
-                      
+                      //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
                       driveBeginms = mtime;
-                      float secondsdecel = ((float)mtime-(float)driveEndms)/1000;
+                      float secondsdecel = ((float)recoveryEndms-(float)driveEndms)/1000;
                       Serial.println(float(secondsdecel));
                       float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsdecel);
                       if(nextk > 0 && nextk < 300)
@@ -398,6 +399,7 @@ void loop()
                       driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
                       accelerations = 0;//reset accelerations counter
                       recoveryAngularVelocity=radSec;
+                      recoveryEndms = mtime;
                     }
                 }
                 
@@ -499,8 +501,13 @@ void writeNextScreen()
           lcd.print(getRpm(0));
           lcd.setCursor(0,1);
           lcd.print("M:");
-          int rpms2[5] = {getRpm(0), getRpm(-1), getRpm(-2),getRpm(-3),getRpm(-4)};
+          int rpms2[3] = {getRpm(0), getRpm(-1), getRpm(-2)};
           lcd.print(median(rpms2,5));
+          int x = getKey();
+          if(x == SELECT_KEY)
+          {
+            dumprpms();
+          }
           return;//no need for other screen stuff.
         }
      #endif
@@ -673,7 +680,7 @@ void dumprpms()
     {
       Serial.println(rpmhistory[i]);
     }
-    nextrpm = 0;
+    //nextrpm = 0;
 }
 
 //Current selection (Distance, Time)
