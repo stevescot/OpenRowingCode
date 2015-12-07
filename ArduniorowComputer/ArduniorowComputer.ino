@@ -304,10 +304,11 @@ void loop()
                 { //lcd.print("Acc");        
                   //on first acceleration - work out the total time decelerating.
                   if(accelerations == 0 && decelerations > consecutivedecelerations) 
-                    {//first acceleration - capture the seconds decelerating and 
-                      secondsdecel = ((float)mtime-(float)driveEndms);
+                    {//first acceleration - capture the seconds decelerating and #
+                      float singlerotationms = 1000.0/(driveAngularVelocity/(2.0*PI));  
+                      //time for a single rotation at drive (which we will have included in secondsdecel but shouldn't have.
+                      secondsdecel = ((float)mtime-(float)driveEndms - singlerotationms)/1000;
                     }
-
                   accelerations ++;
                   
                   if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
