@@ -318,7 +318,7 @@ void loop()
         }
         else
         {
-          AnalogCount --;
+          AnalogCount -= 2;
         }
         if(AnalogCount > AnalogCountMin*2) AnalogCount = AnalogCountMin*2;
         if(AnalogCount < 0) AnalogCount = 0;
