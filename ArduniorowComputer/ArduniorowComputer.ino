@@ -150,6 +150,11 @@ float RecoveryToDriveRatio = 0;                // the ratio of time taken for th
 //Constants that vary with machine:
 float I = 0.04;                             // moment of  interia of the wheel - 0.1001 for Concept2, ~0.05 for V-Fit air rower.*/;
 
+String SerialStr = "";                      //string to hold next serial command.
+
+String variable = "";
+String value = "";
+
 #ifdef UseLCD
   LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 #endif
@@ -171,12 +176,16 @@ void setup()
   if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
     setErgType(ERGTYPEC2);
-    Serial.println("Concept 2 detected on pin 3");
+    Serial.print("Concept 2 detected on pin ");
+    Serial.println(analogPin);
   }
   else
   {
     setErgType(ERGTYPEVFIT);
-    Serial.println("No Concept 2 detected on Analog pin 3");
+    Serial.print("No Concept 2 detected on Analog pin ");
+    Serial.println(analogPin);
+    Serial.print("Detecting reed switch on pin ");
+    Serial.println(switchPin);
   }
   Serial.println("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor");
   #ifdef UseLCD
@@ -232,10 +241,67 @@ void setErgType(short newErgType)
   mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;
 }
 
+void processSerial()
+{
+  if (Serial.available() >0) {
+    char nextChar = Serial.read();
+    //Serial.println(nextChar);
+    if(nextChar == '=')
+    {
+      variable = SerialStr;
+      SerialStr = "";
+    }
+    if(nextChar == '\n')
+    {
+      if(variable == "Session")
+      {
+            sessionType = SerialStr.toInt();
+            Serial.println("Session Set");
+      }
+      else if(variable == "Interval")
+      {
+            targetSeconds = SerialStr.toInt();
+            Serial.println("Interval Set");
+      }
+      else if(variable =="Rest")
+      {
+            intervalSeconds = SerialStr.toInt();
+            Serial.println("Rest Set");
+      }
+      else if(variable =="Intervals")
+      {
+            numIntervals = SerialStr.toInt();
+            Serial.println("Num Intervals Set");
+      }
+      else if(variable =="TargetDistance")
+      {
+            numIntervals = SerialStr.toInt();
+            Serial.println("TargetDistance Set");
+      }
+      else if(variable == "TargetTime")
+      {
+            targetSeconds = SerialStr.toInt();
+            Serial.println("Target Time Set");
+      }
+      else 
+      {
+          Serial.println("Unreckognised");
+          Serial.println(variable);
+      }
+      SerialStr = "";
+    }
+    else
+    {
+      SerialStr += nextChar;
+    }
+  }
+}
+
 void loop()
 {
   mtime = millis();
   utime = micros(); 
+  processSerial();
   if(AnalogSwitch)
   {
     //simulate a reed switch from the coil
@@ -313,6 +379,8 @@ void loop()
             if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
               {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                 totalStroke++;
+                recoveryAngularVelocity=radSec;
+                recoveryEndms = mtime;
                 writeStrokeRow();
 //                      if(totalStroke >9)
 //                      {
@@ -376,8 +444,10 @@ void loop()
               }
               else if(accelerations > consecutiveaccelerations)
               {
-                if(radSec > driveAngularVelocity) driveAngularVelocity = radSec;
-                driveEndms = mtime;
+                //get the angular velocity before the change. 
+                //set the drive angular velocity to be the value it was 4 clicks ago (before any deceleration
+                driveAngularVelocity = (float)getRpm(-4)/60*2*PI;
+                driveEndms = mtime -(float)60000/getRpm(0)-(float)60000/getRpm(1)-(float)60000/getRpm(2)-(float)60000/getRpm(3);
                 lastDriveTimems = driveEndms - recoveryEndms;
                 //driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
                 decelerations = 0;
@@ -404,8 +474,6 @@ void loop()
               {
                 driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
                 accelerations = 0;//reset accelerations counter
-                recoveryAngularVelocity=radSec;
-                recoveryEndms = mtime;
               }
           }
           
@@ -708,7 +776,7 @@ void writeNextScreen()
 void dumprpms()
 {
     Serial.println("Rpm dump");
-    for(int i = 0; i < 190; i++)
+    for(int i = 0; i < numRpms; i++)
     {
       Serial.println(rpmhistory[i]);
     }
