@@ -82,8 +82,10 @@ bool AnalogSwitch = false;                            // if we are connected to 
 
 int clicksPerRotation = 1;                  // number of magnets , or clicks detected per rotation.
 
-unsigned long lastlimittime = 0;
-int lastAnalogSwitchValue = 0;                        // the last value read from the C2
+static int AnalogCountMin = 10;
+static int AnalogMinValue = 4;
+int AnalogCount = 0;                     //indicator to show how high the analog limit has been (count up /count down)
+int lastAnalogSwitchValue = 0;              // the last value read from the C2
 bool AnalogDropping = false;
 
 int val;                                    // variable for reading the pin status
@@ -243,8 +245,22 @@ void loop()
     {
       if(analog < lastAnalogSwitchValue && (utime- laststatechangeus) >5000)
       {//we are starting to drop - mark the value as low, and analog as dropping.
-        val = LOW;
-        AnalogDropping = true;
+        //use this to see if the analog limit has tended to be above 6
+        if(analog >= AnalogMinValue)
+        {
+          AnalogCount ++;
+        }
+        else
+        {
+          AnalogCount --;
+        }
+        if(AnalogCount > AnalogCountMin*2) AnalogCount = AnalogCountMin*2;
+        if(AnalogCount < 0) AnalogCount = 0;
+        if(AnalogCount > AnalogCountMin)//on average the analog value has been above 6 for the last 10 samples.
+        {
+          val = LOW;
+          AnalogDropping = true;
+        }
       }
     }
     if(analog== 0) AnalogDropping = false;//we have reached 0 - reset analog dropping so we can monitor for it once analog starts to drop.
