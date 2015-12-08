@@ -579,6 +579,7 @@ void showInterval(long numSeconds)
     currentTime = millis()/1000;
     writeTimeLeft(startTime+numSeconds-currentTime);
   }
+  Serial.println("Interval Over");
 }
 
 void writeTimeLeft(long totalSeconds)
