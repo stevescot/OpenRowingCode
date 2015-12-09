@@ -378,6 +378,10 @@ void loop()
               {//first acceleration - capture the seconds decelerating and #
                 //time for a single rotation at drive (which we will have included in secondsdecel but shouldn't have.
                 secondsdecel = (float)((float)mtime- driveEndms)/1000;
+                for(int i =0;i<consecutivedecelerations; i++)
+                {//work back to get recovery time before our consecutive check.
+                  secondsdecel -=(float)60/getRpm(0-i);
+                }
               }
             accelerations ++;
             if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
@@ -388,7 +392,7 @@ void loop()
                 recoveryEndms = mtime;
                 for(int i =0;i<consecutivedecelerations; i++)
                 {//work back to get recovery time before our consecutive check.
-                  recoveryEndms -=(float)60000/getRpm(i);
+                  recoveryEndms -=(float)60000/getRpm(0-i);
                 }
                 writeStrokeRow();
 //                      if(totalStroke >9)
@@ -458,7 +462,7 @@ void loop()
                 driveAngularVelocity = (float)getRpm(-consecutiveaccelerations-1)/60*2*PI;
                 for(int i =0;i<consecutiveaccelerations; i++)
                 {//work back to get recovery time before our consecutive check.
-                  driveEndms -=(float)60000/getRpm(i);
+                  driveEndms -=(float)60000/getRpm(0-i);
                 }
                 lastDriveTimems = driveEndms - recoveryEndms;
                 //driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
