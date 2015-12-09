@@ -376,15 +376,20 @@ void loop()
             //on first acceleration - work out the total time decelerating.
             if(accelerations == 0 && decelerations > consecutivedecelerations) 
               {//first acceleration - capture the seconds decelerating and #
-                float singleaccelrotationms = 1000.0/(driveAngularVelocity/(2.0*PI));  
-                float singledecelrotationms = 1000.0/(radSec/(2.0*PI));
                 //time for a single rotation at drive (which we will have included in secondsdecel but shouldn't have.
-                secondsdecel = (float)((float)mtime- driveEndms - singleaccelrotationms -singledecelrotationms)/1000;
+                secondsdecel = (float)((float)mtime- driveEndms)/1000;
               }
             accelerations ++;
             if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
               {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                 totalStroke++;
+                //work back to get recovery velocity and time before our consecutive check.
+                recoveryAngularVelocity=(float)getRpm(-consecutivedecelerations-1)/60*2*PI;
+                recoveryEndms = mtime;
+                for(int i =0;i<consecutivedecelerations; i++)
+                {//work back to get recovery time before our consecutive check.
+                  recoveryEndms -=(float)60000/getRpm(i);
+                }
                 writeStrokeRow();
 //                      if(totalStroke >9)
 //                      {
@@ -400,7 +405,7 @@ void loop()
                 //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
                 float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsdecel)*1000000;
                 driveAngularVelocity = radSec;
-                if(nextk > 40 && nextk < 300)
+                if(nextk > 0 && nextk < 300)
                 {//if drag factor detected is positive and reasonable
                   if(k3 ==0) 
                   {//reset all ks
@@ -450,8 +455,11 @@ void loop()
               {
                 //get the angular velocity before the change. 
                 //set the drive angular velocity to be the value it was 4 clicks ago (before any deceleration
-                driveAngularVelocity = (float)getRpm(-4)/60*2*PI;
-                driveEndms = mtime -(float)60000/getRpm(0)-(float)60000/getRpm(1)-(float)60000/getRpm(2)-(float)60000/getRpm(3);
+                driveAngularVelocity = (float)getRpm(-consecutiveaccelerations-1)/60*2*PI;
+                for(int i =0;i<consecutiveaccelerations; i++)
+                {//work back to get recovery time before our consecutive check.
+                  driveEndms -=(float)60000/getRpm(i);
+                }
                 lastDriveTimems = driveEndms - recoveryEndms;
                 //driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
                 decelerations = 0;
@@ -478,8 +486,6 @@ void loop()
               {
                 driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
                 accelerations = 0;//reset accelerations counter
-                recoveryAngularVelocity=radSec;
-                recoveryEndms = mtime;
               }
           }
           
