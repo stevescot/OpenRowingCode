@@ -66,14 +66,14 @@ short boatType = BOAT4;                     // boat type to simulate
 long targetDistance = 2000;                 // Target distance in meters (2000 = 2k erg)
 long targetSeconds = 20*60;                 // target time in seconds also interval 'on' time
 long intervalSeconds = 60;                  // time for rest in interval mode
-int numIntervals = 5;                       // number of intervals in interval mode.
+byte numIntervals = 5;                       // number of intervals in interval mode.
 //-------------------------------------------------------------------
-int intervals = 0;//number of intervals we have done.
-int sessionType = JUST_ROW;
+byte intervals = 0;//number of intervals we have done.
+byte sessionType = JUST_ROW;
 //-------------------------------------------------------------------
 //               pins
-const int switchPin = 2;                    // switch is connected to pin 2
-const int analogPin = 1;                    // analog pin (Concept2)
+const byte switchPin = 2;                    // switch is connected to pin 2
+const byte analogPin = 1;                    // analog pin (Concept2)
 #ifdef UseLCD
   LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 #endif
@@ -84,16 +84,16 @@ float c = 2.8;                              //The figure used for c is somewhat 
 //-------------------------------------------------------------------
 //               Erg Specific Settings
 bool AnalogSwitch = false;                  // if we are connected to a concept2
-int clicksPerRotation = 1;                  // number of magnets , or clicks detected per rotation.
+byte clicksPerRotation = 1;                  // number of magnets , or clicks detected per rotation.
 short numclickspercalc = 3;                 // number of clicks to wait for before doing anything, if we need more time this will have to be reduced.
 float I = 0.04;                             // moment of  interia of the wheel - 0.1001 for Concept2, ~0.05 for V-Fit air rower.*/;
 float mStrokePerRotation = 0;               // relation from rotation to meters of pull on the handle
 //-------------------------------------------------------------------
 //               C2(analog handling
 static int AnalogMinValue = 4;              // minimum value of pulse to recognise the wheel as spinning
-static int AnalogCountMin = 10;             // minimum number of values above the min value before we start monitoring
-int AnalogCount = 0;                        // indicator to show how high the analog limit has been (count up /count down)
-int lastAnalogSwitchValue = 0;              // the last value read from the C2
+static byte AnalogCountMin = 10;             // minimum number of values above the min value before we start monitoring
+byte AnalogCount = 0;                        // indicator to show how high the analog limit has been (count up /count down)
+byte lastAnalogSwitchValue = 0;              // the last value read from the C2
 bool AnalogDropping = false;                // indicates if teh analog value is now dropping from a peak (wait until it gets to zero).
 //-------------------------------------------------------------------
 //               reed (switch) handling
@@ -118,21 +118,21 @@ float secondsdecel =  0;                    // number of seconds spent decelerat
 //               clicks
 unsigned long clicks = 0;                   // number of clicks since start
 unsigned long clicksInDistance = 0;         // number of clicks already accounted for in the distance.
-int diffclicks;                             // clicks from last stroke to this one
+unsigned int diffclicks;                             // clicks from last stroke to this one
 unsigned long driveStartclicks;             // number of clicks at start of drive.
-short currentrot = 0;                       // current rotation (for number of clicks per calculation)
+byte currentrot = 0;                       // current rotation (for number of clicks per calculation)
 //-------------------------------------------------------------------
 //               strokes
-int totalStroke = 0;
+unsigned int totalStroke = 0;
 float driveLengthm = 0;                     // last stroke length in meters
 //-------------------------------------------------------------------
 //               rpm/angular Velocity
 float previousDriveAngularVelocity;         // fastest angular velocity at end of previous drive
 float driveAngularVelocity;                 // fastest angular velocity at end of drive
 float recoveryAngularVelocity;              // angular velocity at the end of the recovery  (before drive)
-static const short numRpms = 100;           // size of the rpm array
+static const short numRpms = 200;           // size of the rpm array
 int rpmhistory[numRpms];                    // array of rpm per rotation for debugging
-unsigned long microshistory[numRpms];       // array of the amount of time taken in calc/display for debugging.
+//unsigned long microshistory[numRpms];       // array of the amount of time taken in calc/display for debugging.
 short nextrpm = 0;                          // currently measured rpm, to compare to last -index in above array.
 int peakrpm = 0;                            // highest measured rpm
 //-------------------------------------------------------------------
@@ -151,10 +151,10 @@ float mPerClick = 0;                        // meters per rotation of the flywhe
 //               Stats for display
 float split = 0;                            // split time for last stroke in seconds
 float power = 0;                            // last stroke power in watts
-unsigned short spm = 0;                     // current strokes per minute.  
+byte spm = 0;                               // current strokes per minute.  
 float distancem = 0;                        // distance rowed in meters.
 float RecoveryToDriveRatio = 0;             // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
-int screenstep=0;                           // int - which part of the display to draw next.
+byte screenstep=0;                           // int - which part of the display to draw next.
 //-------------------------------------------------------------------
 //               Serial Interface variables
 String SerialStr = "";                      // string to hold next serial command.
