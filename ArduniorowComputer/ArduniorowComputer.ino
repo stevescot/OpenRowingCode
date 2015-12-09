@@ -9,30 +9,26 @@
 #include <LiquidCrystal.h>
 #define UseLCD // comment out this line to not use a 16x2 LCD keypad shield, and just do serial reporting.
 //#define debug  // uncomment this to get more verbose serial output
-// when we use esp8266... https://www.bountysource.com/issues/27619679-request-event-driven-non-blocking-wifi-api
-// initialize the library with the numbers of the interface pins
-
-//end of changes to resolution.
-
-//code for keypad:
+//-------------------------------------------------------------------
+//               reference values for each key on the  keypad:
 static int DEFAULT_KEY_PIN = 0; 
-static int UPKEY_ARV = 144; //that's read "analogue read value"
+static int UPKEY_ARV = 144; 
 static int DOWNKEY_ARV = 329;
 static int LEFTKEY_ARV = 505;
 static int RIGHTKEY_ARV = 0;
 static int SELKEY_ARV = 721;
 static int NOKEY_ARV = 1023;
 static int _threshold = 50;
-
-//KEY index definitions
+//-------------------------------------------------------------------
+//               KEY index definitions
 #define NO_KEY 0
 #define UP_KEY 3
 #define DOWN_KEY 4
 #define LEFT_KEY 2
 #define RIGHT_KEY 5
 #define SELECT_KEY 1
-
-//session(menu) definitions
+//-------------------------------------------------------------------
+//               session(menu) definitions
 #define JUST_ROW 0
 #define DISTANCE 1
 #define TIME 2
@@ -47,117 +43,124 @@ static int _threshold = 50;
 #define WEIGHT 11
 #define POWEROFF 12
 #define BACK 13
-
+//-------------------------------------------------------------------
+//               custom Character definitions
 #define LCDSlowDown 0
 #define LCDSpeedUp 1
 #define LCDJustFine 3
-
-//erg type definitions
+//-------------------------------------------------------------------
+//               erg type definitions
 #define ERGTYPEVFIT 0 // V-Fit air rower.
 #define ERGTYPEC2 1   // Concept 2
-
-//boat type defintions.
+//-------------------------------------------------------------------
+//               boat type defintions.
 #define BOAT4 0
 #define BOAT8 1
 #define BOAT1 2
-
-short ergType = ERGTYPEVFIT;
-short boatType = BOAT4;
-
-long targetDistance = 2000;
-
-long targetSeconds = 20*60;
-long intervalSeconds = 60;
-int numIntervals = 5;
+//-------------------------------------------------------------------
+//               Erg types
+short ergType = ERGTYPEVFIT;                // erg type currently selected.
+short boatType = BOAT4;                     // boat type to simulate
+//-------------------------------------------------------------------
+//               Targets
+long targetDistance = 2000;                 // Target distance in meters (2000 = 2k erg)
+long targetSeconds = 20*60;                 // target time in seconds also interval 'on' time
+long intervalSeconds = 60;                  // time for rest in interval mode
+int numIntervals = 5;                       // number of intervals in interval mode.
+//-------------------------------------------------------------------
 int intervals = 0;//number of intervals we have done.
-
 int sessionType = JUST_ROW;
-
+//-------------------------------------------------------------------
+//               pins
 const int switchPin = 2;                    // switch is connected to pin 2
 const int analogPin = 1;                    // analog pin (Concept2)
-
-int peakrpm = 0;
-
-bool AnalogSwitch = false;                            // if we are connected to a concept2
-
+#ifdef UseLCD
+  LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+#endif
+//-------------------------------------------------------------------
+//               global constants
+float c = 2.8;                              //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power. c/p = (v)^3 where p = power in watts, v = velocity in m/s  so v = (c/p)^1/3 v= (2.8/p)^1/3
+                                            //Concept used to quote a figure c=2.8, which, for a 2:00 per 500m split (equivalent to u=500/120=4.17m/s) gives 203 Watts. 
+//-------------------------------------------------------------------
+//               Erg Specific Settings
+bool AnalogSwitch = false;                  // if we are connected to a concept2
 int clicksPerRotation = 1;                  // number of magnets , or clicks detected per rotation.
-
-static int AnalogCountMin = 10;
-static int AnalogMinValue = 4;
-int AnalogCount = 0;                     //indicator to show how high the analog limit has been (count up /count down)
+short numclickspercalc = 3;                 // number of clicks to wait for before doing anything, if we need more time this will have to be reduced.
+float I = 0.04;                             // moment of  interia of the wheel - 0.1001 for Concept2, ~0.05 for V-Fit air rower.*/;
+float mStrokePerRotation = 0;               // relation from rotation to meters of pull on the handle
+//-------------------------------------------------------------------
+//               C2(analog handling
+static int AnalogMinValue = 4;              // minimum value of pulse to recognise the wheel as spinning
+static int AnalogCountMin = 10;             // minimum number of values above the min value before we start monitoring
+int AnalogCount = 0;                        // indicator to show how high the analog limit has been (count up /count down)
 int lastAnalogSwitchValue = 0;              // the last value read from the C2
-bool AnalogDropping = false;
-
+bool AnalogDropping = false;                // indicates if teh analog value is now dropping from a peak (wait until it gets to zero).
+//-------------------------------------------------------------------
+//               reed (switch) handling
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
-short numclickspercalc = 3;                 // number of clicks to wait for before doing anything, if we need more time this will have to be reduced.
-short currentrot = 0;                       // current rotation (for number of clicks per calculation)
-
+//-------------------------------------------------------------------
+//               timing
 unsigned long utime;                        // time of tick in microseconds
 unsigned long mtime;                        // time of tick in milliseconds
-
 unsigned long laststatechangeus;            // time of last click
 unsigned long timetakenus;                  // time taken in milliseconds for a click from the flywheel
 unsigned long lastrotationus;               // milliseconds taken for the last click of the flywheel
 unsigned long startTimems = 0;              // milliseconds from startup to first sample
-unsigned long clicks = 0;                   // number of clicks since start
 unsigned long laststrokeclicks = 0;         // number of clicks since last drive
 unsigned long laststroketimems = 0;         // milliseconds from startup to last stroke drive
 unsigned long strokems;                     // milliseconds from last stroke to this one
-int totalStroke = 0;
+unsigned long driveEndms = 0;               // time of the end of the last drive (beginning of recovery.
+unsigned long recoveryEndms = 0;            // time of the end of the recovery
+unsigned int lastDriveTimems = 0;           // time that the last drive took in milliseconds
+float secondsdecel =  0;                    // number of seconds spent decelerating.
+//-------------------------------------------------------------------
+//               clicks
+unsigned long clicks = 0;                   // number of clicks since start
 unsigned long clicksInDistance = 0;         // number of clicks already accounted for in the distance.
+int diffclicks;                             // clicks from last stroke to this one
+unsigned long driveStartclicks;             // number of clicks at start of drive.
+short currentrot = 0;                       // current rotation (for number of clicks per calculation)
+//-------------------------------------------------------------------
+//               strokes
+int totalStroke = 0;
 float driveLengthm = 0;                     // last stroke length in meters
-static const short numRpms = 100;
-int rpmhistory[numRpms];                      // array of rpm per rotation for debugging
-unsigned long microshistory[numRpms];           // array of the amount of time taken in calc/display for debugging.
-
-short nextrpm = 0;                              // currently measured rpm, to compare to last.
-
+//-------------------------------------------------------------------
+//               rpm/angular Velocity
 float previousDriveAngularVelocity;         // fastest angular velocity at end of previous drive
 float driveAngularVelocity;                 // fastest angular velocity at end of drive
 float recoveryAngularVelocity;              // angular velocity at the end of the recovery  (before drive)
-int diffclicks;                             // clicks from last stroke to this one
-
-int screenstep=0;                           // int - which part of the display to draw next.
+static const short numRpms = 100;           // size of the rpm array
+int rpmhistory[numRpms];                    // array of rpm per rotation for debugging
+unsigned long microshistory[numRpms];       // array of the amount of time taken in calc/display for debugging.
+short nextrpm = 0;                          // currently measured rpm, to compare to last -index in above array.
+int peakrpm = 0;                            // highest measured rpm
+//-------------------------------------------------------------------
+//               acceleration/deceleration
+const unsigned int consecutivedecelerations = 3;//number of consecutive decelerations before we are decelerating
+const unsigned int consecutiveaccelerations = 3;// number of consecutive accelerations before detecting that we are accelerating.
+unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
+unsigned int accelerations = 0;             // number of acceleration rotations;
+//-------------------------------------------------------------------
+//               drag factor 
 int k3 = 0, k2 = 0, k1 = 0;                 // previous k values for smoothing
 float k = 0.000185;                         // drag factor nm/s/s (displayed *10^6 on a Concept 2) nm/s/s == W/s/s
                                             // The displayed drag factor equals the power dissipation (in Watts), at an angular velocity of the flywheel of 100 rad/sec.                               
-float c = 2.8;                              //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power. c/p = (v)^3 where p = power in watts, v = velocity in m/s  so v = (c/p)^1/3 v= (2.8/p)^1/3
-                                            //Concept used to quote a figure c=2.8, which, for a 2:00 per 500m split (equivalent to u=500/120=4.17m/s) gives 203 Watts. 
-float mPerClick = 0;                        // meters per rotation of the flywheel
-
-unsigned long driveStartclicks;             // number of clicks at start of drive.
-float mStrokePerRotation = 0;               // meters of stroke per rotation of the flywheel to work out how long we have pulled the handle in meters from clicks.
-
-const unsigned int consecutivedecelerations = 3;//number of consecutive decelerations before we are decelerating
-const unsigned int consecutiveaccelerations = 3;// number of consecutive accelerations before detecting that we are accelerating.
-
-unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
-unsigned int accelerations = 0;             // number of acceleration rotations;
-
-unsigned long driveEndms = 0;                 // time of the end of the last drive (beginning of recovery.
-unsigned long recoveryEndms = 0;              // time of the end of the recovery
-unsigned int lastDriveTimems = 0;             // time that the last drive took in milliseconds
-float secondsdecel =  0;                      // number of seconds spent decelerating.
-
-//Stats for display
-float split = 0;                                // split time for last stroke in seconds
-float power = 0;                                // last stroke power in watts
-unsigned long spm = 0;                      // current strokes per minute.  
+float mPerClick = 0;                        // meters per rotation of the flywheel (calculated from drag factor)
+//-------------------------------------------------------------------
+//               Stats for display
+float split = 0;                            // split time for last stroke in seconds
+float power = 0;                            // last stroke power in watts
+unsigned short spm = 0;                     // current strokes per minute.  
 float distancem = 0;                        // distance rowed in meters.
-float RecoveryToDriveRatio = 0;                // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
-
-//Constants that vary with machine:
-float I = 0.04;                             // moment of  interia of the wheel - 0.1001 for Concept2, ~0.05 for V-Fit air rower.*/;
-
-String SerialStr = "";                      //string to hold next serial command.
-
-String variable = "";
-String value = "";
-
-#ifdef UseLCD
-  LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
-#endif
+float RecoveryToDriveRatio = 0;             // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
+int screenstep=0;                           // int - which part of the display to draw next.
+//-------------------------------------------------------------------
+//               Serial Interface variables
+String SerialStr = "";                      // string to hold next serial command.
+String variable = "";                       // variable to set 
+String value = "";                          // new value for the variable above.
+//-------------------------------------------------------------------
 
 void setup() 
 {
@@ -171,7 +174,8 @@ void setup()
    #endif
   //pinMode(backLight, OUTPUT);
   //digitalWrite(backLight, HIGH); // turn backlight on. Replace 'HIGH' with 'LOW' to turn it off.
-  analogReference(DEFAULT);//analogReference(INTERNAL);
+  analogReference(DEFAULT);
+  //analogReference(INTERNAL);
   delay(100);
   if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
@@ -219,6 +223,7 @@ void setErgType(short newErgType)
   switch(newErgType)
   {
     case ERGTYPEVFIT:
+        //V-Fit rower with tach.
         AnalogSwitch = false;
         I = 0.032;
         clicksPerRotation = 1;
@@ -227,6 +232,7 @@ void setErgType(short newErgType)
         mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
         break;
     default:
+        //Concept 2
         AnalogSwitch = true;
         I = 0.101;
         //do the calculations less often to allow inaccuracies to be averaged out.
