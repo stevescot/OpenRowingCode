@@ -1379,6 +1379,10 @@ void graphics() {
 
 int getRpm(short offset)
 {
+  if(offset >0) 
+  {
+    serial.println("Warning, rpm in the future requested.");
+  }
   int index = nextrpm - 1 + offset;
     while (index >= numRpms)
     {
