@@ -1,8 +1,43 @@
+//Code for use with a 1602 display with keypad.
+//
+//-------------------------------------------------------------------
+//               reference values for each key on the  keypad:
+static int DEFAULT_KEY_PIN = 0; 
+static int UPKEY_ARV = 144; 
+static int DOWNKEY_ARV = 329;
+static int LEFTKEY_ARV = 505;
+static int RIGHTKEY_ARV = 0;
+static int SELKEY_ARV = 721;
+static int NOKEY_ARV = 1023;
+static int _threshold = 50;
+
+//-------------------------------------------------------------------
+//               custom Character definitions
+#define LCDSlowDown 0
+#define LCDSpeedUp 1
+#define LCDJustFine 3
+//-------------------------------------------------------------------
+//               KEY index definitions
+#define NO_KEY 0
+#define UP_KEY 3
+#define DOWN_KEY 4
+#define LEFT_KEY 2
+#define RIGHT_KEY 5
+#define SELECT_KEY 1
+
+#ifdef UseLCD
+#include <LiquidCrystal.h>
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
 byte screenstep=0;                           // int - which part of the display to draw next.
 
+void lcdSetup()
+{
+    lcd.begin(16, 2);  
+    lcd.clear();
+}
 void writeTimeLeft(long totalSeconds)
 {
-  #ifdef UseLCD
     lcd.clear();
     lcd.print("Interval ");
     lcd.print(intervals);
@@ -11,12 +46,10 @@ void writeTimeLeft(long totalSeconds)
     if(minutes <10) lcd.print ("0");
     lcd.print(minutes);
     int seconds = totalSeconds - (minutes*60);
-  #endif
 }
 
 void writeNextScreen()
 {
-    #ifdef UseLCD
         if(sessionType == DRAGFACTOR)
         {
           lcd.setCursor(0,1);
@@ -44,7 +77,6 @@ void writeNextScreen()
           lcd.clear();
           lcd.print(power);
         }
-     #endif
   //Display Format:
   // 2:16  r3.1SPM:35
   //5000m     10:00
@@ -54,9 +86,7 @@ void writeNextScreen()
   {//only write a little bit to the screen to save time.
     case 0:
     //lcd.clear();
-    #ifdef UseLCD
       lcd.setCursor(0,0);
-    #endif
     break;
     case 1:
     {
@@ -64,32 +94,23 @@ void writeNextScreen()
       int splits = (int)(((split-splitmin*60)));
         if(splitmin < 10)
         {//only display the split if it is less than 10 mins per 500m
-          #ifdef UseLCD
             lcd.print(getSplitString());
             //lcd 0->5, 0  used
-          #endif
         }
-#ifdef debug
-        Serial.print("\tSplit:\t");
-        Serial.print(getSplitString());
-#endif
     }
     break;
     case 2:
       //lcd 10->16,0 used
-      #ifdef UseLCD
         lcd.setCursor(12,0);
         lcd.print("S:");
         lcd.print(spm);
         lcd.print("  ");
-      #endif
 #ifdef debug
     Serial.print("\tSPM:\t");
     Serial.print(spm);
 #endif
     break;
     case 3:
-      #ifdef UseLCD
        lcd.setCursor(0,1);
        //Distance in meters:
       if(sessionType == DISTANCE)
@@ -109,7 +130,6 @@ void writeNextScreen()
         lcd.print((int)distancem);
         lcd.print("m");
       }
-      #endif
       
       #ifdef debug
       Serial.print("\tDistance:\t");
@@ -123,19 +143,14 @@ void writeNextScreen()
     break;
     case 4:
       //lcd 11->16 used
-      
-      #ifdef UseLCD
         lcd.setCursor(11,1);
-        lcd.print(getTime());
-      #endif
-      
+        lcd.print(getTime());      
       #ifdef debug
         Serial.print("\tTime:\t");
         Serial.print(getTime());
       #endif
       break;
     case 5://next lime
-    #ifdef UseLCD
       //lcd 6->9 , 0
        lcd.setCursor(7,0);
        if(RecoveryToDriveRatio > 2.1)
@@ -151,7 +166,6 @@ void writeNextScreen()
           lcd.print((char)(int)LCDJustFine);
         }       
        //lcd.print(RecoveryToDriveRatio,1);
-    #endif
     #ifdef debug
        Serial.print("\tDrag factor:\t");
        Serial.print(k*1000000);
@@ -179,7 +193,6 @@ void writeNextScreen()
 
 
 //Current selection (Distance, Time)
-#ifdef UseLCD
 void startMenu()
 {
   menuType();
@@ -754,4 +767,3 @@ void graphics() {
 }
 
 #endif
-

@@ -5,8 +5,7 @@
  * 41% total
  */
 #include <avr/sleep.h>
-#include <LiquidCrystal.h>
-//#include "LCDinclude.h"   // comment out this line to not use a 16x2 LCD keypad shield, and just do serial reporting.
+//#define UseLCD 
 #include "mainEngine.h"   
 //#define debug  // uncomment this to get more verbose serial output
 
@@ -27,8 +26,7 @@ void setup()
    buttonState = digitalRead(switchPin);    // read the initial state
    // set up the LCD's number of columns and rows: 
    #ifdef UseLCD
-    lcd.begin(16, 2);  
-    lcd.clear();
+    lcdSetup();
    #endif
   analogReference(DEFAULT);
   //analogReference(INTERNAL);
@@ -72,6 +70,9 @@ void loop()
    if (val != buttonState && val == LOW && (utime- laststatechangeus) >5000)            // the button state has changed!
     { 
       registerClick();
+         #ifdef UseLCD
+            writeNextScreen();
+         #endif
       laststatechangeus=utime;
     }
     if((millis()-mtime) >=10)

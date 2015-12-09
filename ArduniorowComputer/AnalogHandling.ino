@@ -6,7 +6,6 @@ byte AnalogCount = 0;                        // indicator to show how high the a
 byte lastAnalogSwitchValue = 0;              // the last value read from the C2
 bool AnalogDropping = false;                // indicates if teh analog value is now dropping from a peak (wait until it gets to zero).
 
-
 void doAnalogRead()
 {//simulate a reed switch from the coil
     int analog = analogRead(analogPin);

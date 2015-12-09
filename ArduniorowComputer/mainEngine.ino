@@ -230,7 +230,7 @@ void registerClick()
             clicksInDistance = clicks;
           }
           //if we are spinning slower than 10ms per spin then write the next screen
-          if(timetakenus > 10000) writeNextScreen();
+//          if(timetakenus > 10000) writeNextScreen();
           lastrotationus = timetakenus;
           //watch out for integer math problems here
           //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms); 
@@ -301,7 +301,9 @@ void showInterval(long numSeconds)
   {
     delay(200);
     currentTime = millis()/1000;
-    writeTimeLeft(startTime+numSeconds-currentTime);
+    #ifdef UseLCD
+      writeTimeLeft(startTime+numSeconds-currentTime);
+    #endif
   }
   Serial.println("Interval Over");
 }
