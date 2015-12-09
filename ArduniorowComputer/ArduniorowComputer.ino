@@ -18,7 +18,6 @@ const byte analogPin = 1;                    // analog pin (Concept2)
 int val;                                    // variable for reading the pin status
 int buttonState;                            // variable to hold the button state
 
-
 void setup() 
 {
    pinMode(switchPin, INPUT_PULLUP);        // Set the switch pin as input
