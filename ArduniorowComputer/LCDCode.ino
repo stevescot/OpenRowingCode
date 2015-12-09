@@ -174,7 +174,7 @@ void writeNextScreen()
    case 6:
    #ifdef debug
       Serial.print("\tDrive angularve: ");
-      Serial.print(driveAngularVelocity);
+      //Serial.print(driveAngularVelocity);
 
       Serial.print("\tRPM:\t");
       {
