@@ -191,6 +191,7 @@ void registerClick()
                 //get the angular velocity before the change. 
                 //set the drive angular velocity to be the value it was 4 clicks ago (before any deceleration
                 driveAngularVelocity = (float)getRpm(-consecutiveaccelerations-1)/60*2*PI;
+                driveEndms = mtime;
                 for(int i =0;i<consecutiveaccelerations; i++)
                 {//work back to get recovery time before our consecutive check.
                   driveEndms -=(float)60000/getRpm(0-i);
