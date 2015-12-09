@@ -289,6 +289,10 @@ void processSerial()
             targetSeconds = SerialStr.toInt();
             Serial.println("Target Time Set");
       }
+      else if(variable == "DumpRPM")
+      {
+            dumprpms();
+      }
       else 
       {
           Serial.println("Unreckognised");
@@ -1381,7 +1385,7 @@ int getRpm(short offset)
 {
   if(offset >0) 
   {
-    serial.println("Warning, rpm in the future requested.");
+    Serial.println("Warning, rpm in the future requested.");
   }
   int index = nextrpm - 1 + offset;
     while (index >= numRpms)
