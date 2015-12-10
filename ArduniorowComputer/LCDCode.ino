@@ -1,3 +1,5 @@
+#ifdef UseLCD
+
 //Code for use with a 1602 display with keypad.
 //
 //-------------------------------------------------------------------
@@ -25,7 +27,6 @@ static int _threshold = 50;
 #define RIGHT_KEY 5
 #define SELECT_KEY 1
 
-#ifdef UseLCD
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 

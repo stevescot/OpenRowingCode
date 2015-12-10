@@ -4,6 +4,7 @@
  */
 #include "mainEngine.h"   
 //#define debug  // uncomment this to get more verbose serial output
+//ota update : https://github.com/esp8266/Arduino/blob/master/doc/ota_updates/ota_updates.md
 
 //-------------------------------------------------------------------
 //               pins
