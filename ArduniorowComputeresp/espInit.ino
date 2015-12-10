@@ -8,8 +8,6 @@ WiFiServer server(80);
 #include "./DNSServer.h"                  // Patched lib
 DNSServer         dnsServer;              // Create the DNS object
 const byte        DNS_PORT = 53;          // Capture DNS requests on port 53
-
-MDNSResponder mdns;
 String st, host, site;
 //SSID when in unassociated mode.
 const char * ssid = "IntelligentPlant";
@@ -19,10 +17,9 @@ String MAC;                  // the MAC address of your Wifi shield
 rowWiFi RowServer("demo1.intelligentplant.com","IProw", client);
 
 void setupWiFi() {
-    st = "";//empty the option list string to save some memory.
+  st = "";//empty the option list string to save some memory.
   st.reserve(0);
   EEPROM.begin(512);
-  Serial.begin(115200);
   delay(10);
   byte mac[6];   
   WiFi.macAddress(mac);
@@ -80,12 +77,19 @@ void setupWiFi() {
       // test esid 
       WiFi.begin(esid.c_str(), epass.c_str());
       if ( testWifi() == 20 ) { 
-          //launchWeb(0);
           Serial.println("Connected, returning");
-          return;
+      }
+      else
+      {
+        //timed out - setup access point again
+        setupAP();
       }
   }
-  setupAP(); 
+  else
+  {
+    //no ssid - setup access point.
+    setupAP(); 
+  }
 }
 
 void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery)
@@ -93,18 +97,18 @@ void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDist
   RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery);
 }
 
-int testWifi(void) {
+int testWifi() {
   int c = 0;
   Serial.println("Waiting for Wifi to connect");  
- /* while ( c < 20 ) {
+  while ( c < 20 ) {
     if (WiFi.status() == WL_CONNECTED) {return(20); } 
-    delay(1000);
+    delay(200);
     Serial.println(WL_CONNECTED);
     Serial.print(WiFi.status());    
-    delay(100);
-    Serial.println("rechecking Connection");
+    delay(200);
+    Serial.println("rechecking Connection..");
     c++;
-  }*/
+  }
   Serial.println("Connect timed out, opening AP");
   return(10);
 } 
