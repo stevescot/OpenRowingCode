@@ -25,9 +25,6 @@ void setup()
    pinMode(switchPin, INPUT_PULLUP);        // Set the switch pin as input
    buttonState = digitalRead(switchPin);    // read the initial state
    // set up the LCD's number of columns and rows: 
-   #ifdef UseLCD
-    lcdSetup();
-   #endif
   //analogReference(DEFAULT);
   //analogReference(INTERNAL);
   delay(100);
