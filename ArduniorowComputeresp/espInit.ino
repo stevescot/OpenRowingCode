@@ -118,7 +118,6 @@ void launchWeb(int webtype) {
           Serial.println("WiFi connected");
           Serial.println(WiFi.localIP());
           Serial.println(WiFi.softAPIP());
-          //mdns.begin("row", WiFi.softAPIP());
           dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
           // Start the server
           server.begin();
