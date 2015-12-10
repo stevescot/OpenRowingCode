@@ -85,7 +85,8 @@ void writeStrokeRow()
   Serial.print(getTime()); Serial.print("\t");
   Serial.print(k*1000000); 
   Serial.println();
-  SendSplit(mtime, 10, distancem, lastDriveTimems, strokems - lastDriveTimems);
+  float splitdistance = (float)strokems/1000/split*500;
+  SendSplit(mtime, splitdistance, distancem, lastDriveTimems, strokems - lastDriveTimems);
 }
 
 
