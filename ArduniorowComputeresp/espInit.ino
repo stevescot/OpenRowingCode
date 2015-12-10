@@ -76,7 +76,12 @@ void setupWiFi() {
   if ( esid.length() > 1 ) {
       // test esid 
       WiFi.mode(WIFI_STA);
+      Serial.print("connecting to : ");
+      Serial.print(esid.c_str());
+      Serial.print("with password: ");
+      Serial.println(epass.c_str());
       WiFi.begin(esid.c_str(), epass.c_str());
+      WiFi.mode(WIFI_STA);
       if ( testWifi() == 20 ) { 
           Serial.println("Connected, returning");
       }
@@ -100,16 +105,17 @@ void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDist
 
 int testWifi() {
   int c = 0;
+  int x = 0;
   Serial.println("Waiting for Wifi to connect");  
-//  while ( c < 20 ) {
-//    if (WiFi.status() == WL_CONNECTED) {return(20); } 
-//    delay(200);
-//    Serial.println(WL_CONNECTED);
-//    Serial.print(WiFi.status());    
-//    delay(200);
-//    Serial.println("rechecking Connection..");
-//    c++;
-//  }
+  while ( c < 20 ) {
+    delay(300);
+    x = WiFi.status();
+    if(x == WL_CONNECTED) {return(20); } 
+    Serial.println(WL_CONNECTED);
+    Serial.print(x);    
+    Serial.println("rechecking Connection..");
+    c++;
+  }
   Serial.println("Connect timed out, opening AP");
   return(10);
 } 
