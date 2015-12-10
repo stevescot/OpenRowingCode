@@ -7,8 +7,8 @@
 
 //-------------------------------------------------------------------
 //               pins
-const byte switchPin = 2;                    // switch is connected to pin 2
-const byte analogPin = 1;                    // analog pin (Concept2)
+const byte switchPin = 1;                    // switch is connected to pin 2
+const byte analogPin = 2;                    // analog pin (Concept2)
 //-------------------------------------------------------------------
 //               reed (switch) handling
 int val;                                    // variable for reading the pin status
@@ -16,31 +16,34 @@ int buttonState;                            // variable to hold the button state
 
 void setup() 
 {
-  setupWiFi();
-   pinMode(switchPin, INPUT_PULLUP);        // Set the switch pin as input
+  
    Serial.begin(115200);                    // Set up serial communication at 115200bps
+  Serial.println("startup");
+  setupWiFi();
+  Serial.println("done Wifi");
+   pinMode(switchPin, INPUT_PULLUP);        // Set the switch pin as input
    buttonState = digitalRead(switchPin);    // read the initial state
    // set up the LCD's number of columns and rows: 
    #ifdef UseLCD
     lcdSetup();
    #endif
-  analogReference(DEFAULT);
+  //analogReference(DEFAULT);
   //analogReference(INTERNAL);
   delay(100);
-  if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
+  /*if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
     setErgType(ERGTYPEC2);
     Serial.print("Concept 2 detected on pin ");
     Serial.println(analogPin);
   }
   else
-  {
+  {*/
     setErgType(ERGTYPEVFIT);
     Serial.print("No Concept 2 detected on Analog pin ");
     Serial.println(analogPin);
     Serial.print("Detecting reed switch on pin ");
     Serial.println(switchPin);
-  }
+  /*}*/
   Serial.println("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor");
 }
 

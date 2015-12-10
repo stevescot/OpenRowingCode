@@ -5,6 +5,9 @@
 #include <EEPROM.h>
 WiFiClient client;
 WiFiServer server(80);
+#include "./DNSServer.h"                  // Patched lib
+DNSServer         dnsServer;              // Create the DNS object
+const byte        DNS_PORT = 53;          // Capture DNS requests on port 53
 
 MDNSResponder mdns;
 String st, host, site;
@@ -78,6 +81,7 @@ void setupWiFi() {
       WiFi.begin(esid.c_str(), epass.c_str());
       if ( testWifi() == 20 ) { 
           //launchWeb(0);
+          Serial.println("Connected, returning");
           return;
       }
   }
@@ -92,12 +96,15 @@ void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDist
 int testWifi(void) {
   int c = 0;
   Serial.println("Waiting for Wifi to connect");  
-  while ( c < 20 ) {
-    if (WiFi.status() == WL_CONNECTED) { return(20); } 
-    delay(500);
+ /* while ( c < 20 ) {
+    if (WiFi.status() == WL_CONNECTED) {return(20); } 
+    delay(1000);
+    Serial.println(WL_CONNECTED);
     Serial.print(WiFi.status());    
+    delay(100);
+    Serial.println("rechecking Connection");
     c++;
-  }
+  }*/
   Serial.println("Connect timed out, opening AP");
   return(10);
 } 
@@ -107,15 +114,18 @@ void launchWeb(int webtype) {
           Serial.println("WiFi connected");
           Serial.println(WiFi.localIP());
           Serial.println(WiFi.softAPIP());
-          mdns.begin("row", WiFi.softAPIP());
+          //mdns.begin("row", WiFi.softAPIP());
+          dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
           // Start the server
           server.begin();
+          
           Serial.println("Server started");   
           int b = 20;
           int c = 0;
           while(b == 20) 
           { 
              b = mdns1(webtype);
+             dnsServer.processNextRequest();
           }
 }
 
