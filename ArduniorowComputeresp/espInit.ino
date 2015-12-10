@@ -178,9 +178,7 @@ void setupAP(void) {
 }
 
 int mdns1(int webtype)
-{
-  // Check for any mDNS queries and send responses  mdns.update();
-  
+{  
   // Check if a client has connected
   WiFiClient client = server.available();
   if (!client) {
@@ -256,10 +254,19 @@ int mdns1(int webtype)
         s += "<tr><td><label>Password</label></td><td><input name='pass' length=64 size=64/></td></tr>";
         s += "<tr><td><label>Server:</label></td><td><input name='g' value='rowing.intelligentplant.com' size=64/></td></tr>";
         s += "<tr><td><label>My Name</label></td><td><input name='n' length=40 value='RowComputer1' size=64/></td></tr>";
-        s += "<tr><td><label>Site</label></td><td><input name='s' length=20 value='Row' size=64/><input type='submit'></td></tr>";
+        s += "<tr><td><label>Site</label></td><td><input name='s' length=20 value='Row' size=64/><input type='submit'/></td></tr>";
         s += "</table></form>";
+        s += "<form method='get' action='r'>";
+        s += "<input type = 'submit' text='rescan networks'>";
         s += "</html>\r\n\r\n";
         Serial.println("Sending 200");
+      }
+      else if (req.startsWith("/r"))
+      {//rescan - disconnect and scan for wifi networks - then return.
+        client.print("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> disconnecting and scanning networks, when connected again - click <a href ='/' >here</a>");
+        client.flush(); 
+        delay(100);
+        setupAP();
       }
       else if ( req.startsWith("/a?ssid=") ) {
         // /a?ssid=blahhhh&pass=poooo&g=demo1&s=pnid
