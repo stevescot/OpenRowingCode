@@ -17,8 +17,8 @@ float recoveryAngularVelocity;              // angular velocity at the end of th
 
 //-------------------------------------------------------------------
 //               acceleration/deceleration
-const unsigned int consecutivedecelerations = 3;//number of consecutive decelerations before we are decelerating
-const unsigned int consecutiveaccelerations = 3;// number of consecutive accelerations before detecting that we are accelerating.
+const unsigned int consecutivedecelerations = 6;//number of consecutive decelerations before we are decelerating
+const unsigned int consecutiveaccelerations = 6;// number of consecutive accelerations before detecting that we are accelerating.
 unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
 unsigned int accelerations = 0;             // number of acceleration rotations;
 //-------------------------------------------------------------------
@@ -119,9 +119,30 @@ void registerClick()
               {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                 totalStroke++;
                 //work back to get recovery velocity and time before our consecutive check.
-                recoveryAngularVelocity=(float)getRpm(-consecutivedecelerations-1)/60*2*PI;
+                int lowestVal = 2000;
+                int tempLow = 0;
+                for(int e=0;e<consecutivedecelerations; e++)
+                {
+                  Serial.print(" ");
+                  Serial.print(e);
+                  Serial.print(":");
+                  Serial.print(getRpm(-e));
+                  
+                  if(getRpm(-e) <= lowestVal){
+                    lowestVal = getRpm(-e);
+                    tempLow = e;
+                  }
+                  
+                }
+              
+                Serial.print(" tempLow(");
+                Serial.print(tempLow);
+                Serial.print("):");
+                Serial.print(getRpm(0-tempLow));
+                Serial.print("\t");
+                recoveryAngularVelocity=(float)getRpm(0-tempLow)/60*2*PI;
                 recoveryEndms = mtime;
-                for(int i =0;i<consecutivedecelerations; i++)
+                for(int i =0;i<tempLow; i++)
                 {//work back to get recovery time before our consecutive check.
                   recoveryEndms -=(float)60000/getRpm(0-i);
                 }
@@ -190,6 +211,8 @@ void registerClick()
               {
                 //get the angular velocity before the change. 
                 //set the drive angular velocity to be the value it was 4 clicks ago (before any deceleration
+                
+                
                 driveAngularVelocity = (float)getRpm(-consecutiveaccelerations-1)/60*2*PI;
                 driveEndms = mtime;
                 for(int i =0;i<consecutiveaccelerations; i++)

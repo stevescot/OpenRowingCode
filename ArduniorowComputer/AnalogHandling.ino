@@ -1,7 +1,7 @@
 //-------------------------------------------------------------------
 //               C2(analog handling
 static int AnalogMinValue = 4;              // minimum value of pulse to recognise the wheel as spinning
-static byte AnalogCountMin = 10;             // minimum number of values above the min value before we start monitoring
+static byte AnalogCountMin = 8;             // minimum number of values above the min value before we start monitoring
 byte AnalogCount = 0;                        // indicator to show how high the analog limit has been (count up /count down)
 byte lastAnalogSwitchValue = 0;              // the last value read from the C2
 bool AnalogDropping = false;                // indicates if teh analog value is now dropping from a peak (wait until it gets to zero).
