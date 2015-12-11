@@ -10,11 +10,11 @@ DNSServer         dnsServer;              // Create the DNS object
 const byte        DNS_PORT = 53;          // Capture DNS requests on port 53
 String st, host, site;
 //SSID when in unassociated mode.
-const char * ssid = "IntelligentPlant";
+const char * ssid = "IProw";
 //name of this node.
 String myName = "";
 String MAC;                  // the MAC address of your Wifi shield
-rowWiFi RowServer("demo1.intelligentplant.com","IProw", client);
+rowWiFi RowServer("monitoring.intelligentplant.com","row", client);
 
 void setupWiFi() {
   st = "";//empty the option list string to save some memory.
@@ -32,23 +32,23 @@ void setupWiFi() {
   }
   Serial.println();
   Serial.println();
-  Serial.println("Startup");
+  Serial.println(F("Startup"));
   // read eeprom for ssid and pass
-  Serial.println("Reading EEPROM ssid");
+  Serial.println(F("Reading EEPROM ssid"));
   char esid[32];
   for (int i = 0; i < 32; ++i)
     {
       esid[i] = EEPROM.read(i);
     }
-  Serial.print("SSID: ");
+  Serial.print(F("SSID: "));
   Serial.println(esid);
-  Serial.println("Reading EEPROM pass");
+  Serial.println(F("Reading EEPROM pass"));
   char epass[64] ;
   for (int i = 32; i < 96; ++i)
     {
       epass[i-32] += char(EEPROM.read(i));
     }
-  Serial.print("PASS: ");
+  Serial.print(F("PASS: "));
   Serial.println(epass);  
   host.reserve(64);
   for (int i = 96; i < 160; i++)
@@ -58,7 +58,7 @@ void setupWiFi() {
         host += char(EEPROM.read(i));
       }
   }
-  Serial.print("Gestalt: " );
+  Serial.print(F("Gestalt: " ));
   Serial.println(host);
   myName.reserve(40);
   for (int i = 160; i < 200; i++)
@@ -68,7 +68,7 @@ void setupWiFi() {
         myName += char(EEPROM.read(i));
       }
   }
-  Serial.print("MyName: " );
+  Serial.print(F("MyName: " ));
   Serial.println(myName);
   site.reserve(20);
   for(int i = 200; i < 220; i++)
@@ -78,16 +78,16 @@ void setupWiFi() {
         site += char(EEPROM.read(i));
       }
   }
-  Serial.print("Site: ");
+  Serial.print(F("Site: "));
   Serial.println(site);
   if ( esid != "" ) {
       // test esid 
-      Serial.print("connecting to : ");
+      Serial.print(F("connecting to : "));
       Serial.print(esid);
-      Serial.print("with password: ");
+      Serial.print(F("with password: "));
       Serial.println(epass);
       if ( testWifi(esid, epass) == 20 ) { 
-          Serial.println("Connected, returning");
+          Serial.println(F("Connected, returning"));
       }
       else
       {
@@ -110,7 +110,7 @@ void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDist
 int testWifi(char esid[], char epass[]) {
   int c = 0;
   int x = 0;
-  Serial.println("Waiting for Wifi to connect");  
+  Serial.println(F("Waiting for Wifi to connect"));  
   while ( c < 20 ) {
     if(epass != "")
     {
@@ -127,23 +127,23 @@ int testWifi(char esid[], char epass[]) {
       } 
     // wait 10 seconds for connection:
     delay(10000);
-    Serial.println("rechecking Connection..");
+    Serial.println(F("rechecking Connection.."));
     c++;
   }
-  Serial.println("Connect timed out, opening AP");
+  Serial.println(F("Connect timed out, opening AP"));
   return(10);
 } 
 
 void launchWeb(int webtype) {
-          Serial.println("");
-          Serial.println("WiFi connected");
+          Serial.println();
+          Serial.println(F("WiFi connected"));
           Serial.println(WiFi.localIP());
           Serial.println(WiFi.softAPIP());
           dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
           // Start the server
           server.begin();
           
-          Serial.println("Server started");   
+          Serial.println(F("Server started"));   
           int b = 20;
           int c = 0;
           while(b == 20) 
@@ -159,46 +159,46 @@ void setupAP(void) {
   WiFi.disconnect();
   delay(100);
   int n = WiFi.scanNetworks();
-  Serial.println("scan done");
+  Serial.println(F("scan done"));
   if (n == 0)
-    Serial.println("no networks found");
+    Serial.println(F("no networks found"));
   else
   {
     Serial.print(n);
-    Serial.println(" networks found");
+    Serial.println(F(" networks found"));
     for (int i = 0; i < n; ++i)
      {
       // Print SSID and RSSI for each network found
       Serial.print(i + 1);
-      Serial.print(": ");
+      Serial.print(F(": "));
       Serial.print(WiFi.SSID(i));
-      Serial.print(" (");
+      Serial.print(F(" ("));
       Serial.print(WiFi.RSSI(i));
-      Serial.print(")");
+      Serial.print(F(")"));
       Serial.println((WiFi.encryptionType(i) == ENC_TYPE_NONE)?" ":"*");
       delay(10);
      }
   }
   Serial.println(""); 
   st.reserve(60 + n * 20);
-  st = "<select name='ssid'>";
+  st = F("<select name='ssid'>");
   for (int i = 0; i < n; ++i)
     {
       // Print SSID and RSSI for each network found
-      st += "<option value = '";
+      st += F("<option value = '");
       st += WiFi.SSID(i);
-      st += "'/>";
+      st += F("'/>");
       st += WiFi.SSID(i);
-      st += "</option>";
+      st += F("</option>");
     }
-  st += "</select>";
+  st += F("</select>");
   delay(100);
 
   WiFi.softAP(ssid);
-  Serial.println("softap");
-  Serial.println("");
+  Serial.println(F("softap"));
+  Serial.println();
   launchWeb(1);
-  Serial.println("over");
+  Serial.println(F("over"));
 }
 
 int mdns1(int webtype)
@@ -208,8 +208,8 @@ int mdns1(int webtype)
   if (!client) {
     return(20);
   }
-  Serial.println("");
-  Serial.println("New client");
+  Serial.println();
+  Serial.println(F("New client"));
 
   // Wait for data from client to become available
   while(client.connected() && !client.available()){
@@ -224,12 +224,12 @@ int mdns1(int webtype)
   int addr_start = req.indexOf(' ');
   int addr_end = req.indexOf(' ', addr_start + 1);
   if (addr_start == -1 || addr_end == -1) {
-    Serial.print("Invalid request: ");
+    Serial.print(F("Invalid request: "));
     Serial.println(req);
     return(20);
    }
   req = req.substring(addr_start + 1, addr_end);
-  Serial.print("Request: ");
+  Serial.print(F("Request: "));
   Serial.println(req);
   client.flush(); 
   String s;
@@ -238,58 +238,57 @@ int mdns1(int webtype)
     {
         IPAddress ip = WiFi.softAPIP();
         String ipStr = String(ip[0]) + '.' + String(ip[1]) + '.' + String(ip[2]) + '.' + String(ip[3]);
-        s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>";
-        s += "<head><style>table#settings {";
-        s += "font-size:16px;";
-        s += "font-family: 'Trebuchet MS', Arial, Helvetica, sans-serif;";
-        s += "border-collapse: collapse;";
-        s += "border-spacing: 0;";
-        s += "width: 100%;";
-        s += "}";
-        s += "#settings td, #settings th {";
-        s += "border: 1px solid #ddd;";
-        s += "text-align: left;";
-        s += "padding: 8px;";
-        s += "}";
-        s += "#settings tr:nth-child(even){background-color: #f2f2f2}";
-        s += "#settings th {";
-        s += "padding-top: 11px;";
-        s += "padding-bottom: 11px;";
-        s += "background-color: #4CAF50;";
-        s += "color: white;";
-        s += "}";
-        s += "</style>";
-        s += "</head>";
-        s += "<body>";
+        s =  F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>");
+        s += F("<head><style>table#settings {");
+        s += F("font-size:16px;");
+        s += F("font-family: 'Trebuchet MS', Arial, Helvetica, sans-serif;");
+        s += F("border-collapse: collapse;");
+        s += F("border-spacing: 0;");
+        s += F("width: 100%;");
+        s += F("}");
+        s += F("#settings td, #settings th {");
+        s += F("border: 1px solid #ddd;");
+        s += F("text-align: left;");
+        s += F("padding: 8px;");
+        s += F("}");
+        s += F("#settings tr:nth-child(even){background-color: #f2f2f2}");
+        s += F("#settings th {");
+        s += F("padding-top: 11px;");
+        s += F("padding-bottom: 11px;");
+        s += F("background-color: #4CAF50;");
+        s += F("color: white;");
+        s += F("}");
+        s += F("</style>");
+        s += F("</head>");
+        s += F("<body>");
         client.print(s);
-        s = "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABMdJREFUeNrsnYtx2kAQho9UoA6MO6CDqAPTQZQKTCowroB0IHdAXAF2BTgVQCrAqcDhZk4TmbFBj13dQ983sxOHcRR0++9q9x5gDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAxMpkwP8rO1p";
-        s += "+tFnttRdne1yRLtbh66O9nbGNEwckxuqC409txZClQ9nS+ZWtGbr4WXZ0PpkgAaY9nV8ZNcHIUv9HhSFEyJugTRlOXb4IX086bc9wUVwCmCGAcQsgY0jHLYBXhnTcAngJ/HowAAfBLoBHSmQZwPJL8Do8UiJkKhT9dAARszCsBYyerlPCJUM33kywZMjSrAnKC91BaZj394LEnkDbqs2PdnPStj26Sn5fey13xV3mKnzb5z/hhniZN+j7Ny615wxXWhSm+zo/goic3Mj";
-        s += "N9m1csUjfHxEbI7vxozL7OFkjiLCLwNwMt13r1RWJz+5PFof++8Da1Un39OyK7iejeNimVIp+MkT/drpuW1eniZJ5dP4lQaQ6j2DHfNVjjHaSBfciMAF8dLOlU34Kgpi5e5IYm6XEG9oFLoCUBDEzsnsreq+z5JE5/5wg8hE6v/dKa5mAAOpWBCyArfK9z7tUoG8JWoiZYDlQ8ZyF8qYOLrv4qC9CO4mcKab+XkWhpnPKk0xTOMcMNRAhMWSXdWj6pubKb2R6oRhaKAvil";
-        s += "JgK2qKWyvMOdVqjWmCteBNtp5SlBbGJVADbM8/wQrIj0C7++lbifQVRRCiAJgXcUioAVyE8gzoKouukSOgCaNLHZ1I+OHi+EYlVs6V5v3y9uZB5Umldm84lfEph/BV/Y2TpQwDnjoZ9U7zZ082i0Jybho+AJsvle1/F3xw/dl5rGaQI1Cz+dvi6d9CptoHa05FLfC2yCFRNBE2lJ4K0iz/O/Ac+Fay5FMnBz8vFm9fFoJkZ3/JrrO2gymyi5qYPij+dWkCsC9NOPwv82hgv";
+        s = F("<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABMdJREFUeNrsnYtx2kAQho9UoA6MO6CDqAPTQZQKTCowroB0IHdAXAF2BTgVQCrAqcDhZk4TmbFBj13dQ983sxOHcRR0++9q9x5gDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAxMpkwP8rO1p");
+        s += F("+tFnttRdne1yRLtbh66O9nbGNEwckxuqC409txZClQ9nS+ZWtGbr4WXZ0PpkgAaY9nV8ZNcHIUv9HhSFEyJugTRlOXb4IX086bc9wUVwCmCGAcQsgY0jHLYBXhnTcAngJ/HowAAfBLoBHSmQZwPJL8Do8UiJkKhT9dAARszCsBYyerlPCJUM33kywZMjSrAnKC91BaZj394LEnkDbqs2PdnPStj26Sn5fey13xV3mKnzb5z/hhniZN+j7Ny615wxXWhSm+zo/goic3Mj");
+        s += F("N9m1csUjfHxEbI7vxozL7OFkjiLCLwNwMt13r1RWJz+5PFof++8Da1Un39OyK7iejeNimVIp+MkT/drpuW1eniZJ5dP4lQaQ6j2DHfNVjjHaSBfciMAF8dLOlU34Kgpi5e5IYm6XEG9oFLoCUBDEzsnsreq+z5JE5/5wg8hE6v/dKa5mAAOpWBCyArfK9z7tUoG8JWoiZYDlQ8ZyF8qYOLrv4qC9CO4mcKab+XkWhpnPKk0xTOMcMNRAhMWSXdWj6pubKb2R6oRhaKAvil");
+        s += F("JgK2qKWyvMOdVqjWmCteBNtp5SlBbGJVADbM8/wQrIj0C7++lbifQVRRCiAJgXcUioAVyE8gzoKouukSOgCaNLHZ1I+OHi+EYlVs6V5v3y9uZB5Umldm84lfEph/BV/Y2TpQwDnjoZ9U7zZ082i0Jybho+AJsvle1/F3xw/dl5rGaQI1Cz+dvi6d9CptoHa05FLfC2yCFRNBE2lJ4K0iz/O/Ac+Fay5FMnBz8vFm9fFoJkZ3/JrrO2gymyi5qYPij+dWkCsC9NOPwv82hgv");
         client.print(s);
-        s = "W8I0C5AtxV8QIjhbg0lv+tg5tXHEq58IBtkWnhu54qLE6eKdgfrBkFIo2vOakfL9zBK2Oho2qRV/Q/B08nd7+PP3B6/Z3+Mg6PsALRr+7v3RHkyLxbZQj3tVj5OM6Ndttbcm/C1Q+cijX3WLXSy7YFcjzAbq0R+TAMSPOhP98QlgTEvKg0R/rAKo2pwZ0d9/e/0uYhGkusYwWPQbo7v9ayjbmLR2GQ8W/V1nmUJtFxdE/3izQP3Id0b0pzch1DYbzIn+dmRG7xNAfVlsU8mDR";
-        s += "//kk7WBO6WBqz4i3rI/2p/az9ZuFJ7j9rrfTfgfSz9tEdX2nq61BFBhFXbboNeunGecc//Wfq6+9avN4OdG5wskfh7tR+DR3zSqraAfpARwaVbtyomgLgTr0Ocz/+bB9Dv7l7kBkX6O3wc6i+gl+rVnAiWiuMkXUqRwKtlb5T/EVHBfIUgXp4sAo9/r1vohK/I+QlgIZYM10e9HABJCmApkgw3R/74I9PVZeQ+1NrAttz3aVNudPAYigK+m+f4Gsco/FAFAu7mMa40Lf2Fso+B";
-        s += "e68JkgBFHPxlg5NFfZYBc6Fq2or0zfPxbNNGvRWHi32bGl1oghCC2wCcBQhhh9COESKJ/4kEIuYEmxd+eYQAAAAAAAAAAAAAAAAAAAAAAAIAW/BNgAJTlfGP7NWKCAAAAAElFTkSuQmCC' /> ";
-        s += "<h2>Row Computer Wifi Setup</h2>";
+        s = F("W8I0C5AtxV8QIjhbg0lv+tg5tXHEq58IBtkWnhu54qLE6eKdgfrBkFIo2vOakfL9zBK2Oho2qRV/Q/B08nd7+PP3B6/Z3+Mg6PsALRr+7v3RHkyLxbZQj3tVj5OM6Ndttbcm/C1Q+cijX3WLXSy7YFcjzAbq0R+TAMSPOhP98QlgTEvKg0R/rAKo2pwZ0d9/e/0uYhGkusYwWPQbo7v9ayjbmLR2GQ8W/V1nmUJtFxdE/3izQP3Id0b0pzch1DYbzIn+dmRG7xNAfVlsU8mDR");
+        s += F("//kk7WBO6WBqz4i3rI/2p/az9ZuFJ7j9rrfTfgfSz9tEdX2nq61BFBhFXbboNeunGecc//Wfq6+9avN4OdG5wskfh7tR+DR3zSqraAfpARwaVbtyomgLgTr0Ocz/+bB9Dv7l7kBkX6O3wc6i+gl+rVnAiWiuMkXUqRwKtlb5T/EVHBfIUgXp4sAo9/r1vohK/I+QlgIZYM10e9HABJCmApkgw3R/74I9PVZeQ+1NrAttz3aVNudPAYigK+m+f4Gsco/FAFAu7mMa40Lf2Fso+B");
+        s += F("e68JkgBFHPxlg5NFfZYBc6Fq2or0zfPxbNNGvRWHi32bGl1oghCC2wCcBQhhh9COESKJ/4kEIuYEmxd+eYQAAAAAAAAAAAAAAAAAAAAAAAIAW/BNgAJTlfGP7NWKCAAAAAElFTkSuQmCC' /> ");
+        s += F("<h2>Row Computer Wifi Setup</h2>");
         client.print(s);
         s = ipStr;
-        s += "<form method='get' action='a'>";
-        s += "<table id='settings'><tr><th>Setting</th><th>Value</th></tr><tr><td><label>SSID: </label></td><td>";
+        s += F("<form method='get' action='a'>");
+        s += F("<table id='settings'><tr><th>Setting</th><th>Value</th></tr><tr><td><label>SSID: </label></td><td>");
         s += st;
-        s += "<input type = 'submit' value='rescan networks'></td></tr>";
-        s += "<tr><td><label>Password</label></td><td><input name='pass' length=64 size=64/></td></tr>";
-        s += "<tr><td><label>Server:</label></td><td><input name='g' value='rowing.intelligentplant.com' size=64/></td></tr>";
-        s += "<tr><td><label>My Name</label></td><td><input name='n' length=40 value='RowComputer1' size=64/></td></tr>";
-        s += "<tr><td><label>Site</label></td><td><input name='s' length=20 value='Row' size=64/><input type='submit' value='save details'/></td></tr>";
-        s += "</table></form>";
-        s += "<form method='get' action='r'>";
-        s += "";
-        s += "</html>\r\n\r\n";
-        Serial.println("Sending 200");
+        s += F("<input type = 'submit' value='rescan networks'></td></tr>");
+        s += F("<tr><td><label>Password</label></td><td><input name='pass' length=64 size=64/></td></tr>");
+        s += F("<tr><td><label>Server:</label></td><td><input name='g' value='rowing.intelligentplant.com' size=64/></td></tr>");
+        s += F("<tr><td><label>My Name</label></td><td><input name='n' length=40 value='RowComputer1' size=64/></td></tr>");
+        s += F("<tr><td><label>Site</label></td><td><input name='s' length=20 value='Row' size=64/><input type='submit' value='save details'/></td></tr>");
+        s += F("</table></form>");
+        s += F("<form method='get' action='r'>");
+        s += F("</html>\r\n\r\n");
+        Serial.println(F("Sending 200"));
     }
       else if (req.startsWith("/r"))
       {//rescan - disconnect and scan for wifi networks - then return.
-        client.print("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> disconnecting and scanning networks, when connected again - click <a href ='/' >here</a>");
+        client.print(F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> disconnecting and scanning networks, when connected again - click <a href ='/' >here</a>"));
         client.flush(); 
         delay(100);
         setupAP();
@@ -329,51 +328,51 @@ int mdns1(int webtype)
         currentend = req.indexOf('&',currentstart+1);
         qs = req.substring(currentstart, currentend);
         Serial.println(qs);
-        Serial.println("");
-        Serial.println("writing eeprom ssid:");
+        Serial.println();
+        Serial.println(F("writing eeprom ssid:"));
         for (int i = 0; i < qsid.length(); ++i)
           {
             EEPROM.write(i, qsid[i]);
             Serial.print("Wrote: ");
             Serial.println(qsid[i]); 
           }
-        Serial.println("writing eeprom pass:"); 
+        Serial.println(F("writing eeprom pass:")); 
         for (int i = 0; i < qpass.length(); ++i)
           {
             EEPROM.write(32+i, qpass[i]);
-            Serial.print("Wrote: ");
+            Serial.print(F("Wrote: "));
             Serial.println(qpass[i]); 
           }    
-        Serial.println("writing eeprom g:");
+        Serial.println(F("writing eeprom g:"));
         for (int i = 0; i < qg.length(); ++i)
         {
           EEPROM.write(96+i, qg[i]);
-          Serial.print("Wrote: ");
+          Serial.print(F("Wrote: "));
           Serial.println(qg[i]);
         }
-        Serial.println("writing eeprom n:");
+        Serial.println(F("writing eeprom n:"));
         for(int i = 0; i < qn.length(); ++i)
         {
           EEPROM.write(160+i, qn[i]);
-          Serial.print("Wrote: ");
+          Serial.print(F("Wrote: "));
           Serial.println(qn[i]);
         }
-        Serial.println("writing eeprom s:");
+        Serial.println(F("writing eeprom s:"));
         for(int i = 0; i < qs.length(); ++i)
         {
           EEPROM.write(200+i, qs[i]);
-          Serial.print("Wrote: ");
+          Serial.print(F("Wrote: "));
           Serial.println(qs[i]);
         }
         EEPROM.commit();
-        s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP8266 ";
-        s += "Found ";
+        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP8266 ");
+        s += F("Found ");
         s += req;
-        s += "<p> saved to eeprom... reset to boot into new wifi</html>\r\n\r\n";
+        s += F("<p> saved to eeprom... reset to boot into new wifi</html>\r\n\r\n");
       }
       else
       {
-        client.print("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> click here to setup row machine <a href ='/' >here</a>");
+        client.print(F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> click here to setup row machine <a href ='/' >here</a>"));
         client.flush(); 
         delay(100);
       }
@@ -387,15 +386,15 @@ int mdns1(int webtype)
   {
       if (req == "/")
       {
-        s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP8266";
-        s += "<p>";
-        s += "</html>\r\n\r\n";
+        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP8266");
+        s += F("<p>");
+        s += F("</html>\r\n\r\n");
         Serial.println("Sending 200");
       }
       else if ( req.startsWith("/cleareeprom") ) {
-        s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP8266";
-        s += "<p>Clearing the EEPROM<p>";
-        s += "</html>\r\n\r\n";
+        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP8266");
+        s += F("<p>Clearing the EEPROM<p>");
+        s += F("</html>\r\n\r\n");
         Serial.println("Sending 200");  
         Serial.println("clearing eeprom");
         for (int i = 0; i < 96; ++i) { EEPROM.write(i, 0); }
@@ -403,11 +402,11 @@ int mdns1(int webtype)
       }
       else
       {
-        s = "HTTP/1.1 404 Not Found\r\n\r\n";
+        s = F("HTTP/1.1 404 Not Found\r\n\r\n");
         Serial.println("Sending 404");
       }       
   }
   client.print(s);
-  Serial.println("Done with client");
+  Serial.println(F("Done with client"));
   return(20);
 }

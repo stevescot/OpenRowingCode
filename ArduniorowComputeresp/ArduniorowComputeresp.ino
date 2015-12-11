@@ -19,9 +19,9 @@ void setup()
 {
   
    Serial.begin(115200);                    // Set up serial communication at 115200bps
-  Serial.println("startup");
+  Serial.println(F("startup"));
   setupWiFi();
-  Serial.println("done Wifi");
+  Serial.println(F("done Wifi"));
    pinMode(switchPin, INPUT_PULLUP);        // Set the switch pin as input
    buttonState = digitalRead(switchPin);    // read the initial state
    // set up the LCD's number of columns and rows: 
@@ -37,12 +37,12 @@ void setup()
   else
   {*/
     setErgType(ERGTYPEVFIT);
-    Serial.print("No Concept 2 detected on Analog pin ");
+    Serial.print(F("No Concept 2 detected on Analog pin "));
     Serial.println(analogPin);
-    Serial.print("Detecting reed switch on pin ");
+    Serial.print(F("Detecting reed switch on pin "));
     Serial.println(switchPin);
   /*}*/
-  Serial.println("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor");
+  Serial.println(F("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor"));
 }
 
 void loop()
@@ -68,7 +68,7 @@ void loop()
     }
     if((millis()-mtime) >=10)
     {
-      Serial.print("warning - loop took (ms):");
+      Serial.print(F("warning - loop took (ms):"));
       Serial.println(millis()-mtime);
     }
   buttonState = val;                       // save the new state in our variable
@@ -77,12 +77,13 @@ void loop()
 
 void writeStrokeRow()
 {
-  Serial.print(totalStroke); Serial.print("\t");
-  Serial.print(spm); Serial.print("\t");
-  Serial.print(getSplitString()); Serial.print("\t");
-  Serial.print(power); Serial.print("\t");
-  Serial.print(distancem); Serial.print("\t");
-  Serial.print(getTime()); Serial.print("\t");
+  String tab = F("\t");
+  Serial.print(totalStroke); Serial.print(tab);
+  Serial.print(spm); Serial.print(tab);
+  Serial.print(getSplitString()); Serial.print(tab);
+  Serial.print(power); Serial.print(tab);
+  Serial.print(distancem); Serial.print(tab);
+  Serial.print(getTime()); Serial.print(tab);
   Serial.print(k*1000000); 
   Serial.println();
   float splitdistance = (float)strokems/1000/split*500;

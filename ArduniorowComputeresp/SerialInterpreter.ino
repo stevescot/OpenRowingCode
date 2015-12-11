@@ -20,32 +20,32 @@ void processSerial()
       if(variable == "Session")
       {
             sessionType = SerialStr.toInt();
-            Serial.println("Session Set");
+            Serial.println(F("Session Set"));
       }
       else if(variable == "Interval")
       {
             targetSeconds = SerialStr.toInt();
-            Serial.println("Interval Set");
+            Serial.println(F("Interval Set"));
       }
       else if(variable =="Rest")
       {
             intervalSeconds = SerialStr.toInt();
-            Serial.println("Rest Set");
+            Serial.println(F("Rest Set"));
       }
       else if(variable =="Intervals")
       {
             numIntervals = SerialStr.toInt();
-            Serial.println("Num Intervals Set");
+            Serial.println(F("Num Intervals Set"));
       }
       else if(variable =="TargetDistance")
       {
             numIntervals = SerialStr.toInt();
-            Serial.println("TargetDistance Set");
+            Serial.println(F("TargetDistance Set"));
       }
       else if(variable == "TargetTime")
       {
             targetSeconds = SerialStr.toInt();
-            Serial.println("Target Time Set");
+            Serial.println(F("Target Time Set"));
       }
       else if(variable == "DumpRPM")
       {
@@ -53,7 +53,7 @@ void processSerial()
       }
       else 
       {
-          Serial.println("Unreckognised");
+          Serial.println(F("Unrecognised"));
           Serial.println(variable);
       }
       SerialStr = "";
