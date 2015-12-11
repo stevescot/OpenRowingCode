@@ -222,7 +222,7 @@ int mdns1(int webtype)
   if ( webtype == 1 ) {
     if(req.equals("/"))
     {
-      IPAddress ip = WiFi.softAPIP();
+        IPAddress ip = WiFi.softAPIP();
         String ipStr = String(ip[0]) + '.' + String(ip[1]) + '.' + String(ip[2]) + '.' + String(ip[3]);
         s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>";
         s += "<head><style>table#settings {";
@@ -247,16 +247,18 @@ int mdns1(int webtype)
         s += "</style>";
         s += "</head>";
         s += "<body>";
-        //image of rowing machine, 1.7k
-     /*   s += "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABMdJREFUeNrsnYtx2kAQho9UoA6MO6CDqAPTQZQKTCowroB0IHdAXAF2BTgVQCrAqcDhZk4TmbFBj13dQ983sxOHcRR0++9q9x5gDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAxMpkwP8rO1p";
+        client.print(s);
+        s = "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABMdJREFUeNrsnYtx2kAQho9UoA6MO6CDqAPTQZQKTCowroB0IHdAXAF2BTgVQCrAqcDhZk4TmbFBj13dQ983sxOHcRR0++9q9x5gDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAxMpkwP8rO1p";
         s += "+tFnttRdne1yRLtbh66O9nbGNEwckxuqC409txZClQ9nS+ZWtGbr4WXZ0PpkgAaY9nV8ZNcHIUv9HhSFEyJugTRlOXb4IX086bc9wUVwCmCGAcQsgY0jHLYBXhnTcAngJ/HowAAfBLoBHSmQZwPJL8Do8UiJkKhT9dAARszCsBYyerlPCJUM33kywZMjSrAnKC91BaZj394LEnkDbqs2PdnPStj26Sn5fey13xV3mKnzb5z/hhniZN+j7Ny615wxXWhSm+zo/goic3Mj";
         s += "N9m1csUjfHxEbI7vxozL7OFkjiLCLwNwMt13r1RWJz+5PFof++8Da1Un39OyK7iejeNimVIp+MkT/drpuW1eniZJ5dP4lQaQ6j2DHfNVjjHaSBfciMAF8dLOlU34Kgpi5e5IYm6XEG9oFLoCUBDEzsnsreq+z5JE5/5wg8hE6v/dKa5mAAOpWBCyArfK9z7tUoG8JWoiZYDlQ8ZyF8qYOLrv4qC9CO4mcKab+XkWhpnPKk0xTOMcMNRAhMWSXdWj6pubKb2R6oRhaKAvil";
         s += "JgK2qKWyvMOdVqjWmCteBNtp5SlBbGJVADbM8/wQrIj0C7++lbifQVRRCiAJgXcUioAVyE8gzoKouukSOgCaNLHZ1I+OHi+EYlVs6V5v3y9uZB5Umldm84lfEph/BV/Y2TpQwDnjoZ9U7zZ082i0Jybho+AJsvle1/F3xw/dl5rGaQI1Cz+dvi6d9CptoHa05FLfC2yCFRNBE2lJ4K0iz/O/Ac+Fay5FMnBz8vFm9fFoJkZ3/JrrO2gymyi5qYPij+dWkCsC9NOPwv82hgv";
-        s += "W8I0C5AtxV8QIjhbg0lv+tg5tXHEq58IBtkWnhu54qLE6eKdgfrBkFIo2vOakfL9zBK2Oho2qRV/Q/B08nd7+PP3B6/Z3+Mg6PsALRr+7v3RHkyLxbZQj3tVj5OM6Ndttbcm/C1Q+cijX3WLXSy7YFcjzAbq0R+TAMSPOhP98QlgTEvKg0R/rAKo2pwZ0d9/e/0uYhGkusYwWPQbo7v9ayjbmLR2GQ8W/V1nmUJtFxdE/3izQP3Id0b0pzch1DYbzIn+dmRG7xNAfVlsU8mDR";
+        client.print(s);
+        s = "W8I0C5AtxV8QIjhbg0lv+tg5tXHEq58IBtkWnhu54qLE6eKdgfrBkFIo2vOakfL9zBK2Oho2qRV/Q/B08nd7+PP3B6/Z3+Mg6PsALRr+7v3RHkyLxbZQj3tVj5OM6Ndttbcm/C1Q+cijX3WLXSy7YFcjzAbq0R+TAMSPOhP98QlgTEvKg0R/rAKo2pwZ0d9/e/0uYhGkusYwWPQbo7v9ayjbmLR2GQ8W/V1nmUJtFxdE/3izQP3Id0b0pzch1DYbzIn+dmRG7xNAfVlsU8mDR";
         s += "//kk7WBO6WBqz4i3rI/2p/az9ZuFJ7j9rrfTfgfSz9tEdX2nq61BFBhFXbboNeunGecc//Wfq6+9avN4OdG5wskfh7tR+DR3zSqraAfpARwaVbtyomgLgTr0Ocz/+bB9Dv7l7kBkX6O3wc6i+gl+rVnAiWiuMkXUqRwKtlb5T/EVHBfIUgXp4sAo9/r1vohK/I+QlgIZYM10e9HABJCmApkgw3R/74I9PVZeQ+1NrAttz3aVNudPAYigK+m+f4Gsco/FAFAu7mMa40Lf2Fso+B";
-        s += "e68JkgBFHPxlg5NFfZYBc6Fq2or0zfPxbNNGvRWHi32bGl1oghCC2wCcBQhhh9COESKJ/4kEIuYEmxd+eYQAAAAAAAAAAAAAAAAAAAAAAAIAW/BNgAJTlfGP7NWKCAAAAAElFTkSuQmCC' /> ";*/
+        s += "e68JkgBFHPxlg5NFfZYBc6Fq2or0zfPxbNNGvRWHi32bGl1oghCC2wCcBQhhh9COESKJ/4kEIuYEmxd+eYQAAAAAAAAAAAAAAAAAAAAAAAIAW/BNgAJTlfGP7NWKCAAAAAElFTkSuQmCC' /> ";
         s += "<h2>Row Computer Wifi Setup</h2>";
-        s += ipStr;
+        client.print(s);
+        s = ipStr;
         s += "<form method='get' action='a'>";
         s += "<table id='settings'><tr><th>Setting</th><th>Value</th></tr><tr><td><label>SSID: </label></td><td>";
         s += st;
