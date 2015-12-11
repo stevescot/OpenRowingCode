@@ -35,54 +35,58 @@ void setupWiFi() {
   Serial.println("Startup");
   // read eeprom for ssid and pass
   Serial.println("Reading EEPROM ssid");
-  String esid;
-  esid.reserve(32);
+  char esid[32];
   for (int i = 0; i < 32; ++i)
     {
-      esid += char(EEPROM.read(i));
+      esid[i] = EEPROM.read(i);
     }
   Serial.print("SSID: ");
   Serial.println(esid);
   Serial.println("Reading EEPROM pass");
-  String epass = "";
-  epass.reserve(64);
+  char epass[64] ;
   for (int i = 32; i < 96; ++i)
     {
-      epass += char(EEPROM.read(i));
+      epass[i-32] += char(EEPROM.read(i));
     }
   Serial.print("PASS: ");
   Serial.println(epass);  
   host.reserve(64);
   for (int i = 96; i < 160; i++)
   {
-    host += char(EEPROM.read(i));
+    if(EEPROM.read(i) != 0)
+      {
+        host += char(EEPROM.read(i));
+      }
   }
   Serial.print("Gestalt: " );
   Serial.println(host);
   myName.reserve(40);
   for (int i = 160; i < 200; i++)
   {
-    myName += char(EEPROM.read(i));
+    if(EEPROM.read(i) != 0)
+      {
+        myName += char(EEPROM.read(i));
+      }
   }
   Serial.print("MyName: " );
   Serial.println(myName);
   site.reserve(20);
   for(int i = 200; i < 220; i++)
   {
-    site += char(EEPROM.read(i));
+    if(EEPROM.read(i) != 0)
+      {
+        site += char(EEPROM.read(i));
+      }
   }
   Serial.print("Site: ");
   Serial.println(site);
-  if ( esid.length() > 1 ) {
+  if ( esid != "" ) {
       // test esid 
-      WiFi.mode(WIFI_STA);
       Serial.print("connecting to : ");
-      Serial.print(esid.c_str());
+      Serial.print(esid);
       Serial.print("with password: ");
-      Serial.println(epass.c_str());
-      WiFi.begin(esid.c_str(), epass.c_str());
-      WiFi.mode(WIFI_STA);
-      if ( testWifi() == 20 ) { 
+      Serial.println(epass);
+      if ( testWifi(esid, epass) == 20 ) { 
           Serial.println("Connected, returning");
       }
       else
@@ -103,16 +107,26 @@ void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDist
   RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery);
 }
 
-int testWifi() {
+int testWifi(char esid[], char epass[]) {
   int c = 0;
   int x = 0;
   Serial.println("Waiting for Wifi to connect");  
   while ( c < 20 ) {
-    delay(300);
-    x = WiFi.status();
-    if(x == WL_CONNECTED) {return(20); } 
-    Serial.println(WL_CONNECTED);
-    Serial.print(x);    
+    if(epass != "")
+    {
+    x = WiFi.begin(esid, epass);
+    }
+    else
+    {
+      x = WiFi.begin(esid);
+    }
+    
+    if(x == WL_CONNECTED) {
+      Serial.println(WiFi.localIP());
+      return(20); 
+      } 
+    // wait 10 seconds for connection:
+    delay(10000);
     Serial.println("rechecking Connection..");
     c++;
   }
