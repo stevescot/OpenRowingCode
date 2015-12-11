@@ -179,7 +179,7 @@ void setupAP(void) {
       delay(10);
      }
   }
-  Serial.println(""); 
+  Serial.println(); 
   st.reserve(60 + n * 20);
   st = F("<select name='ssid'>");
   for (int i = 0; i < n; ++i)
@@ -295,7 +295,7 @@ int mdns1(int webtype)
       }
       else if ( req.startsWith("/a?ssid=") ) {
         // /a?ssid=blahhhh&pass=poooo&g=demo1&s=pnid
-        Serial.println("clearing eeprom");
+        Serial.println(F("clearing eeprom"));
         for (int i = 0; i < 220; ++i) { EEPROM.write(i, 0); }
         String qsid; 
         int currentstart;
@@ -304,25 +304,25 @@ int mdns1(int webtype)
         currentend = req.indexOf('&');
         qsid = req.substring(currentstart,currentend);
         Serial.println(qsid);
-        Serial.println("");
+        Serial.println();
         String qpass;
         currentstart = currentend + 6;
         currentend = req.indexOf('&',currentstart);
         qpass = req.substring(currentstart,currentend);
         Serial.println(qpass);
-        Serial.println("");
+        Serial.println();
         currentstart = currentend + 3;
         currentend = req.indexOf('&',currentstart);
         String qg;
         qg = req.substring(currentstart,currentend);
         Serial.println(qg);
-        Serial.println("");
+        Serial.println();
         String qn;//name
         currentstart = currentend + 3;
         currentend = req.indexOf('&',currentstart+1);
         qn = req.substring(currentstart, currentend);
         Serial.println(qn);
-        Serial.println("");
+        Serial.println(F(""));
         String qs;//site
         currentstart = currentend +3;
         currentend = req.indexOf('&',currentstart+1);
@@ -379,7 +379,7 @@ int mdns1(int webtype)
     /*  else
       {
         s = "HTTP/1.1 404 Not Found\r\n\r\n";
-        Serial.println("Sending 404");
+        Serial.println(F("Sending 404");
       }*/
   } 
   else
@@ -389,21 +389,21 @@ int mdns1(int webtype)
         s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP8266");
         s += F("<p>");
         s += F("</html>\r\n\r\n");
-        Serial.println("Sending 200");
+        Serial.println(F("Sending 200"));
       }
       else if ( req.startsWith("/cleareeprom") ) {
         s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP8266");
         s += F("<p>Clearing the EEPROM<p>");
         s += F("</html>\r\n\r\n");
-        Serial.println("Sending 200");  
-        Serial.println("clearing eeprom");
+        Serial.println(F("Sending 200"));  
+        Serial.println(F("clearing eeprom"));
         for (int i = 0; i < 96; ++i) { EEPROM.write(i, 0); }
         EEPROM.commit();
       }
       else
       {
         s = F("HTTP/1.1 404 Not Found\r\n\r\n");
-        Serial.println("Sending 404");
+        Serial.println(F("Sending 404"));
       }       
   }
   client.print(s);

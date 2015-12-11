@@ -123,9 +123,9 @@ void registerClick()
                 int tempLow = 0;
                 for(int e=0;e<consecutivedecelerations; e++)
                 {
-                  Serial.print(" ");
+                  Serial.print(F(" "));
                   Serial.print(e);
-                  Serial.print(":");
+                  Serial.print(F(":"));
                   Serial.print(getRpm(-e));
                   
                   if(getRpm(-e) <= lowestVal){
@@ -135,11 +135,11 @@ void registerClick()
                   
                 }
               
-                Serial.print(" tempLow(");
+                Serial.print(F(" tempLow("));
                 Serial.print(tempLow);
-                Serial.print("):");
+                Serial.print(F("):"));
                 Serial.print(getRpm(0-tempLow));
-                Serial.print("\t");
+                Serial.print(F("\t"));
                 recoveryAngularVelocity=(float)getRpm(0-tempLow)/60*2*PI;
                 recoveryEndms = mtime;
                 for(int i =0;i<tempLow; i++)
@@ -153,9 +153,9 @@ void registerClick()
 //                      }
 #ifdef debug
                 Serial.println("\n");
-                Serial.print("Total strokes:");
+                Serial.print(F("Total strokes:"));
                 Serial.print(totalStroke);
-                Serial.print("\tSecondsDecelerating:\t");
+                Serial.print(F("\tSecondsDecelerating:\t"));
                 Serial.println(float(secondsdecel));
 #endif
                 //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
@@ -175,23 +175,23 @@ void registerClick()
                   int karr[3] = {k1,k2,k3};
                   k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
        #ifdef debug
-                  Serial.print("k:"); Serial.println(nextk);
-                  Serial.print("recw:"); Serial.println(recoveryAngularVelocity);
-                  Serial.print("dw"); Serial.println(driveAngularVelocity);
-                  Serial.print("sdecel"); Serial.println(secondsdecel);
+                  Serial.print(F("k:")); Serial.println(nextk);
+                  Serial.print(F("recw:")); Serial.println(recoveryAngularVelocity);
+                  Serial.print(F("dw")); Serial.println(driveAngularVelocity);
+                  Serial.print(F("sdecel")); Serial.println(secondsdecel);
        #endif
                   mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
                 }
                 else
                 {
             #ifdef debug
-                  Serial.print("k:");
+                  Serial.print(F("k:"));
                   Serial.print(nextk);
-                  Serial.print("recoveryrad");
+                  Serial.print(F("recoveryrad"));
                   Serial.print(recoveryAngularVelocity);
-                  Serial.print("driverad");
+                  Serial.print(F("driverad"));
                   Serial.print(driveAngularVelocity);
-                  Serial.print("recoverySeconds");
+                  Serial.print(F("recoverySeconds"));
                   Serial.print(secondsdecel);
             #endif
                 }
@@ -317,7 +317,7 @@ String getTime()
 //take time and display how long remains on the screen.
 void showInterval(long numSeconds)
 {
-  Serial.print("Interval ");
+  Serial.print(F("Interval "));
   Serial.println(intervals);
   long startTime = millis()/1000;
   long currentTime = millis()/1000;
