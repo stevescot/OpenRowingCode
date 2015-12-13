@@ -1,7 +1,5 @@
 #include "ESP8266WiFi.h"
 #include "rowWifi.h"
-#include <ESP8266mDNS.h>
-#include <WiFiClient.h>
 #include <EEPROM.h>
 WiFiClient client;
 WiFiServer server(80);
@@ -14,7 +12,7 @@ const char * ssid = "IProw";
 //name of this node.
 String myName = "";
 String MAC;                  // the MAC address of your Wifi shield
-rowWiFi RowServer("monitoring.intelligentplant.com","row", client);
+rowWiFi RowServer("monitoring.intelligentplant.local","row", client);
 
 void setupWiFi() {
   st = "";//empty the option list string to save some memory.
@@ -44,9 +42,9 @@ void setupWiFi() {
   Serial.println(esid);
   Serial.println(F("Reading EEPROM pass"));
   char epass[64] ;
-  for (int i = 32; i < 96; ++i)
+  for (int i = 32; i < 96; i++)
     {
-      epass[i-32] += char(EEPROM.read(i));
+      epass[i-32] = char(EEPROM.read(i));
     }
   Serial.print(F("PASS: "));
   Serial.println(epass);  
@@ -100,6 +98,9 @@ void setupWiFi() {
     //no ssid - setup access point.
     setupAP(); 
   }
+  delay(100);
+  Serial.println("exiting");
+  delay(200);
 }
 
 void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery)
@@ -107,27 +108,34 @@ void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDist
   RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery);
 }
 
+String getMac()
+{
+  return MAC;
+}
+
 int testWifi(char esid[], char epass[]) {
   int c = 0;
   int x = 0;
-  Serial.println(F("Waiting for Wifi to connect"));  
-  while ( c < 20 ) {
     if(epass != "")
     {
-    x = WiFi.begin(esid, epass);
+    x = WiFi.begin(esid,epass);
     }
     else
     {
       x = WiFi.begin(esid);
     }
-    
-    if(x == WL_CONNECTED) {
+  Serial.println(F("Waiting for Wifi to connect"));  
+  while ( c < 200 ) {
+      x = WiFi.status();
+    // wait 10 seconds for connection:
+    //delay(10000);
+      if(x == WL_CONNECTED) {
       Serial.println(WiFi.localIP());
+      //delay(1000);
       return(20); 
       } 
-    // wait 10 seconds for connection:
-    delay(10000);
     Serial.println(F("rechecking Connection.."));
+    delay(100);
     c++;
   }
   Serial.println(F("Connect timed out, opening AP"));

@@ -37,12 +37,12 @@ int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistan
 	Serial.println(F("sendSplit"));
 	if (connect())
 	{
-		if (!_inRequest)
-		{
+		//if (!_inRequest)
+		//{
 			Serial.println(F("Sending to Server: ")); Serial.println(_host);
 			_client.print(F("GET /"));
 			_client.print(_path);
-			_client.print(F("/Public/StoreSplit.aspx?m="));
+			_client.print(F("/upload.aspx?m="));
       _client.print(MAC);
 			_client.print(F("&t="));
 			_client.print(msfromStart);
@@ -54,9 +54,12 @@ int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistan
       _client.print(msDrive);
       _client.print(F("&msR="));
       _client.print(msRecovery);
-			_client.print(F(" HTTP/1.1 \r\n\r\n"));
-			_inRequest = true;
-		}
+			_client.print(F("\r\nHost: ")); _client.print(_host);
+      _client.print(F("\r\nUser-Agent: IPHomeBox/1.0\r\n"));
+      _client.print(F("Accept: text/html\r\n"));
+      _client.print(F("Conection: keep-alive\r\n\r\n"));
+			//_inRequest = true;
+		//}
 		return true;
 	}
 	else

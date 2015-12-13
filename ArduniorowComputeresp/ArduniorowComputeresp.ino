@@ -5,10 +5,11 @@
 #include "mainEngine.h"   
 //#define debug  // uncomment this to get more verbose serial output
 //ota update : https://github.com/esp8266/Arduino/blob/master/doc/ota_updates/ota_updates.md
+//test page: http://monitoring/row/Display.html?MAC=18fe34e62748
 
 //-------------------------------------------------------------------
 //               pins
-const byte switchPin = 1;                    // switch is connected to pin 2
+const byte switchPin = 2;                    // switch is connected to GPIO2
 const byte analogPin = 2;                    // analog pin (Concept2)
 //-------------------------------------------------------------------
 //               reed (switch) handling
@@ -20,8 +21,12 @@ void setup()
   
    Serial.begin(115200);                    // Set up serial communication at 115200bps
   Serial.println(F("startup"));
+  Serial.print(F("Flash Size:"));
+  Serial.println(ESP.getFlashChipSize());
   setupWiFi();
   Serial.println(F("done Wifi"));
+  Serial.print(F("MAC:"));
+  Serial.println(getMac());
    pinMode(switchPin, INPUT_PULLUP);        // Set the switch pin as input
    buttonState = digitalRead(switchPin);    // read the initial state
    // set up the LCD's number of columns and rows: 
@@ -86,7 +91,15 @@ void writeStrokeRow()
   Serial.print(getTime()); Serial.print(tab);
   Serial.print(k*1000000); 
   Serial.println();
-  float splitdistance = (float)strokems/1000/split*500;
+  float splitdistance;
+  if(split >0)
+  {
+   splitdistance = (float)strokems/1000/split*500;
+  }
+  else 
+  {
+    splitdistance = 1;
+  }
   SendSplit(mtime, splitdistance, distancem, lastDriveTimems, strokems - lastDriveTimems);
 }
 

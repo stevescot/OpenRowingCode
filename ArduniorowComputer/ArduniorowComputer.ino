@@ -5,7 +5,7 @@
  * 41% total
  */
 #include <avr/sleep.h>
-//#define UseLCD 
+#define UseLCD 
 #include "mainEngine.h"   
 //#define debug  // uncomment this to get more verbose serial output
 
