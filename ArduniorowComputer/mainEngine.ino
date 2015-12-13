@@ -211,8 +211,12 @@ void registerClick()
               {
                 //get the angular velocity before the change. 
                 //set the drive angular velocity to be the value it was 4 clicks ago (before any deceleration
-                
-                
+                //= I ( dω / dt ) dθ + k ω2 dθ 
+                float dtheta = (2*PI/clicksPerRotation*numclickspercalc);
+                //Serial.print((float)timetakenus/1000000);
+                float instantaneouspower = I *(radSec-prevradSec)/((float)timetakenus/1000000)*dtheta + k * pow(radSec,2) * dtheta;
+                Serial.print(instantaneouspower);
+                Serial.println("W");
                 driveAngularVelocity = (float)getRpm(-consecutiveaccelerations-1)/60*2*PI;
                 driveEndms = mtime;
                 for(int i =0;i<consecutiveaccelerations; i++)
