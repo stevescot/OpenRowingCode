@@ -121,7 +121,7 @@ void registerClick()
                 //work back to get recovery velocity and time before our consecutive check.
                 int lowestVal = 2000;
                 int tempLow = 0;
-                for(int e=0;e<consecutivedecelerations; e++)
+                for(int e=0;e<consecutivedecelerations+10; e++)
                 {
                   Serial.print(F(" "));
                   Serial.print(e);
@@ -134,7 +134,7 @@ void registerClick()
                   }
                   
                 }
-              
+                tempLow+=3;//go 3 rotations back to get a good sample
                 Serial.print(F(" tempLow("));
                 Serial.print(tempLow);
                 Serial.print(F("):"));
