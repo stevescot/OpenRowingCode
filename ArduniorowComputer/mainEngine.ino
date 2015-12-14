@@ -109,10 +109,10 @@ void registerClick()
               {//first acceleration - capture the seconds decelerating and #
                 //time for a single rotation at drive (which we will have included in secondsdecel but shouldn't have.
                 secondsdecel = (float)((float)mtime- driveEndms)/1000;
-                for(int i =0;i<consecutivedecelerations; i++)
-                {//work back to get recovery time before our consecutive check.
-                  secondsdecel -=(float)60/getRpm(0-i);
-                }
+//                for(int i =0;i<consecutivedecelerations; i++)
+//                {//work back to get recovery time before our consecutive check.
+//                  secondsdecel -=(float)60/getRpm(0-i);
+//                }
                 //wipe the powerArray
                 for(int i = 0; i < PowerSamples; i++)
                 {
