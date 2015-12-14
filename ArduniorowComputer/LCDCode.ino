@@ -40,7 +40,7 @@ void lcdSetup()
 void writeTimeLeft(long totalSeconds)
 {
     lcd.clear();
-    lcd.print("Interval ");
+    lcd.print(F("Interval "));
     lcd.print(intervals);
     lcd.setCursor(0,1);
     int minutes = totalSeconds/60;
@@ -55,7 +55,7 @@ void writeNextScreen()
         {
           lcd.setCursor(0,1);
           lcd.print(k*1000000,0);
-          lcd.print("  ");
+          lcd.print(F("  "));
           return;//no need for other screen stuff.
         }else if (sessionType == RPM)
         {
@@ -107,7 +107,7 @@ void writeNextScreen()
         lcd.print(spm);
         lcd.print("  ");
 #ifdef debug
-    Serial.print("\tSPM:\t");
+    Serial.print(F("\tSPM:\t"));
     Serial.print(spm);
 #endif
     break;
@@ -133,7 +133,7 @@ void writeNextScreen()
       }
       
       #ifdef debug
-      Serial.print("\tDistance:\t");
+      Serial.print(F("\tDistance:\t"));
       Serial.print(distancem);
       Serial.print("m");
       #endif
@@ -147,7 +147,7 @@ void writeNextScreen()
         lcd.setCursor(11,1);
         lcd.print(getTime());      
       #ifdef debug
-        Serial.print("\tTime:\t");
+        Serial.print(F("\tTime:\t"));
         Serial.print(getTime());
       #endif
       break;
@@ -168,21 +168,21 @@ void writeNextScreen()
         }       
        //lcd.print(RecoveryToDriveRatio,1);
     #ifdef debug
-       Serial.print("\tDrag factor:\t");
+       Serial.print(F("\tDrag factor:\t"));
        Serial.print(k*1000000);
     #endif
       break;
    case 6:
    #ifdef debug
-      Serial.print("\tDrive angularve: ");
+      Serial.print(F("\tDrive angularve: "));
       //Serial.print(driveAngularVelocity);
 
-      Serial.print("\tRPM:\t");
+      Serial.print(F("\tRPM:\t"));
       {
         int rpms1[5] = {getRpm(0), getRpm(-1), getRpm(-2),getRpm(-3),getRpm(-4)};
         Serial.print(median(rpms1,5));
       }
-      Serial.print("\tPeakrpm:\t");
+      Serial.print(F("\tPeakrpm:\t"));
       Serial.println(peakrpm);
    #endif 
     break;
@@ -199,7 +199,7 @@ void startMenu()
   menuType();
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Begin Rowing");
+  lcd.print(F("Begin Rowing"));
 }
 
 void menuType()
@@ -237,11 +237,11 @@ void menuType()
      targetSeconds = menuSelectTime(targetSeconds);
      lcd.clear();
      lcd.setCursor(0,0);
-     lcd.print("Rest");
+     lcd.print(F("Rest"));
      intervalSeconds = menuSelectTime(intervalSeconds);
      lcd.clear();
      lcd.setCursor(0,0);
-     lcd.print("Repeats");
+     lcd.print(F("Repeats"));
      numIntervals = menuSelectNumber(numIntervals);
       break;
     case SETTINGS:
@@ -365,13 +365,13 @@ void menuDisplayBoatType()
   switch(boatType)
   {
     case BOAT1:
-      lcd.print("Single  ");
+      lcd.print(F("Single  "));
       break;
     case BOAT4:
-      lcd.print("Four    ");
+      lcd.print(F("Four    "));
       break;
     case BOAT8:
-      lcd.print("Eight   ");
+      lcd.print(F("Eight   "));
       break;
   }
 }
@@ -385,22 +385,22 @@ void writeSettingsMenu()
     switch(sessionType)
     {
       case BACKLIGHT:
-        menuDisplay("Back Light");
+        menuDisplay((char*)F("Back Light"));
         break;
       case ERGTYPE:
-        menuDisplay("Erg Type");
+        menuDisplay((char*)F("Erg Type"));
         break;
       case BOATTYPE:
-        menuDisplay("Boat Type");
+        menuDisplay((char*)F("Boat Type"));
         break;
       case WEIGHT:
-        menuDisplay("Weight");
+        menuDisplay((char*)F("Weight"));
         break;
       case POWEROFF:
-        menuDisplay("Sleep");
+        menuDisplay((char*)F("Sleep"));
         break;
       case BACK:
-        menuDisplay("Back");
+        menuDisplay((char*)F("Back"));
         break;
     }
 }
@@ -414,30 +414,30 @@ void writeType()
     switch(sessionType)
     {
       case DISTANCE:
-        menuDisplay("Distance");
+        menuDisplay((char *)F("Distance"));
       break;
       case TIME:
-        menuDisplay("Time");
+        menuDisplay((char *)F("Time"));
       break;
       case INTERVAL:
-        menuDisplay("Interval");
+        menuDisplay((char *)F("Interval"));
         break;
       case DRAGFACTOR:
-        menuDisplay("Drag Factor");
+        menuDisplay((char *)F("Drag Factor"));
         break;
       case RPM:
-        menuDisplay("RPM");
+        menuDisplay((char *)F("RPM"));
         break;
       case SETTINGS:
-        menuDisplay("Settings");
+        menuDisplay((char *)F("Settings"));
         break;
 
       case WATTS:
-        menuDisplay("Watts");
+        menuDisplay((char *)F("Watts"));
         break;
       default:
         sessionType = JUST_ROW;
-        menuDisplay("Just Row");
+        menuDisplay((char *)F("Just Row"));
         break;
     }
 }
@@ -473,10 +473,10 @@ void menuDisplayErgType()
   switch(ergType)
   {
     case ERGTYPEC2:
-      lcd.print("Concept 2");
+      lcd.print((char *)F("Concept 2"));
       break;
     case ERGTYPEVFIT:
-      lcd.print("V-Fit    ");
+      lcd.print((char *)F("V-Fit    "));
       break;
   }
 }
@@ -537,11 +537,11 @@ void showBacklightState(int state)
   lcd.setCursor(0,1);
   if(state == LOW)
   {
-      lcd.print("Off");
+      lcd.print((char *)F("Off"));
   }
   else
   {
-      lcd.print("On ");
+      lcd.print((char *)F("On "));
   }
 }
 
