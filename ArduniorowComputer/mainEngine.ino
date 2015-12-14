@@ -88,7 +88,7 @@ void registerClick()
               lcd.clear();
            #endif
         }
-        timetakenus = utime - laststatechangeus;
+        timetakenus = utime - lastcalcchangeus;
         rpmhistory[nextrpm] = (60000000.0*numclickspercalc/clicksPerRotation)/timetakenus;
         nextrpm ++;
         const int rpmarraycount = 3;
@@ -262,7 +262,7 @@ void registerClick()
               }
           }
           
-          if(mPerClick <= 20)
+          if(mPerClick <= 20 && mPerClick >=20)
           {
             distancem += (clicks-clicksInDistance)*mPerClick;
             clicksInDistance = clicks;
@@ -272,8 +272,8 @@ void registerClick()
           lastrotationus = timetakenus;
           //watch out for integer math problems here
           //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms); 
-
-              if((mtime-startTimems)/1000 > targetSeconds)
+          lastcalcchangeus = utime;
+    if((mtime-startTimems)/1000 > targetSeconds)
     {
       switch(sessionType)
       {

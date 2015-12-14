@@ -87,3 +87,6 @@ float RecoveryToDriveRatio = 0;             // the ratio of time taken for the w
 //               Power Graph
 static const int PowerSamples = 40;
 int PowerArray[PowerSamples];
+
+//
+unsigned long lastcalcchangeus = 0;       // the time of the last click that caused calculations.
