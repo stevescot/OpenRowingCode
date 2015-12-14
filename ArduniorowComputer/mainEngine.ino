@@ -126,7 +126,6 @@ void registerClick()
                 // That is for energy so all above /dt = power
                 float dtheta = (2*PI/clicksPerRotation*clicksPerCalc);
                 //Serial.print((float)timeTakenus/1000000);
-<<<<<<< HEAD
                 float instw = (float)getRpm(0)/60*2*PI;
                 float prevw = (float)getRpm(-1)/60*2*PI;
                 float dTs = (float)timeTakenus/1000000;
@@ -134,12 +133,6 @@ void registerClick()
                 #ifdef debug
                 Serial.print(instantaneouspower);
                 Serial.println("W");
-=======
-                float instantaneouspower = I *(radSec-prevradSec)/((float)timeTakenus/1000000)*dtheta + k * pow(radSec,3) * dtheta;
-                #ifdef debug
-                Serial.print(instantaneouspower);
-                Serial.println(F("W"));
->>>>>>> origin/master
                 #endif
                 if(accelerations < powerSamples)
                 {
@@ -170,11 +163,7 @@ void registerClick()
                   }
                   
                 }
-<<<<<<< HEAD
-                tempLow+=3;//go 3 rotations back to get a good sample
-=======
                 //tempLow+=3;//go 3 rotations back to get a good sample
->>>>>>> origin/master
                 #ifdef debug
                 Serial.print(F(" tempLow("));
                 Serial.print(tempLow);
