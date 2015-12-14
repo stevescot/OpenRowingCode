@@ -62,7 +62,7 @@ void setErgType(short newErgType)
         AnalogSwitch = true;
         I = 0.101;
         //do the calculations less often to allow inaccuracies to be averaged out.
-        numclickspercalc = 1;//take out a lot of noise before we detect drive / recovery.
+        numclickspercalc = 3;//take out a lot of noise before we detect drive / recovery.
         //number of clicks per rotation is 3 as there are three magnets.
         clicksPerRotation = 3;
         k = 0.000125;
@@ -290,14 +290,14 @@ void registerClick()
           }
           else
           {//stop.
-            Serial.println("Done");
+            Serial.println(F("Done"));
             while(true);
           }
           
           intervals ++;
           break;
         case TIME:
-          Serial.println("Done");
+          Serial.println(F("Done"));
           while(true);
           break;
         default:
@@ -347,7 +347,7 @@ void showInterval(long numSeconds)
       writeTimeLeft(startTime+numSeconds-currentTime);
     #endif
   }
-  Serial.println("Interval Over");
+  Serial.println(F("Interval Over"));
 }
 
 String getSplitString()
@@ -368,7 +368,7 @@ String getSplitString()
 
 void dumprpms()
 {
-    Serial.println("Rpm dump");
+    Serial.println(F("Rpm dump"));
     for(int i = 0; i < numRpms; i++)
     {
       Serial.println(rpmhistory[i]);

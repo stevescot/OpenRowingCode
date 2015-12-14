@@ -17,43 +17,43 @@ void processSerial()
     }
     if(nextChar == '\n')
     {
-      if(variable == "Session")
+      if(variable == F("Session"))
       {
             sessionType = SerialStr.toInt();
-            Serial.println("Session Set");
+            Serial.println(F("Session Set"));
       }
-      else if(variable == "Interval")
+      else if(variable == F("Interval"))
       {
             targetSeconds = SerialStr.toInt();
-            Serial.println("Interval Set");
+            Serial.println(F("Interval Set"));
       }
-      else if(variable =="Rest")
+      else if(variable == F("Rest"))
       {
             intervalSeconds = SerialStr.toInt();
-            Serial.println("Rest Set");
+            Serial.println(F("Rest Set"));
       }
-      else if(variable =="Intervals")
+      else if(variable ==F("Intervals"))
       {
             numIntervals = SerialStr.toInt();
-            Serial.println("Num Intervals Set");
+            Serial.println(F("Num Intervals Set"));
       }
-      else if(variable =="TargetDistance")
+      else if(variable ==F("TargetDistance"))
       {
             numIntervals = SerialStr.toInt();
-            Serial.println("TargetDistance Set");
+            Serial.println(F("TargetDistance Set"));
       }
-      else if(variable == "TargetTime")
+      else if(variable == F("TargetTime"))
       {
             targetSeconds = SerialStr.toInt();
-            Serial.println("Target Time Set");
+            Serial.println(F("Target Time Set"));
       }
-      else if(variable == "DumpRPM")
+      else if(variable == F("DumpRPM"))
       {
             dumprpms();
       }
       else 
       {
-          Serial.println("Unreckognised");
+          Serial.println(F("Unreckognised"));
           Serial.println(variable);
       }
       SerialStr = "";

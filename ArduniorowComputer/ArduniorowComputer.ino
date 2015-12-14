@@ -33,18 +33,18 @@ void setup()
   if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
     setErgType(ERGTYPEC2);
-    Serial.print("Concept 2 detected on pin ");
+    Serial.print(F("Concept 2 detected on pin "));
     Serial.println(analogPin);
   }
   else
   {
     setErgType(ERGTYPEVFIT);
-    Serial.print("No Concept 2 detected on Analog pin ");
+    Serial.print(F("No Concept 2 detected on Analog pin "));
     Serial.println(analogPin);
-    Serial.print("Detecting reed switch on pin ");
+    Serial.print(F("Detecting reed switch on pin "));
     Serial.println(switchPin);
   }
-  Serial.println("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor");
+  Serial.println(F("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor"));
   #ifdef UseLCD
     startMenu();
     //register graphics for up/down
@@ -76,7 +76,7 @@ void loop()
     }
     if((millis()-mtime) >=10)
     {
-      Serial.print("warning - loop took (ms):");
+      Serial.print(F("warning - loop took (ms):"));
       Serial.println(millis()-mtime);
     }
   buttonState = val;                       // save the new state in our variable
@@ -85,12 +85,13 @@ void loop()
 
 void writeStrokeRow()
 {
-  Serial.print(totalStroke); Serial.print("\t");
-  Serial.print(spm); Serial.print("\t");
-  Serial.print(getSplitString()); Serial.print("\t");
-  Serial.print(power); Serial.print("\t");
-  Serial.print(distancem); Serial.print("\t");
-  Serial.print(getTime()); Serial.print("\t");
+  char tabchar = '\t';
+  Serial.print(totalStroke); Serial.print(tabchar);
+  Serial.print(spm); Serial.print(tabchar);
+  Serial.print(getSplitString()); Serial.print(tabchar);
+  Serial.print(power); Serial.print(tabchar);
+  Serial.print(distancem); Serial.print(tabchar);
+  Serial.print(getTime()); Serial.print(tabchar);
   Serial.print(k*1000000); 
   Serial.println();
 }
