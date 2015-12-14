@@ -17,8 +17,8 @@ float recoveryAngularVelocity;              // angular velocity at the end of th
 
 //-------------------------------------------------------------------
 //               acceleration/deceleration
-const unsigned int consecutivedecelerations = 6;//number of consecutive decelerations before we are decelerating
-const unsigned int consecutiveaccelerations = 6;// number of consecutive accelerations before detecting that we are accelerating.
+const unsigned int consecutivedecelerations = 2;//number of consecutive decelerations before we are decelerating
+const unsigned int consecutiveaccelerations = 2;// number of consecutive accelerations before detecting that we are accelerating.
 unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
 unsigned int accelerations = 0;             // number of acceleration rotations;
 //-------------------------------------------------------------------
@@ -141,7 +141,7 @@ void registerClick()
                 //work back to get recovery velocity and time before our consecutive check.
                 int lowestVal = 2000;
                 int tempLow = 0;
-                for(int e=0;e<consecutivedecelerations+10; e++)
+                for(int e=0;e<consecutiveaccelerations+10; e++)
                 {
                   Serial.print(F(" "));
                   Serial.print(e);
@@ -231,12 +231,8 @@ void registerClick()
               {
                 //get the angular velocity before the change. 
                 //set the drive angular velocity to be the value it was 4 clicks ago (before any deceleration
-                driveAngularVelocity = (float)getRpm(-consecutiveaccelerations-1)/60*2*PI;
+                driveAngularVelocity = radSec;//(float)getRpm(-consecutiveaccelerations-1)/60*2*PI;
                 driveEndms = mtime;
-                for(int i =0;i<consecutiveaccelerations; i++)
-                {//work back to get recovery time before our consecutive check.
-                  driveEndms -=(float)60000/getRpm(0-i);
-                }
                 lastDriveTimems = driveEndms - recoveryEndms;
                 //driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
                 decelerations = 0;
