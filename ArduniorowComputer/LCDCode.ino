@@ -414,30 +414,30 @@ void writeType()
     switch(sessionType)
     {
       case DISTANCE:
-        menuDisplay((char *)F("Distance"));
+        menuDisplay(("Distance"));
       break;
       case TIME:
-        menuDisplay((char *)F("Time"));
+        menuDisplay(("Time"));
       break;
       case INTERVAL:
-        menuDisplay((char *)F("Interval"));
+        menuDisplay(("Interval"));
         break;
       case DRAGFACTOR:
-        menuDisplay((char *)F("Drag Factor"));
+        menuDisplay(("Drag Factor"));
         break;
       case RPM:
-        menuDisplay((char *)F("RPM"));
+        menuDisplay(("RPM"));
         break;
       case SETTINGS:
-        menuDisplay((char *)F("Settings"));
+        menuDisplay(("Settings"));
         break;
 
       case WATTS:
-        menuDisplay((char *)F("Watts"));
+        menuDisplay(("Watts"));
         break;
       default:
         sessionType = JUST_ROW;
-        menuDisplay((char *)F("Just Row"));
+        menuDisplay("Just Row");
         break;
     }
 }
@@ -473,10 +473,10 @@ void menuDisplayErgType()
   switch(ergType)
   {
     case ERGTYPEC2:
-      lcd.print((char *)F("Concept 2"));
+      lcd.print(("Concept 2"));
       break;
     case ERGTYPEVFIT:
-      lcd.print((char *)F("V-Fit    "));
+      lcd.print(("V-Fit    "));
       break;
   }
 }
@@ -537,11 +537,11 @@ void showBacklightState(int state)
   lcd.setCursor(0,1);
   if(state == LOW)
   {
-      lcd.print((char *)F("Off"));
+      lcd.print(("Off"));
   }
   else
   {
-      lcd.print((char *)F("On "));
+      lcd.print(("On "));
   }
 }
 

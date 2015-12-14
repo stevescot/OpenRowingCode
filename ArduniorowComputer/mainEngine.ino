@@ -91,12 +91,14 @@ void registerClick()
         timeTakenus = uTime - lastCalcChangeus;
         rpmHistory[nextRPM] = (60000000.0*clicksPerCalc/clicksPerRotation)/timeTakenus;
         nextRPM ++;
+        if(nextRPM >=numRpms) nextRPM = 0;//wrap around to the start again.
+        
         const int rpmarraycount = 3;
         int rpms[rpmarraycount] = {getRpm(0), getRpm(-1), getRpm(-2)};//,getRpm(-3),getRpm(-4)};
-        if(nextRPM >=numRpms) nextRPM = 0;//wrap around to the start again.
         int currentmedianrpm = median(rpms,rpmarraycount);
         int rpms2[rpmarraycount] = {getRpm(-3), getRpm(-4),getRpm(-5)};//,getRpm(-8),getRpm(-9)};
         int previousmedianrpm = median(rpms2, rpmarraycount);
+        
         if(currentmedianrpm > peakRPM) peakRPM = currentmedianrpm;
         float radSec = (float)currentmedianrpm/60*2*PI;
         float prevradSec = (float)previousmedianrpm/60*2*PI;
@@ -120,12 +122,17 @@ void registerClick()
                 }
               }
                 //= I ( dω / dt ) dθ + k ω2 dθ 
-                // I think equation 8 has an error - kwcubeddtheta the first term is the power to accelerate the wheel, second is power lost to the fan i think and should be w cubed, not squared.
+                // That is for energy so all above /dt = power
                 float dtheta = (2*PI/clicksPerRotation*clicksPerCalc);
                 //Serial.print((float)timeTakenus/1000000);
-                float instantaneouspower = I *(radSec-prevradSec)/((float)timeTakenus/1000000)*dtheta + k * pow(radSec,3) * dtheta;
+                float instw = (float)getRpm(0)/60*2*PI;
+                float prevw = (float)getRpm(-1)/60*2*PI;
+                float dTs = (float)timeTakenus/1000000;
+                float instantaneouspower = (I *(instw-prevw)/(dTs)*dtheta + k * pow(radSec,2) * dtheta)/dTs;
+                #ifdef debug
                 Serial.print(instantaneouspower);
                 Serial.println("W");
+                #endif
                 if(accelerations < powerSamples)
                 {
                   powerArray[accelerations] = instantaneouspower;
@@ -143,11 +150,12 @@ void registerClick()
                 int tempLow = 0;
                 for(int e=0;e<consecutiveaccelerations+10; e++)
                 {
+                  #ifdef debug
                   Serial.print(F(" "));
                   Serial.print(e);
                   Serial.print(F(":"));
                   Serial.print(getRpm(-e));
-                  
+                  #endif
                   if(getRpm(-e) <= lowestVal){
                     lowestVal = getRpm(-e);
                     tempLow = e;
@@ -155,11 +163,13 @@ void registerClick()
                   
                 }
                 tempLow+=3;//go 3 rotations back to get a good sample
+                #ifdef debug
                 Serial.print(F(" tempLow("));
                 Serial.print(tempLow);
                 Serial.print(F("):"));
                 Serial.print(getRpm(0-tempLow));
                 Serial.print(F("\t"));
+                #endif
                 recoveryAngularVelocity=(float)getRpm(0-tempLow)/60*2*PI;
                 recoveryEndms = mTime;
                 for(int i =0;i<tempLow; i++)
