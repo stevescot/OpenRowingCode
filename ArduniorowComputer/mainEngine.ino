@@ -109,10 +109,11 @@ void registerClick()
               {//first acceleration - capture the seconds decelerating and #
                 //time for a single rotation at drive (which we will have included in secondsDecel but shouldn't have.
                 secondsDecel = (float)((float)mTime- driveEndms)/1000;
-//                for(int i =0;i<consecutivedecelerations; i++)
-//                {//work back to get recovery time before our consecutive check.
-//                  secondsDecel -=(float)60/getRpm(0-i);
-//                }
+                for(int i =0;i<consecutivedecelerations; i++)
+                {//work back to get recovery time before our consecutive check.
+                  secondsDecel -=(float)60/getRpm(0-i);
+                  
+                }
                 //wipe the powerArray
                 for(int i = 0; i < powerSamples; i++)
                 {
@@ -124,8 +125,10 @@ void registerClick()
                 float dtheta = (2*PI/clicksPerRotation*clicksPerCalc);
                 //Serial.print((float)timeTakenus/1000000);
                 float instantaneouspower = I *(radSec-prevradSec)/((float)timeTakenus/1000000)*dtheta + k * pow(radSec,3) * dtheta;
+                #ifdef debug
                 Serial.print(instantaneouspower);
-                Serial.println("W");
+                Serial.println(F("W"));
+                #endif
                 if(accelerations < powerSamples)
                 {
                   powerArray[accelerations] = instantaneouspower;
@@ -143,23 +146,26 @@ void registerClick()
                 int tempLow = 0;
                 for(int e=0;e<consecutiveaccelerations+10; e++)
                 {
+                  #ifdef debug
                   Serial.print(F(" "));
                   Serial.print(e);
                   Serial.print(F(":"));
                   Serial.print(getRpm(-e));
-                  
+                  #endif
                   if(getRpm(-e) <= lowestVal){
                     lowestVal = getRpm(-e);
                     tempLow = e;
                   }
                   
                 }
-                tempLow+=3;//go 3 rotations back to get a good sample
+                //tempLow+=3;//go 3 rotations back to get a good sample
+                #ifdef debug
                 Serial.print(F(" tempLow("));
                 Serial.print(tempLow);
                 Serial.print(F("):"));
                 Serial.print(getRpm(0-tempLow));
                 Serial.print(F("\t"));
+                #endif
                 recoveryAngularVelocity=(float)getRpm(0-tempLow)/60*2*PI;
                 recoveryEndms = mTime;
                 for(int i =0;i<tempLow; i++)
@@ -180,7 +186,7 @@ void registerClick()
 #endif
                 //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
                 float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsDecel)*1000000;
-                driveAngularVelocity = radSec;
+                driveAngularVelocity = radSec + 13;
                 if(nextk > 0 && nextk < 300)
                 {//if drag factor detected is positive and reasonable
                   if(k3 ==0) 
@@ -194,12 +200,12 @@ void registerClick()
                   k1 = nextk;  //nm/s/s == W/s/s
                   int karr[3] = {k1,k2,k3};
                   k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
-       #ifdef debug
+       //#ifdef debug
                   Serial.print(F("k:")); Serial.println(nextk);
                   Serial.print(F("recw:")); Serial.println(recoveryAngularVelocity);
                   Serial.print(F("dw")); Serial.println(driveAngularVelocity);
                   Serial.print(F("sdecel")); Serial.println(secondsDecel);
-       #endif
+       //#endif
                   mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
                 }
                 else
