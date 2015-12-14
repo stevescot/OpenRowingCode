@@ -103,9 +103,9 @@ void setupWiFi() {
   delay(200);
 }
 
-void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery)
+void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int PowerArray[])
 {
-  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery);
+  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery, PowerArray, PowerSamples);
 }
 
 String getMac()

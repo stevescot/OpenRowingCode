@@ -100,7 +100,7 @@ void writeStrokeRow()
   {
     splitdistance = 1;
   }
-  SendSplit(mtime, splitdistance, distancem, lastDriveTimems, strokems - lastDriveTimems);
+  SendSplit(mtime, splitdistance, distancem, lastDriveTimems, strokems - lastDriveTimems, PowerArray);
 }
 
 

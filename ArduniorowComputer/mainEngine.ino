@@ -126,7 +126,14 @@ void registerClick()
                 float instantaneouspower = I *(radSec-prevradSec)/((float)timetakenus/1000000)*dtheta + k * pow(radSec,3) * dtheta;
                 Serial.print(instantaneouspower);
                 Serial.println("W");
-                PowerArray[accelerations] = instantaneouspower;
+                if(accelerations < PowerSamples)
+                {
+                  PowerArray[accelerations] = instantaneouspower;
+                }
+                else
+                {
+                  Serial.println(F("More samples than power array"));
+                }
               accelerations ++;
             if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
               {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating

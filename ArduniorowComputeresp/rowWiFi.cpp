@@ -32,7 +32,7 @@ int rowWiFi::connect()
 }
 
 
-int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery)
+int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int PowerArray[],int PowerSamples)
 {
 	Serial.println(F("sendSplit"));
 	if (connect())
@@ -40,24 +40,35 @@ int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistan
 		//if (!_inRequest)
 		//{
 			Serial.println(F("Sending to Server: ")); Serial.println(_host);
-			_client.print(F("GET /"));
-			_client.print(_path);
-			_client.print(F("/upload.aspx?m="));
-      _client.print(MAC);
-			_client.print(F("&t="));
-			_client.print(msfromStart);
-			_client.print(F("&sd="));
-			_client.print(strokeDistance);
-			_client.print(F("&d="));
-			_client.print(totalDistancem);
-      _client.print(F("&msD="));
-      _client.print(msDrive);
-      _client.print(F("&msR="));
-      _client.print(msRecovery);
-			_client.print(F("\r\nHost: ")); _client.print(_host);
-      _client.print(F("\r\nUser-Agent: IPHomeBox/1.0\r\n"));
-      _client.print(F("Accept: text/html\r\n"));
-      _client.print(F("Conection: keep-alive\r\n\r\n"));
+      String request = (F("GET /"));
+			request += _path;
+			request += F("/upload.aspx?m=");
+      request += MAC;
+			request += F("&t=");
+			request += msfromStart;
+			request += F("&sd=");
+			request += strokeDistance;
+			request += F("&d=");
+			request += totalDistancem;
+      request += F("&msD=");
+      request += msDrive;
+      request += F("&msR=");
+      request += msRecovery;
+      request += F("&Dr=");
+      int i = 0;
+      while(PowerArray[i] != -1 && i < PowerSamples)
+      {
+        if(i > 0) request +="%2C";
+        request+=PowerArray[i];  
+      }
+      if(i==0) request +=0;
+			request += F("\r\nHost: "); 
+			request += _host;
+      request += F("\r\nUser-Agent: IPHomeBox/1.0\r\n");
+      request += F("Accept: text/html\r\n");
+      request +=F("Conection: keep-alive\r\n\r\n");
+      _client.print(request);
+      request = "";
 			//_inRequest = true;
 		//}
 		return true;

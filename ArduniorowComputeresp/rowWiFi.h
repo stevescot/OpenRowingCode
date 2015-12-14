@@ -10,7 +10,7 @@ class rowWiFi
 public:
 	rowWiFi(const char *host, const char *path, WiFiClient &client);
 	rowWiFi();
-	int sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery);
+	int sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int PowerArray[],int PowerSamples);
 	int finishSend();
 private:
 	bool _inRequest;

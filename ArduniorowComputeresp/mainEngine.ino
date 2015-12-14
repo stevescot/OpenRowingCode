@@ -113,8 +113,28 @@ void registerClick()
                 {//work back to get recovery time before our consecutive check.
                   secondsdecel -=(float)60/getRpm(0-i);
                 }
+                //wipe the powerArray
+                for(int i = 0; i < PowerSamples; i++)
+                {
+                  PowerArray[i] = -1;
+                }
               }
-            accelerations ++;
+                //= I ( dω / dt ) dθ + k ω2 dθ 
+                // I think equation 8 has an error - kwcubeddtheta the first term is the power to accelerate the wheel, second is power lost to the fan i think and should be w cubed, not squared.
+                float dtheta = (2*PI/clicksPerRotation*numclickspercalc);
+                //Serial.print((float)timetakenus/1000000);
+                float instantaneouspower = I *(radSec-prevradSec)/((float)timetakenus/1000000)*dtheta + k * pow(radSec,3) * dtheta;
+                Serial.print(instantaneouspower);
+                Serial.println("W");
+                if(accelerations < PowerSamples)
+                {
+                  PowerArray[accelerations] = instantaneouspower;
+                }
+                else
+                {
+                  Serial.println(F("More samples than power array"));
+                }
+              accelerations ++;
             if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
               {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                 totalStroke++;
@@ -211,8 +231,6 @@ void registerClick()
               {
                 //get the angular velocity before the change. 
                 //set the drive angular velocity to be the value it was 4 clicks ago (before any deceleration
-                
-                
                 driveAngularVelocity = (float)getRpm(-consecutiveaccelerations-1)/60*2*PI;
                 driveEndms = mtime;
                 for(int i =0;i<consecutiveaccelerations; i++)
