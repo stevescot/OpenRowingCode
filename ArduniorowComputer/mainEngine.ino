@@ -212,9 +212,10 @@ void registerClick()
                 //get the angular velocity before the change. 
                 //set the drive angular velocity to be the value it was 4 clicks ago (before any deceleration
                 //= I ( dω / dt ) dθ + k ω2 dθ 
+                // I think equation 8 has an error - kwcubeddtheta the first term is the power to accelerate the wheel, second is power lost to the fan i think and should be w cubed, not squared.
                 float dtheta = (2*PI/clicksPerRotation*numclickspercalc);
                 //Serial.print((float)timetakenus/1000000);
-                float instantaneouspower = I *(radSec-prevradSec)/((float)timetakenus/1000000)*dtheta + k * pow(radSec,2) * dtheta;
+                float instantaneouspower = I *(radSec-prevradSec)/((float)timetakenus/1000000)*dtheta + k * pow(radSec,3) * dtheta;
                 Serial.print(instantaneouspower);
                 Serial.println("W");
                 driveAngularVelocity = (float)getRpm(-consecutiveaccelerations-1)/60*2*PI;
