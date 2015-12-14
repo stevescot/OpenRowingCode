@@ -65,7 +65,7 @@ void setErgType(short newErgType)
         clicksPerCalc = 3;//take out a lot of noise before we detect drive / recovery.
         //number of clicks per rotation is 3 as there are three magnets.
         clicksPerRotation = 3;
-        k = 0.000125;
+        k = 0.000135;
         mStrokePerRotation = 0.08;//meters of stroke per rotation of the flywheel - C2.
         ergType = ERGTYPEC2;    
         break;
@@ -202,7 +202,8 @@ void registerClick()
 #endif
                 //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
                 float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsDecel)*1000000;
-                driveAngularVelocity = radSec + 13;
+                //driveAngularVelocity = radSec + 13;//HACK to get dw to real levels - needs calculating
+                driveAngularVelocity = (float)peakRPM/60*2*PI;
                 if(nextk > 0 && nextk < 300)
                 {//if drag factor detected is positive and reasonable
                   if(k3 ==0) 
@@ -220,6 +221,8 @@ void registerClick()
                   Serial.print(F("k:")); Serial.println(nextk);
                   Serial.print(F("recw:")); Serial.println(recoveryAngularVelocity);
                   Serial.print(F("dw")); Serial.println(driveAngularVelocity);
+                  Serial.print(F("currentMedianRPM")); Serial.println(currentmedianrpm);
+                  Serial.print(F("peakRPM")); Serial.println(peakRPM);
                   Serial.print(F("sdecel")); Serial.println(secondsDecel);
        //#endif
                   mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
@@ -258,6 +261,7 @@ void registerClick()
                 lastDriveTimems = driveEndms - recoveryEndms;
                 //driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
                 decelerations = 0;
+                peakRPM = 0;
               }
           }
           else
