@@ -154,11 +154,11 @@ void writeNextScreen()
     case 5://next lime
       //lcd 6->9 , 0
        lcd.setCursor(7,0);
-       if(RecoveryToDriveRatio > 2.1)
+       if(recoveryToDriveRatio > 2.1)
        {
         lcd.print((char)(int)LCDSpeedUp);
        }
-       else if (RecoveryToDriveRatio < 1.9)
+       else if (recoveryToDriveRatio < 1.9)
         {
           lcd.print((char)(int)LCDSlowDown);
         }
@@ -166,7 +166,7 @@ void writeNextScreen()
         {
           lcd.print((char)(int)LCDJustFine);
         }       
-       //lcd.print(RecoveryToDriveRatio,1);
+       //lcd.print(recoveryToDriveRatio,1);
     #ifdef debug
        Serial.print(F("\tDrag factor:\t"));
        Serial.print(k*1000000);
@@ -182,8 +182,8 @@ void writeNextScreen()
         int rpms1[5] = {getRpm(0), getRpm(-1), getRpm(-2),getRpm(-3),getRpm(-4)};
         Serial.print(median(rpms1,5));
       }
-      Serial.print(F("\tPeakrpm:\t"));
-      Serial.println(peakrpm);
+      Serial.print(F("\tpeakRPM:\t"));
+      Serial.println(peakRPM);
    #endif 
     break;
 

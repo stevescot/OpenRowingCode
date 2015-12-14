@@ -39,12 +39,12 @@ void setup()
   else
   {
     setErgType(ERGTYPEVFIT);
-    Serial.print(F("No Concept 2 detected on Analog pin "));
+    Serial.print("No Concept 2 detected on Analog pin ");
     Serial.println(analogPin);
-    Serial.print(F("Detecting reed switch on pin "));
+    Serial.print("Detecting reed switch on pin ");
     Serial.println(switchPin);
   }
-  Serial.println(F("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor"));
+  Serial.println("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor");
   #ifdef UseLCD
     startMenu();
     //register graphics for up/down
@@ -55,10 +55,10 @@ void setup()
 
 void loop()
 {
-  mtime = millis();
-  utime = micros(); 
+  mTime = millis();
+  uTime = micros(); 
   processSerial();
-  if(AnalogSwitch)
+  if(analogSwitch)
   {
     doAnalogRead();
   }
@@ -66,18 +66,18 @@ void loop()
   {
     val = digitalRead(switchPin);            // read input value and store it in val                       
   }
-   if (val != buttonState && val == LOW && (utime- laststatechangeus) >5000)            // the button state has changed!
+   if (val != buttonState && val == LOW && (uTime- lastStateChangeus) >5000)            // the button state has changed!
     { 
       registerClick();
          #ifdef UseLCD
             writeNextScreen();
          #endif
-      laststatechangeus=utime;
+      lastStateChangeus=uTime;
     }
-    if((millis()-mtime) >=10)
+    if((millis()-mTime) >=10)
     {
       Serial.print(F("warning - loop took (ms):"));
-      Serial.println(millis()-mtime);
+      Serial.println(millis()-mTime);
     }
   buttonState = val;                       // save the new state in our variable
 }
