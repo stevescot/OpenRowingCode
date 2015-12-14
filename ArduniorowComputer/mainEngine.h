@@ -66,7 +66,7 @@ unsigned int totalStroke = 0;
 float driveLengthm = 0;                     // last stroke length in meters
 //-------------------------------------------------------------------
 //               rpm/angular Velocity
-static const short numRpms = 200;           // size of the rpm array
+static const short numRpms = 100;           // size of the rpm array
 int rpmhistory[numRpms];                    // array of rpm per rotation for debugging
 //unsigned long microshistory[numRpms];       // array of the amount of time taken in calc/display for debugging.
 short nextrpm = 0;                          // currently measured rpm, to compare to last -index in above array.
@@ -82,3 +82,8 @@ float power = 0;                            // last stroke power in watts
 byte spm = 0;                               // current strokes per minute.  
 float distancem = 0;                        // distance rowed in meters.
 float RecoveryToDriveRatio = 0;             // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
+
+//-------------------------------------------------------------------
+//               Power Graph
+static const int PowerSamples = 40;
+int PowerArray[PowerSamples];
