@@ -7,7 +7,7 @@
 #include <avr/sleep.h>
 #define UseLCD 
 #include "mainEngine.h"   
-//#define debug  // uncomment this to get more verbose serial output
+#define debug  // uncomment this to get more verbose serial output
 
 //-------------------------------------------------------------------
 //               pins
