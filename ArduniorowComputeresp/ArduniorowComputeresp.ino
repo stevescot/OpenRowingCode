@@ -3,7 +3,6 @@
  * principles behind calculations are here : http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7
  */
 #include "mainEngine.h"   
-#define recoveryWork
 //#define debug  // uncomment this to get more verbose serial output
 //ota update : https://github.com/esp8266/Arduino/blob/master/doc/ota_updates/ota_updates.md
 //test page: http://monitoring/row/Display.html?MAC=18fe34e62748
