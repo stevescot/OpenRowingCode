@@ -73,6 +73,82 @@ void setErgType(short newErgType)
   mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;
 }
 
+void calculateInstantaneousPower()
+{
+  //= I ( dω / dt ) dθ + k ω2 dθ 
+  // That is for energy so all above /dt = power
+  float dtheta = (2*PI/clicksPerRotation*clicksPerCalc);
+  //Serial.print((float)timeTakenus/1000000);
+  float instw = (float)getRpm(0)/60*2*PI;
+  float prevw = (float)getRpm(-1)/60*2*PI;
+  float dTs = (float)timeTakenus/1000000;
+  float instantaneouspower = (I *(instw-prevw)/(dTs)*dtheta + k * pow(instw,2) * dtheta)/dTs;
+#ifdef debug
+  Serial.print(instantaneouspower); Serial.println("W");
+#endif
+  if(accelerations < powerSamples)
+  {
+    powerArray[accelerations] = instantaneouspower;
+  }
+  else
+  {
+    Serial.println(F("More samples than power array"));
+  }
+}
+
+void calculateDragFactor()
+{
+  //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
+  float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsDecel)*1000000;
+  //driveAngularVelocity = radSec + 13;//HACK to get dw to real levels - needs calculating
+  driveAngularVelocity = (float)peakRPM/60*2*PI;
+  if(nextk > 0 && nextk < 300)
+  {//if drag factor detected is positive and reasonable
+  if(k3 ==0) 
+  {//reset all ks
+    k3 = nextk;
+    k2 = nextk;
+    k1 = nextk;
+  }
+  k3 = k2; 
+  k2 = k1;
+  k1 = nextk;  //nm/s/s == W/s/s
+  int karr[3] = {k1,k2,k3};
+  k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
+    mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
+  }
+  else
+  {//dodgy k - write out to serial if debug.
+  #ifdef debug
+    Serial.print(F("k:")); Serial.print(nextk); Serial.print(F("recoveryrad")); Serial.print(recoveryAngularVelocity); Serial.print(F("driverad")); Serial.print(driveAngularVelocity); Serial.print(F("recoverySeconds")); Serial.print(secondsDecel);
+    Serial.print(F("k:")); Serial.println(nextk); Serial.print(F("recw:")); Serial.println(recoveryAngularVelocity); Serial.print(F("dw")); Serial.println(driveAngularVelocity);  Serial.print(F("currentMedianRPM")); Serial.println(currentmedianrpm);
+    Serial.print(F("peakRPM")); Serial.println(peakRPM); Serial.print(F("sdecel")); Serial.println(secondsDecel);
+  #endif
+  }
+}
+
+void workBackToRecoveryTime()
+{
+  int lowestVal = 2000;
+  int tempLow = 0;
+  for(int e=0;e<consecutiveaccelerations+10; e++)
+  {
+    #ifdef debug
+    Serial.print(F(" ")); Serial.print(e); Serial.print(F(":")); Serial.print(getRpm(-e));
+    #endif
+    if(getRpm(-e) <= lowestVal){
+      lowestVal = getRpm(-e);
+      tempLow = e;
+    }
+  }
+  recoveryAngularVelocity=(float)getRpm(0-tempLow)/60*2*PI;
+  recoveryEndms = mTime;
+  for(int i =0;i<tempLow; i++)
+  {//work back to get recovery time before our consecutive check.
+  recoveryEndms -=(float)60000/getRpm(0-i);
+  }
+}
+
 void registerClick()
 {
   currentrot ++;
@@ -92,7 +168,6 @@ void registerClick()
         rpmHistory[nextRPM] = (60000000.0*clicksPerCalc/clicksPerRotation)/timeTakenus;
         nextRPM ++;
         if(nextRPM >=numRpms) nextRPM = 0;//wrap around to the start again.
-        
         const int rpmarraycount = 3;
         int rpms[rpmarraycount] = {getRpm(0), getRpm(-1), getRpm(-2)};//,getRpm(-3),getRpm(-4)};
         int currentmedianrpm = median(rpms,rpmarraycount);
@@ -105,139 +180,35 @@ void registerClick()
         float angulardeceleration = (prevradSec-radSec)/((float)timeTakenus/1000000.0);
         //Serial.println(nextinstantaneousrpm);
         if(radSec > prevradSec || (accelerations > consecutiveaccelerations && radSec == prevradSec))//faster, or previously going faster and the same rpm
-          { //lcd.print("Acc");        
-            //on first acceleration - work out the total time decelerating.
-            if(accelerations == 0 && decelerations > consecutivedecelerations) 
-              {//first acceleration - capture the seconds decelerating and #
-                //time for a single rotation at drive (which we will have included in secondsDecel but shouldn't have.
+          { //on first acceleration - work out the total time decelerating.
+            accelerations ++;
+            calculateInstantaneousPower();
+            if(accelerations == 1 && decelerations > consecutivedecelerations) 
+              {//first acceleration - capture the seconds decelerating
                 secondsDecel = (float)((float)mTime- driveEndms)/1000;
-//                for(int i =0;i<consecutivedecelerations; i++)
-//                {//work back to get recovery time before our consecutive check.
-//                  secondsDecel -=(float)60/getRpm(0-i);
-//                  
-//                }
                 //wipe the powerArray
                 for(int i = 0; i < powerSamples; i++)
                 {
                   powerArray[i] = -1;
                 }
               }
-                //= I ( dω / dt ) dθ + k ω2 dθ 
-                // That is for energy so all above /dt = power
-                float dtheta = (2*PI/clicksPerRotation*clicksPerCalc);
-                //Serial.print((float)timeTakenus/1000000);
-                float instw = (float)getRpm(0)/60*2*PI;
-                float prevw = (float)getRpm(-1)/60*2*PI;
-                float dTs = (float)timeTakenus/1000000;
-                float instantaneouspower = (I *(instw-prevw)/(dTs)*dtheta + k * pow(radSec,2) * dtheta)/dTs;
-                #ifdef debug
-                Serial.print(instantaneouspower);
-                Serial.println("W");
-                #endif
-                if(accelerations < powerSamples)
-                {
-                  powerArray[accelerations] = instantaneouspower;
-                }
-                else
-                {
-                  Serial.println(F("More samples than power array"));
-                }
-              accelerations ++;
             if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
               {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                 totalStroke++;
                 //work back to get recovery velocity and time before our consecutive check.
-                int lowestVal = 2000;
-                int tempLow = 0;
-                for(int e=0;e<consecutiveaccelerations+10; e++)
-                {
-                  #ifdef debug
-                  Serial.print(F(" "));
-                  Serial.print(e);
-                  Serial.print(F(":"));
-                  Serial.print(getRpm(-e));
-                  #endif
-                  if(getRpm(-e) <= lowestVal){
-                    lowestVal = getRpm(-e);
-                    tempLow = e;
-                  }
-                  
-                }
-                //tempLow+=3;//go 3 rotations back to get a good sample
-                #ifdef debug
-                Serial.print(F(" tempLow("));
-                Serial.print(tempLow);
-                Serial.print(F("):"));
-                Serial.print(getRpm(0-tempLow));
-                Serial.print(F("\t"));
-                #endif
-                recoveryAngularVelocity=(float)getRpm(0-tempLow)/60*2*PI;
-                recoveryEndms = mTime;
-                for(int i =0;i<tempLow; i++)
-                {//work back to get recovery time before our consecutive check.
-                  recoveryEndms -=(float)60000/getRpm(0-i);
-                }
+                workBackToRecoveryTime();
                 writeStrokeRow();
-//                      if(totalStroke >9)
-//                      {
-//                        dumprpms();
-//                      }
-#ifdef debug
-                Serial.println("\n");
-                Serial.print(F("Total strokes:"));
-                Serial.print(totalStroke);
-                Serial.print(F("\tsecondsDecelerating:\t"));
-                Serial.println(float(secondsDecel));
-#endif
-                //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
-                float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsDecel)*1000000;
-                //driveAngularVelocity = radSec + 13;//HACK to get dw to real levels - needs calculating
-                driveAngularVelocity = (float)peakRPM/60*2*PI;
-                if(nextk > 0 && nextk < 300)
-                {//if drag factor detected is positive and reasonable
-                  if(k3 ==0) 
-                  {//reset all ks
-                    k3 = nextk;
-                    k2 = nextk;
-                    k1 = nextk;
-                  }
-                  k3 = k2; 
-                  k2 = k1;
-                  k1 = nextk;  //nm/s/s == W/s/s
-                  int karr[3] = {k1,k2,k3};
-                  k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
-       //#ifdef debug
-                  Serial.print(F("k:")); Serial.println(nextk);
-                  Serial.print(F("recw:")); Serial.println(recoveryAngularVelocity);
-                  Serial.print(F("dw")); Serial.println(driveAngularVelocity);
-                  Serial.print(F("currentMedianRPM")); Serial.println(currentmedianrpm);
-                  Serial.print(F("peakRPM")); Serial.println(peakRPM);
-                  Serial.print(F("sdecel")); Serial.println(secondsDecel);
-       //#endif
-                  mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
-                }
-                else
-                {
             #ifdef debug
-                  Serial.print(F("k:"));
-                  Serial.print(nextk);
-                  Serial.print(F("recoveryrad"));
-                  Serial.print(recoveryAngularVelocity);
-                  Serial.print(F("driverad"));
-                  Serial.print(driveAngularVelocity);
-                  Serial.print(F("recoverySeconds"));
-                  Serial.print(secondsDecel);
+                Serial.print(F(" tempLow(")); Serial.print(tempLow); Serial.print(F("):"));  Serial.print(getRpm(0-tempLow)); Serial.print(F("\t"));
+                Serial.println("\n");Serial.print(F("Total strokes:")); Serial.print(totalStroke); Serial.print(F("\tsecondsDecelerating:\t")); Serial.println(float(secondsDecel));
             #endif
-                }
+                calculateDragFactor();
                 decelerations = 0;
                 driveStartclicks = clicks;
                                 //recovery is the stroke minus the drive, drive is just drive
                 recoveryToDriveRatio = (float)(secondsDecel) / ((float)lastDriveTimems/1000);
             #ifdef debug
-                Serial.println();
-                Serial.println(secondsDecel);
-                Serial.println(((float)strokems/1000)-secondsDecel);
-                Serial.println(recoveryToDriveRatio);
+                Serial.println(); Serial.println(secondsDecel); Serial.println(((float)strokems/1000)-secondsDecel); Serial.println(recoveryToDriveRatio);
             #endif
                 //safest time to write a screen or to serial (slowest rpm)
               }
@@ -255,6 +226,15 @@ void registerClick()
           }
           else
           {
+              if(decelerations ==0 && accelerations > consecutiveaccelerations)
+              {
+                //first deceleration
+                #ifdef recoverywork
+                  doRecoveryWork();
+                  unsigned long timeAfter = micros();
+                  unsigned long timeTakenus = uTime - timeAfter;
+                #endif
+              }
               decelerations ++;
               if(decelerations == consecutivedecelerations)
               {//still decelerating (more than three decelerations in a row).
@@ -276,17 +256,12 @@ void registerClick()
                 accelerations = 0;//reset accelerations counter
               }
           }
-          
           if(mPerClick <= 20 && mPerClick >=20)
           {
             distancem += (clicks-clicksInDistance)*mPerClick;
             clicksInDistance = clicks;
           }
-          //if we are spinning slower than 10ms per spin then write the next screen
-//          if(timeTakenus > 10000) writeNextScreen();
           lastRotationus = timeTakenus;
-          //watch out for integer math problems here
-          //Serial.println((nextinstantaneousrpm - instantaneousrpm)/timetakenms); 
           lastCalcChangeus = uTime;
     if((mTime-startTimems)/1000 > targetSeconds)
     {
