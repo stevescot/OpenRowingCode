@@ -121,7 +121,7 @@ void calculateDragFactor()
   {//dodgy k - write out to serial if debug.
   #ifdef debug
     Serial.print(F("k:")); Serial.print(nextk); Serial.print(F("recoveryrad")); Serial.print(recoveryAngularVelocity); Serial.print(F("driverad")); Serial.print(driveAngularVelocity); Serial.print(F("recoverySeconds")); Serial.print(secondsDecel);
-    Serial.print(F("k:")); Serial.println(nextk); Serial.print(F("recw:")); Serial.println(recoveryAngularVelocity); Serial.print(F("dw")); Serial.println(driveAngularVelocity);  Serial.print(F("currentMedianRPM")); Serial.println(currentmedianrpm);
+    Serial.print(F("k:")); Serial.println(nextk); Serial.print(F("recw:")); Serial.println(recoveryAngularVelocity); Serial.print(F("dw")); Serial.println(driveAngularVelocity); 
     Serial.print(F("peakRPM")); Serial.println(peakRPM); Serial.print(F("sdecel")); Serial.println(secondsDecel);
   #endif
   }
@@ -147,6 +147,10 @@ void workBackToRecoveryTime()
   {//work back to get recovery time before our consecutive check.
   recoveryEndms -=(float)60000/getRpm(0-i);
   }
+  #ifdef debug
+   // Serial.print(F(" tempLow(")); Serial.print(tempLow); Serial.print(F("):"));  Serial.print(getRpm(0-tempLow)); Serial.print(F("\t"));
+    Serial.println("\n");Serial.print(F("Total strokes:")); Serial.print(totalStroke); Serial.print(F("\tsecondsDecelerating:\t")); Serial.println(float(secondsDecel));
+  #endif
 }
 
 void registerClick()
@@ -198,10 +202,6 @@ void registerClick()
                 //work back to get recovery velocity and time before our consecutive check.
                 workBackToRecoveryTime();
                 writeStrokeRow();
-            #ifdef debug
-                Serial.print(F(" tempLow(")); Serial.print(tempLow); Serial.print(F("):"));  Serial.print(getRpm(0-tempLow)); Serial.print(F("\t"));
-                Serial.println("\n");Serial.print(F("Total strokes:")); Serial.print(totalStroke); Serial.print(F("\tsecondsDecelerating:\t")); Serial.println(float(secondsDecel));
-            #endif
                 calculateDragFactor();
                 decelerations = 0;
                 driveStartclicks = clicks;
