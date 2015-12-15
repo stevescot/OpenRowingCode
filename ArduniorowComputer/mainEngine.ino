@@ -59,7 +59,7 @@ void setErgType(short newErgType)
         analogSwitch = false;
         I = 0.03;
         clicksPerRotation = 1;
-        clicksPerCalc = 1;
+        clicksPerCalc = 3;
         k = 0.000085;  
         mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
         break;
@@ -92,7 +92,7 @@ void calculateInstantaneousPower()
 #ifdef debug
   Serial.print(instantaneouspower); Serial.println("W");
 #endif
-  if(accelerations < powerSamples && instantaneouspower > 0)
+  if(nextPower < powerSamples && instantaneouspower > 0)
   {
     Serial.println(instantaneouspower);
     powerArray[nextPower] = instantaneouspower;
@@ -100,7 +100,15 @@ void calculateInstantaneousPower()
   }
   else
   {
-    Serial.println(F("More samples than power array"));
+    if(nextPower >= powerSamples)
+    {
+      Serial.println(F("More samples than power array"));
+    }
+    else
+    {
+      Serial.println(instantaneouspower);
+      //negative power
+    }
   }
 }
 
@@ -109,8 +117,8 @@ void addDragFactorToArray()
   float nextk = I * ((1.0/recoveryEndAngularVelocity)-(1.0/recoveryBeginAngularVelocity))/(secondsDecel)*1000000;
   if(nextk >40 && nextk < 300 && kIndex < maxKArray)
   {
-    kIndex ++;
     kArray[kIndex] = nextk;
+    kIndex ++;
   }
   else
   {//dodgy k - write out to serial if debug.
@@ -131,7 +139,7 @@ void getDragFactor()
     mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
     Serial.println();
     Serial.println();
-    Serial.print("K MEDIAN"); Serial.println(k*1000000);
+    Serial.print("K MEDIAN"); Serial.println(k*1000000); Serial.print("samples "); Serial.println(kIndex);
     Serial.println();
     Serial.println();
     kIndex = 0;

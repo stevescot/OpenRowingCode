@@ -178,7 +178,7 @@ void writeNextScreen()
     #endif
       break;
    case 6:
-   Serial.print("generatingChars");
+   //Serial.print("generatingChars");
       generateGraphChars();
       lcd.setCursor(6,1);
       lcd.print((char)(int)LCDGraphOne);

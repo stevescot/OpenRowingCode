@@ -74,7 +74,7 @@ void loop()
          #endif
       lastStateChangeus=uTime;
     }
-    if((millis()-mTime) >=10)
+    if((millis()-mTime) >=23)
     {
       Serial.print(F("warning - loop took (ms):"));
       Serial.println(millis()-mTime);
