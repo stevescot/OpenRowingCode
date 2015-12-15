@@ -241,7 +241,7 @@ void registerClick()
                 addDragFactorToArray();
               }
           }
-          if(mPerClick <= 20 && mPerClick >=20)
+          if(mPerClick <= 20 && mPerClick >=0)
           {
             distancem += (clicks-clicksInDistance)*mPerClick;
             clicksInDistance = clicks;
