@@ -1,60 +1,30 @@
-const int numvalues = 200;
-int values[numvalues];
-unsigned long times[numvalues];
-int currentvalue = 0;
-int nextinsertedvalue= 0;
-
+int i = 1;
+const int numValues = 196;
+long delays[numValues] = {4164,20592,4180,20476,4144,20316,4172,20472,4176,20368,4172,20156,4152,20144,4168,20024,4156,19932,4168,19696,4172,19532,4220,19460,4172,19080,3520,19820,4168,18792,4152,18568,3528,18968,4220,18228,3528,18408,3524,18452,3512,18112,3528,17844,3508,17896,3528,17680,3516,17444,3528,17288,3588,17348,3524,17116,3508,17220,3528,17000,3524,17100,3524,17116,3516,17124,3516,17228,3508,17220,3528,17352,3516,17340,3508,17444,3524,17408,3520,17692,3516,17504,3580,17680,3524,17796,3516,17796,3524,17720,3520,18004,3524,17944,3576,17960,3520,18244,3524,18060,3592,18240,3524,18180,3528,18472,3520,18292,4216,17908,3524,18572,3528,18584,4168,18008,3516,18788,3528,18636,4236,18240,3516,18852,4224,18288,4232,18472,3516,19132,4176,18464,4156,18668,3532,19188,4240,18628,4236,18736,4176,18868,4228,18852,4220,19024,3524,19636,4232,19136,4172,19228,3528,19912,4176,19240,4152,19456,4152,19464,4228,19468,4176,19584,3524,20204,4244,19636,4220,19736,4156,20032,4156,19900,4176,19860,4172,20248,4176,20024,4164,20236,4172,20192,4224,20200,4236,20196,4164,20376,4168,20480,4176,20480,4240};
+int numtowrite[numValues] = {0,108,0,121,0,106,0,107,0,124,0,113,0,109,0,122,0,117,0,109,0,120,0,120,0,108,0,130,0,123,0,116,0,126,0,128,0,118,0,139,0,131,0,122,0,142,0,135,0,128,0,141,0,138,0,130,0,148,0,139,0,131,0,148,0,139,0,131,0,147,0,140,0,131,0,144,0,134,0,128,0,142,0,137,0,127,0,147,0,130,0,125,0,140,0,130,0,127,0,136,0,136,0,123,0,139,0,129,0,126,0,141,0,134,0,124,0,142,0,127,0,123,0,131,0,128,0,126,0,136,0,129,0,122,0,131,0,123,0,117,0,127,0,121,0,118,0,129,0,127,0,122,0,133,0,125,0,119,0,134,0,125,0,119,0,123,0,118,0,110,0,131,0,124,0,108,0,129,0,121,0,114,0,120,0,116,0,108,0,120,0,114,0,128,0};
+unsigned long nextTime = 0;
+unsigned long uTime = 0;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  //read the first 800 lines in.
-  for(int i = 0; i < numvalues +1; i++)
-  {
-    readLine();
-  }
+  
 }
 
 void loop() {
-  unsigned long mics = micros();
-    if(mics > times[currentvalue])
+  uTime = micros();
+  if(uTime > nextTime)
+  {
+    if(uTime-nextTime > 1000) 
     {
-      analogWrite(0,values[currentvalue]);
-      currentvalue++;
-      if(currentvalue > numvalues+1) 
-          currentvalue = 0;
+      Serial.print("delay not accurate") ;
+      Serial.println(uTime - nextTime);
     }
-    else if(mics < times[currentvalue] - 5000)
-    {//time to do some reading
-      readLine();
+    analogWrite(0,numtowrite[i]);
+    i++;
+    if(i >= 196)
+    {//go back to the start.
+      i =0;
     }
-}
-
-void readLine()
-{//read a line of serial input into the arrays
-  //if there is something to read, and we are not about to overwrite what we are reading from the arrays.
-  if (Serial.available() > 0 && (nextinsertedvalue+1 != currentvalue)) {
-    String line = "";
-    char c = Serial.read();
-    while(c != 9)//until we get to the tab
-    {
-      line += c;
-      c = Serial.read();
-    }
-    times[nextinsertedvalue] = atol(line.c_str());
-    line = "";
-    while(c != 13)//until we get to the end of line
-    {
-      line += c;
-      c = Serial.read();
-    }
-    values[nextinsertedvalue] = atoi(line.c_str());
-    //read line feed.
-    c = Serial.read();
-    nextinsertedvalue++;
-    if(nextinsertedvalue > numvalues-1)
-    {
-      nextinsertedvalue = 0;
-    }
+    nextTime = nextTime + delays[i];
   }
 }
-
