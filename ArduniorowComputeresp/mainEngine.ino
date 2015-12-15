@@ -100,8 +100,6 @@ void calculateDragFactor()
 {
   //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
   float nextk = I * ((1.0/recoveryAngularVelocity)-(1.0/driveAngularVelocity))/(secondsDecel)*1000000;
-  //driveAngularVelocity = radSec + 13;//HACK to get dw to real levels - needs calculating
-  driveAngularVelocity = (float)peakRPM/60*2*PI;
   if(nextk > 0 && nextk < 300)
   {//if drag factor detected is positive and reasonable
   if(k3 ==0) 
