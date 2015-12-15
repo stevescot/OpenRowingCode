@@ -17,12 +17,12 @@ static int _threshold = 50;
 //               custom Character definitions
 #define LCDSlowDown 0
 #define LCDSpeedUp 1
-#define LCDJustFine 3
-#define LCDGraphOne 4
-#define LCDGraphTwo 5
-#define LCDGraphThree 6
-#define LCDGraphFour 7
-#define LCDGraphFive 8
+#define LCDJustFine 2
+#define LCDGraphOne 3
+#define LCDGraphTwo 4
+#define LCDGraphThree 5
+#define LCDGraphFour 6
+#define LCDGraphFive 7
 //-------------------------------------------------------------------
 //               KEY index definitions
 #define NO_KEY 0
@@ -178,6 +178,7 @@ void writeNextScreen()
     #endif
       break;
    case 6:
+   Serial.print("generatingChars");
       generateGraphChars();
       lcd.setCursor(6,1);
       lcd.print((char)(int)LCDGraphOne);
@@ -736,7 +737,23 @@ int getKey()
 
 void generateGraphChars()
 {
-  byte graphChar[8];
+    byte bitNums[5] = {
+                    B10000,
+                    B01000,
+                    B00100,
+                    B00010,
+                    B00001
+                    };
+  byte graphChar[8]{
+                    B00000,
+                    B00000,
+                    B00000,
+                    B00000,
+                    B00000,
+                    B00000,
+                    B00000,
+                    B00000
+                    };
   float maxPower = -1;
   float minPower = 9999999999;
   int i;
@@ -754,7 +771,6 @@ void generateGraphChars()
       {//reset it all to blank
         graphChar[i] = B00000;
       }
-      int byteindex = 16;//current position in the byte to set the pixel of (we are moving from left to right, so starting with highest value)
       for(i=0; i<5; i++)//for each bit position
       {
         int bitnum = character*5 + i;//this is the position in the powerarray for the character bit combination.
@@ -762,12 +778,15 @@ void generateGraphChars()
         {
           int sampleHeight = ((powerArray[bitnum] - minPower) / maxPower * 7);
           if(sampleHeight > 7) sampleHeight = 7;
-          graphChar[7-sampleHeight] = graphChar[7-sampleHeight] + byteindex;
+          graphChar[7-sampleHeight] |=  bitNums[i];
         }
       }      
       lcd.createChar((int)LCDGraphOne+character, graphChar);
-      byteindex /=2;//step along to next bit position
     }
+  }
+  else
+  {
+    Serial.println("maxpower less than zero");
   }
 //  static const int powerSamples = 40;
 }
