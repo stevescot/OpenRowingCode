@@ -18,6 +18,10 @@ static int _threshold = 50;
 #define LCDSlowDown 0
 #define LCDSpeedUp 1
 #define LCDJustFine 3
+#define LCDGraphOne 4
+#define LCDGraphTwo 5
+#define LCDGraphThree 6
+#define LCDGraphFour 7
 //-------------------------------------------------------------------
 //               KEY index definitions
 #define NO_KEY 0
@@ -173,6 +177,12 @@ void writeNextScreen()
     #endif
       break;
    case 6:
+      generateGraphChars();
+      lcd.setCursor(6,1);
+      lcd.print((char)(int)LCDGraphOne);
+      lcd.print((char)(int)LCDGraphTwo);
+      lcd.print((char)(int)LCDGraphThree);
+      lcd.print((char)(int)LCDGraphFour);
    #ifdef debug
       Serial.print(F("\tDrive angularve: "));
       //Serial.print(driveAngularVelocity);
@@ -720,6 +730,50 @@ int getKey()
       else _curKey = NO_KEY;
   return _curKey;
   delay(100);
+}
+
+void generateGraphChars()
+{
+  byte graphChar[8];
+  float maxPower = -1;
+  float minPower = 9999999999;
+  int i;
+  for(i=0; i<powerSamples; i++)
+  {
+    if(powerArray[i]==-1) break;
+    if(powerArray[i] > maxPower) maxPower = powerArray[i];
+    if(powerArray[i] < minPower) minPower = powerArray[i];
+  }
+  if(maxPower > 0)
+  {
+    for(int character = 0; character < 3; character++)
+    {
+      for(i=0; i<8;i++)
+      {//reset it all to blank
+        graphChar[i] = B00000;
+      }
+      for(i=0; i<5; i++)
+      {
+        int bitnum = character*5 + i;
+        if(powerArray[bitnum] > 0)
+        {
+          int sampleHeight = ((powerArray[bitnum] - minPower) / maxPower * 7);
+          Serial.println(i);
+          Serial.println(sampleHeight);
+          Serial.println("bytebefore");
+          Serial.println((int)graphChar[7-sampleHeight]);
+          if(sampleHeight > 7) sampleHeight = 7;
+          Serial.println("add");
+          Serial.println((int)pow(2,(4-i))+1);
+          graphChar[7-sampleHeight] = graphChar[7-sampleHeight] + (byte)(int)pow(2,(4-i))+1;
+          Serial.println("byte");
+          Serial.println((int)graphChar[7-sampleHeight]);
+        }
+        lcd.createChar((int)LCDGraphOne+character, graphChar);
+      }      
+    }
+  }
+//  static const int powerSamples = 40;
 }
 
 //
