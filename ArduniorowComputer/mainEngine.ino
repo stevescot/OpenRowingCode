@@ -59,7 +59,7 @@ void setErgType(short newErgType)
         analogSwitch = false;
         I = 0.03;
         clicksPerRotation = 1;
-        clicksPerCalc = 3;
+        clicksPerCalc = 1;
         k = 0.000085;  
         mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
         break;
