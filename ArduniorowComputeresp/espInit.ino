@@ -14,6 +14,11 @@ String myName = "";
 String MAC;                  // the MAC address of your Wifi shield
 rowWiFi RowServer("monitoring.intelligentplant.local","row", client);
 
+void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int PowerArray[])
+{
+  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery, PowerArray, powerSamples);
+}
+
 void setupWiFi() {
   st = "";//empty the option list string to save some memory.
   st.reserve(0);
@@ -103,10 +108,7 @@ void setupWiFi() {
   delay(200);
 }
 
-void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int PowerArray[])
-{
-  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery, PowerArray, PowerSamples);
-}
+
 
 String getMac()
 {

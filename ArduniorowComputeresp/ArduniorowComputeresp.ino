@@ -52,10 +52,10 @@ void setup()
 
 void loop()
 {
-  mtime = millis();
-  utime = micros(); 
+  mTime = millis();
+  uTime = micros(); 
   processSerial();
-  if(AnalogSwitch)
+  if(analogSwitch)
   {
     doAnalogRead();
   }
@@ -63,18 +63,18 @@ void loop()
   {
     val = digitalRead(switchPin);            // read input value and store it in val                       
   }
-   if (val != buttonState && val == LOW && (utime- laststatechangeus) >5000)            // the button state has changed!
+   if (val != buttonState && val == LOW && (uTime- lastStateChangeus) >5000)            // the button state has changed!
     { 
       registerClick();
          #ifdef UseLCD
             writeNextScreen();
          #endif
-      laststatechangeus=utime;
+      lastStateChangeus=uTime;
     }
-    if((millis()-mtime) >=10)
+    if((millis()-mTime) >=10)
     {
       Serial.print(F("warning - loop took (ms):"));
-      Serial.println(millis()-mtime);
+      Serial.println(millis()-mTime);
     }
   buttonState = val;                       // save the new state in our variable
 }
@@ -91,16 +91,16 @@ void writeStrokeRow()
   Serial.print(getTime()); Serial.print(tab);
   Serial.print(k*1000000); 
   Serial.println();
-  float splitdistance;
+  float splitDistance;
   if(split >0)
   {
-   splitdistance = (float)strokems/1000/split*500;
+   splitDistance = (float)strokems/1000/split*500;
   }
   else 
   {
-    splitdistance = 1;
+    splitDistance = 1;
   }
-  SendSplit(mtime, splitdistance, distancem, lastDriveTimems, strokems - lastDriveTimems, PowerArray);
+  SendSplit(mTime, splitDistance, distancem, lastDriveTimems, strokems - lastDriveTimems, powerArray);
 }
 
 
