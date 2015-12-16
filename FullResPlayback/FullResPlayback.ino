@@ -7,7 +7,8 @@ unsigned long uTime = 0;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  
+  Serial.write("Started");
+  pinMode(2,INPUT);
 }
 
 void loop() {
@@ -19,7 +20,14 @@ void loop() {
       Serial.print("delay not accurate") ;
       Serial.println(uTime - nextTime);
     }
-    analogWrite(0,numtowrite[i]);
+    if(numtowrite[i] >0)
+    {
+      digitalWrite(2,HIGH);
+    }
+    else
+    {
+      digitalWrite(2,LOW);
+    }
     i++;
     if(i >= 196)
     {//go back to the start.
