@@ -5,7 +5,7 @@
  * 41% total
  */
 #include <avr/sleep.h>
-#define UseLCD 
+//#define UseLCD 
 #include "mainEngine.h"   
 //#define debug  // uncomment this to get more verbose serial output
 
@@ -27,8 +27,8 @@ void setup()
    #ifdef UseLCD
     lcdSetup();
    #endif
-  analogReference(DEFAULT);
-  //analogReference(INTERNAL);
+  //analogReference(DEFAULT);
+  analogReference(INTERNAL);
   delay(100);
   if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
