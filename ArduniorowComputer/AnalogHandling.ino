@@ -40,6 +40,10 @@ void doAnalogRead()
             {
               Serial.print("Warning, adjustment too high, something went wrong ");
               Serial.println(timeAdjustment);
+              Serial.print("Analog Value:");
+              Serial.println(analog);
+              Serial.print("Analog Count");
+              Serial.println(AnalogCount);
             }
             uTime = lastAnalogReadus + timeAdjustment;
         }

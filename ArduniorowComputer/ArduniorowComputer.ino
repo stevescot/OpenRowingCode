@@ -5,7 +5,7 @@
  * 41% total
  */
 #include <avr/sleep.h>
-//#define UseLCD 
+#define UseLCD 
 #include "mainEngine.h"   
 //#define debug  // uncomment this to get more verbose serial output
 
@@ -27,9 +27,8 @@ void setup()
    #ifdef UseLCD
     lcdSetup();
    #endif
-  //analogReference(DEFAULT);
-  analogReference(INTERNAL);
   delay(100);
+  analogReference(DEFAULT);
   if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
     setErgType(ERGTYPEC2);
@@ -50,6 +49,8 @@ void setup()
     //register graphics for up/down
      graphics();
   #endif
+  //done with LCD sheild - safe to use internal reference now (is there a workaround for this...?)
+  analogReference(INTERNAL);
   // Print a message to the LCD.
 }
 
