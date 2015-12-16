@@ -12,21 +12,24 @@ float c = 2.8;                              //The figure used for c is somewhat 
 //-------------------------------------------------------------------
 //               rpm/angular Velocity
 float previousDriveAngularVelocity;         // fastest angular velocity at end of previous drive
-float driveAngularVelocity;                 // fastest angular velocity at end of drive
-float recoveryStartAngularVelocity;
-float recoveryEndAngularVelocity;              // angular velocity at the end of the recovery  (before drive)
-
+//float driveAngularVelocity;                 // fastest angular velocity at end of drive
+float recoveryBeginAngularVelocity;              // angular velocity at the end of the recovery  (before drive)
+float recoveryEndAngularVelocity;
+float previousRecoveryEndAngularVelocity;
+unsigned long previousRecoveryEndms;
+unsigned long recoveryBeginms; 
 //-------------------------------------------------------------------
 //               acceleration/deceleration
 const unsigned int consecutivedecelerations = 2;//number of consecutive decelerations before we are decelerating
 const unsigned int consecutiveaccelerations = 2;// number of consecutive accelerations before detecting that we are accelerating.
 unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
 unsigned int accelerations = 0;             // number of acceleration rotations;
-float nextSecondsDecel =0;
-unsigned long recoveryStartms = 0;
 //-------------------------------------------------------------------
 //               drag factor 
-int k3 = 0, k2 = 0, k1 = 0;                 // previous k values for smoothing                           
+//int k3 = 0, k2 = 0, k1 = 0;                 // previous k values for smoothing   
+int kIndex = 0;     
+const int maxKArray = 60;                   
+int kArray[maxKArray];                                  // array of k values (so we can get a median when we are done.
 float mPerClick = 0;                        // meters per rotation of the flywheel (calculated from drag factor)
 
 void setBoatType(short BoatType)
@@ -54,7 +57,7 @@ void setErgType(short newErgType)
     case ERGTYPEVFIT:
         //V-Fit rower with tach.
         analogSwitch = false;
-        I = 0.032;
+        I = 0.03;
         clicksPerRotation = 1;
         clicksPerCalc = 1;
         k = 0.000085;  
@@ -89,64 +92,59 @@ void calculateInstantaneousPower()
 #ifdef debug
   Serial.print(instantaneouspower); Serial.println("W");
 #endif
-  if(accelerations < powerSamples)
+  if(nextPower < powerSamples && instantaneouspower > 0)
   {
-    powerArray[accelerations] = instantaneouspower;
+    powerArray[nextPower] = instantaneouspower;
+    nextPower++;
   }
   else
   {
-    Serial.println(F("More samples than power array"));
+    if(nextPower >= powerSamples)
+    {
+      #ifdef debug
+      Serial.println(F("More samples than power array"));
+      #endif
+    }
+    else
+    {
+      //negative power
+    }
   }
 }
 
-void calculateDragFactor()
+void addDragFactorToArray()
 {
-  //the number of seconds to add to deceleration which we missed as we were waiting for consecutive accelerations before we detected it.
-  float nextk = I * ((1.0/recoveryEndAngularVelocity)-(1.0/recoveryStartAngularVelocity))/(secondsDecel)*1000000;
-  if(nextk > 0 && nextk < 300)
-  {//if drag factor detected is positive and reasonable
-  if(k3 ==0) 
-  {//reset all ks
-    k3 = nextk;
-    k2 = nextk;
-    k1 = nextk;
-  }
-  k3 = k2; 
-  k2 = k1;
-  k1 = nextk;  //nm/s/s == W/s/s
-  int karr[3] = {k1,k2,k3};
-  k = (float)median(karr,3)/1000000;  //adjust k by half of the difference from the last k
-    mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
+  float nextk = I * ((1.0/recoveryEndAngularVelocity)-(1.0/recoveryBeginAngularVelocity))/(secondsDecel)*1000000;
+  if(nextk >40 && nextk < 300 && kIndex < maxKArray)
+  {
+    kArray[kIndex] = nextk;
+    kIndex ++;
   }
   else
   {//dodgy k - write out to serial if debug.
   #ifdef debug
-    Serial.print(F("k:")); Serial.print(nextk); Serial.print(F("recoveryrad")); Serial.print(recoveryEndAngularVelocity); Serial.print(F("driverad")); Serial.print(driveAngularVelocity); Serial.print(F("recoverySeconds")); Serial.print(secondsDecel);
-    Serial.print(F("k:")); Serial.println(nextk); Serial.print(F("recw:")); Serial.println(recoveryEndAngularVelocity); Serial.print(F("dw")); Serial.println(driveAngularVelocity); 
+    Serial.print(F("k:")); Serial.print(nextk); Serial.print(F("recoverybeginrad")); Serial.print(recoveryBeginAngularVelocity); Serial.print(F("recoveryend")); Serial.print(recoveryEndAngularVelocity); Serial.print(F("recoverySeconds")); Serial.print(secondsDecel);
+    Serial.print(" last Recovery time "); Serial.println(previousSecondsDecel);
+//    Serial.print(F("k:")); Serial.println(nextk); Serial.print(F("recw:")); Serial.println(recoveryBeginAngularVelocity); Serial.print(F("dw")); Serial.println(driveAngularVelocity); 
     Serial.print(F("peakRPM")); Serial.println(peakRPM); Serial.print(F("sdecel")); Serial.println(secondsDecel);
   #endif
   }
 }
 
-void workBackToRecoveryTime()
+void getDragFactor()
 {
-  int lowestVal = 2000;
-  int tempLow = 0;
-  for(int e=0;e<consecutiveaccelerations+10; e++)
-  {
+  if(kIndex > 5)
+  {//more than 5 values so calculate k
+    k = (float)median(kArray,kIndex)/1000000;  //get a median of all the k calculations
+    mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
     #ifdef debug
-    Serial.print(F(" ")); Serial.print(e); Serial.print(F(":")); Serial.print(getRpm(-e));
+    Serial.println();
+    Serial.println();
+    Serial.print("K MEDIAN"); Serial.println(k*1000000); Serial.print("samples "); Serial.println(kIndex);
+    Serial.println();
+    Serial.println();
     #endif
-    if(getRpm(-e) <= lowestVal){
-      lowestVal = getRpm(-e);
-      tempLow = e;
-    }
-  }
-  recoveryEndAngularVelocity=(float)getRpm(0-tempLow)/60*2*PI;
-  recoveryEndms = mTime;
-  for(int i =0;i<tempLow; i++)
-  {//work back to get recovery time before our consecutive check.
-  recoveryEndms -=(float)60000/getRpm(0-i);
+    kIndex = 0;
   }
 }
 
@@ -183,30 +181,21 @@ void registerClick()
         if(radSec > prevradSec || (accelerations > consecutiveaccelerations && radSec == prevradSec))//faster, or previously going faster and the same rpm
           { //on first acceleration - work out the total time decelerating.
             accelerations ++;
-            calculateInstantaneousPower();
             if(accelerations == 1 && decelerations > consecutivedecelerations) 
               {//first acceleration - capture the seconds decelerating
-                secondsDecel = nextSecondsDecel;//capture the seconds decelerating from the last decelertion
-                //wipe the powerArray
-                for(int i = 0; i < powerSamples; i++)
-                {
-                  powerArray[i] = -1;
-                }
+                nextPower = 0;
+                previousSecondsDecel = secondsDecel;
               }
+            calculateInstantaneousPower();
             if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
               {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                 totalStroke++;
-                //work back to get recovery velocity and time before our consecutive check.
-                workBackToRecoveryTime();
                 writeStrokeRow();
-            #ifdef debug
-                Serial.println("\n");Serial.print(F("Total strokes:")); Serial.print(totalStroke); Serial.print(F("\tsecondsDecelerating:\t")); Serial.println(float(secondsDecel));
-            #endif
-                calculateDragFactor();
+                getDragFactor();
                 decelerations = 0;
                 driveStartclicks = clicks;
                                 //recovery is the stroke minus the drive, drive is just drive
-                recoveryToDriveRatio = (float)(secondsDecel) / ((float)lastDriveTimems/1000);
+                recoveryToDriveRatio = (float)(previousSecondsDecel) / ((float)lastDriveTimems/1000);
             #ifdef debug
                 Serial.println(); Serial.println(secondsDecel); Serial.println(((float)strokems/1000)-secondsDecel); Serial.println(recoveryToDriveRatio);
             #endif
@@ -216,7 +205,7 @@ void registerClick()
               {
                 //get the angular velocity before the change. 
                 //set the drive angular velocity to be the value it was 4 clicks ago (before any deceleration
-                driveAngularVelocity = radSec;//(float)getRpm(-consecutiveaccelerations-1)/60*2*PI;
+//                driveAngularVelocity = radSec;//(float)getRpm(-consecutiveaccelerations-1)/60*2*PI;
                 driveEndms = mTime;
                 lastDriveTimems = driveEndms - recoveryEndms;
                 //driveAngularVelocity = radSec;//and start monitoring the next drive (make the drive angular velocity low,
@@ -229,8 +218,6 @@ void registerClick()
               if(decelerations ==0 && accelerations > consecutiveaccelerations)
               {
                 //first deceleration
-                recoveryStartms = mTime;
-                recoveryStartAngularVelocity = radSec;
                 #ifdef recoverywork
                   doRecoveryWork();
                   unsigned long timeAfter = micros();
@@ -240,7 +227,9 @@ void registerClick()
               decelerations ++;
               if(decelerations == consecutivedecelerations)
               {//still decelerating (more than three decelerations in a row).
-                previousDriveAngularVelocity = driveAngularVelocity;    //store the previous deceleration
+//                previousDriveAngularVelocity = driveAngularVelocity;    //store the previous deceleration
+                recoveryBeginms = mTime;
+                recoveryBeginAngularVelocity = radSec;
                 diffclicks = clicks - lastStrokeClicks;
                 strokems = mTime - lastStrokeTimems;
                 spm = 60000 /strokems;
@@ -256,10 +245,13 @@ void registerClick()
               {
                 driveLengthm = (float)(clicks - driveStartclicks) * mStrokePerRotation;
                 accelerations = 0;//reset accelerations counter
-                nextSecondsDecel = (float)((float)mTime- driveEndms)/1000;
+                recoveryEndAngularVelocity = radSec;
+                recoveryEndms = mTime;
+                secondsDecel = (float)((float)recoveryEndms- recoveryBeginms)/1000;
+                addDragFactorToArray();
               }
           }
-          if(mPerClick <= 20 && mPerClick >=20)
+          if(mPerClick <= 20 && mPerClick >=0)
           {
             distancem += (clicks-clicksInDistance)*mPerClick;
             clicksInDistance = clicks;

@@ -60,6 +60,7 @@ unsigned long driveEndms = 0;               // time of the end of the last drive
 unsigned long recoveryEndms = 0;            // time of the end of the recovery
 unsigned int lastDriveTimems = 0;           // time that the last drive took in milliseconds
 float secondsDecel =  0;                    // number of seconds spent decelerating.
+float previousSecondsDecel = 0;
 //-------------------------------------------------------------------
 //               strokes
 unsigned int totalStroke = 0;
@@ -87,6 +88,6 @@ float recoveryToDriveRatio = 0;             // the ratio of time taken for the w
 //               Power Graph
 static const int powerSamples = 40;
 int powerArray[powerSamples];
-
+int nextPower = 0;
 //
 unsigned long lastCalcChangeus = 0;       // the time of the last click that caused calculations.
