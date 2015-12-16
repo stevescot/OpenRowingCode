@@ -43,4 +43,5 @@ void doAnalogRead()
     if(analog== 0) AnalogDropping = false;//we have reached 0 - reset analog dropping so we can monitor for it once analog starts to drop.
     lastAnalogSwitchValue = analog;
     lastAnalogReadus = uTime;
+    previousGradient = gradient;
 }
