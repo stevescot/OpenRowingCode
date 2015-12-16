@@ -94,7 +94,6 @@ void calculateInstantaneousPower()
 #endif
   if(nextPower < powerSamples && instantaneouspower > 0)
   {
-    Serial.println(instantaneouspower);
     powerArray[nextPower] = instantaneouspower;
     nextPower++;
   }
@@ -102,11 +101,12 @@ void calculateInstantaneousPower()
   {
     if(nextPower >= powerSamples)
     {
+      #ifdef debug
       Serial.println(F("More samples than power array"));
+      #endif
     }
     else
     {
-      Serial.println(instantaneouspower);
       //negative power
     }
   }
@@ -137,11 +137,13 @@ void getDragFactor()
   {//more than 5 values so calculate k
     k = (float)median(kArray,kIndex)/1000000;  //get a median of all the k calculations
     mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;//v= (2.8/p)^1/3  
+    #ifdef debug
     Serial.println();
     Serial.println();
     Serial.print("K MEDIAN"); Serial.println(k*1000000); Serial.print("samples "); Serial.println(kIndex);
     Serial.println();
     Serial.println();
+    #endif
     kIndex = 0;
   }
 }
@@ -193,7 +195,7 @@ void registerClick()
                 decelerations = 0;
                 driveStartclicks = clicks;
                                 //recovery is the stroke minus the drive, drive is just drive
-                recoveryToDriveRatio = (float)(secondsDecel) / ((float)lastDriveTimems/1000);
+                recoveryToDriveRatio = (float)(previousSecondsDecel) / ((float)lastDriveTimems/1000);
             #ifdef debug
                 Serial.println(); Serial.println(secondsDecel); Serial.println(((float)strokems/1000)-secondsDecel); Serial.println(recoveryToDriveRatio);
             #endif
