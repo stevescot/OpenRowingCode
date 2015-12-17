@@ -48,6 +48,18 @@ void doAnalogRead()
         else
         {
           //not enough samples to reliably detect the point of intersection
+              Serial.print("Warning, adjustment too high, something went wrong ");
+              Serial.println(usdiffprev);
+              Serial.print("Analog Value:");
+              Serial.println(analog);
+              Serial.print("Analog Count");
+              Serial.println(AnalogCount);
+              Serial.print("Previous Value");
+              Serial.println(lastAnalogSwitchValue);
+              Serial.print("Current Value");
+              Serial.println(analog);
+              Serial.print("gradient");
+              Serial.println(gradient);
         }
       }
     }
