@@ -770,7 +770,16 @@ void generateGraphChars()
       for(i=0; i<8;i++)//for each byte in the character
       {//reset it all to blank
         graphChar[i] = B00000;
+//       if(character == 0)
+//        {//draw line on left of graph
+//        graphChar[i] |= bitNums[0];
+//        }
+//       if(character == 4)
+//       {//draw line on right of graph.
+//        graphChar[i] |= bitnums[4];
+//       }
       }
+
       for(i=0; i<5; i++)//for each bit position
       {
         int bitnum = character*5 + i;//this is the position in the powerarray for the character bit combination.

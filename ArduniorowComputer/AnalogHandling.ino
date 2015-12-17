@@ -36,7 +36,7 @@ void doAnalogRead()
           AnalogDropping = true;
           //adjust the time using the gradient:
             long timeAdjustment = (float)previousGradient/(-gradientOfGradient);
-            if(timeAdjustment > 120) 
+            if(timeAdjustment > 120 || timeAdjustment < -120) 
             {
               Serial.print("Warning, adjustment too high, something went wrong ");
               Serial.println(timeAdjustment);
@@ -45,7 +45,10 @@ void doAnalogRead()
               Serial.print("Analog Count");
               Serial.println(AnalogCount);
             }
-            uTime = lastAnalogReadus + timeAdjustment;
+            else
+            {
+              uTime = lastAnalogReadus + timeAdjustment;
+            }
         }
       }
     }
