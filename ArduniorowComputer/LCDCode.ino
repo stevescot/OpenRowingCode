@@ -213,6 +213,7 @@ void writeNextScreen()
 //Current selection (Distance, Time)
 void startMenu()
 {
+  analogReference(DEFAULT);                 //we need default analog reference to work with the LCD shield
   menuType();
   lcd.clear();
   lcd.setCursor(0,0);

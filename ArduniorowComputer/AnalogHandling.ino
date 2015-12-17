@@ -9,13 +9,13 @@
 //
 //
 static int AnalogMinValue = 4*5;              // minimum value of pulse to recognise the wheel as spinning
-static byte AnalogCountMin = 8;             // minimum number of values above the min value before we start monitoring
-byte AnalogCount = 0;                        // indicator to show how high the analog limit has been (count up /count down)
-byte lastAnalogSwitchValue = 0;              // the last value read from the C2
-bool AnalogDropping = false;                // indicates if teh analog value is now dropping from a peak (wait until it gets to zero).
-float previousGradient = 0;
-float gradient = 0;
-unsigned long lastAnalogReadus = 0;
+static byte AnalogCountMin = 8;               // minimum number of values above the min value before we start monitoring
+byte AnalogCount = 0;                         // indicator to show how high the analog limit has been (count up /count down)
+byte lastAnalogSwitchValue = 0;               // the last value read from the C2
+bool AnalogDropping = false;                  // indicates if teh analog value is now dropping from a peak (wait until it gets to zero).
+float previousGradient = 0;                   // gradient from the previous two analog samples
+float gradient = 0;                           // current gradient 
+unsigned long lastAnalogReadus = 0;           // the previous measured analog value.
 
 void doAnalogRead()
 {//simulate a reed switch from the coil
@@ -49,7 +49,7 @@ void doAnalogRead()
       {
         unsigned long usdiffprev = (float)lastAnalogSwitchValue / (-previousGradient);
         if(previousGradient < 0 && (lastAnalogReadus + usdiffprev) < uTime)
-        {
+        {//numbers are reasonable - calculate the actual time that this happened, and use it.
          uTime = lastAnalogReadus + usdiffprev;
          val = LOW;
         }
@@ -77,6 +77,8 @@ void doAnalogRead()
     previousGradient = gradient;
 }
 
+//the previous AnalogRead function - this gave relatively reliable drag factors but is hopefully improved upon by the above function
+// this function attempts to predict when the analog values peaked rather than when they returned to zero.
 void AnalogReadOld()
 {//simulate a reed switch from the coil
     int analog = analogRead(analogPin);

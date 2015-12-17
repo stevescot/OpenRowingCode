@@ -23,15 +23,9 @@ int buttonState;                            // variable to hold the button state
 
 void setup() 
 {
-   pinMode(switchPin, INPUT_PULLUP);        // Set the switch pin as input
-   Serial.begin(115200);                    // Set up serial communication at 115200bps
-   buttonState = digitalRead(switchPin);    // read the initial state
-   // set up the LCD's number of columns and rows: 
-   #ifdef UseLCD
-    lcdSetup();
-   #endif
-  delay(100);
-  analogReference(DEFAULT);
+  pinMode(switchPin, INPUT_PULLUP);        // Set the switch pin as input
+  Serial.begin(115200);                    // Set up serial communication at 115200bps
+  buttonState = digitalRead(switchPin);    // read the initial state
   if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
     setErgType(ERGTYPEC2);
@@ -46,17 +40,20 @@ void setup()
     Serial.print("Detecting reed switch on pin ");
     Serial.println(switchPin);
   }
-  Serial.println("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor");
+   // set up the LCD's number of columns and rows: 
   #ifdef UseLCD
-    startMenu();
+    lcdSetup();
     //register graphics for up/down
-     graphics();
+    graphics();
+    startMenu();
   #endif
+  Serial.println("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor");
   //done with LCD sheild - safe to use internal reference now (is there a workaround for this...?)
   analogReference(INTERNAL);
   // Print a message to the LCD.
 }
 
+//quickly figure out if a rotation has happened.
 void loop()
 {
   mTime = millis();
@@ -86,7 +83,7 @@ void loop()
   buttonState = val;                       // save the new state in our variable
 }
 
-
+//write the details of a stroke to serial
 void writeStrokeRow()
 {
   char tabchar = '\t';

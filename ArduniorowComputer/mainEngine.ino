@@ -7,11 +7,13 @@
 // this will work out the drag factor, power, split, powergraph etc.. from strokes and print them to serial
 //
 
+//-------------------------------------------------------------------
+//               click based variables
 unsigned long clicks = 0;                   // number of clicks since start
 unsigned long clicksInDistance = 0;         // number of clicks already accounted for in the distance.
-unsigned int diffclicks;                             // clicks from last stroke to this one
+unsigned int diffclicks;                    // clicks from last stroke to this one
 unsigned long driveStartclicks;             // number of clicks at start of drive.
-byte currentrot = 0;                       // current rotation (for number of clicks per calculation)
+byte currentrot = 0;                        // current rotation (for number of clicks per calculation)
 //-------------------------------------------------------------------
 //               global constants
 float c = 2.8;                              //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power. c/p = (v)^3 where p = power in watts, v = velocity in m/s  so v = (c/p)^1/3 v= (2.8/p)^1/3
@@ -19,26 +21,26 @@ float c = 2.8;                              //The figure used for c is somewhat 
 //-------------------------------------------------------------------
 //               rpm/angular Velocity
 float previousDriveAngularVelocity;         // fastest angular velocity at end of previous drive
-//float driveAngularVelocity;                 // fastest angular velocity at end of drive
-float recoveryBeginAngularVelocity;              // angular velocity at the end of the recovery  (before drive)
-float recoveryEndAngularVelocity;
-float previousRecoveryEndAngularVelocity;
-unsigned long previousRecoveryEndms;
-unsigned long recoveryBeginms; 
+//float driveAngularVelocity;               // fastest angular velocity at end of drive
+float recoveryBeginAngularVelocity;         // angular velocity at the beginning of the recovery  end drive)
+float recoveryEndAngularVelocity;           // angular velocity at the end of the revovery
+float previousRecoveryEndAngularVelocity;   // previous recovery end angular velocity
+unsigned long previousRecoveryEndms;        // time in ms of the end of the previous recovery
+unsigned long recoveryBeginms;              // time in ms of the beginning of the recovery
 //-------------------------------------------------------------------
 //               acceleration/deceleration
-const unsigned int consecutivedecelerations = 2;//number of consecutive decelerations before we are decelerating
-const unsigned int consecutiveaccelerations = 2;// number of consecutive accelerations before detecting that we are accelerating.
-unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
-unsigned int accelerations = 0;             // number of acceleration rotations;
+const unsigned int consecutivedecelerations = 2;          //number of consecutive decelerations before we are decelerating
+const unsigned int consecutiveaccelerations = 2;          // number of consecutive accelerations before detecting that we are accelerating.
+unsigned int decelerations = consecutivedecelerations +1; // number of decelerations detected.
+unsigned int accelerations = 0;                           // number of acceleration rotations;
 //-------------------------------------------------------------------
-//               drag factor 
-//int k3 = 0, k2 = 0, k1 = 0;                 // previous k values for smoothing   
-int kIndex = 0;     
-const int maxKArray = 60;                   
-int kArray[maxKArray];                                  // array of k values (so we can get a median when we are done.
-float mPerClick = 0;                        // meters per rotation of the flywheel (calculated from drag factor)
+//               drag factor  
+int kIndex = 0;                                           //current position in the drag factor array
+const int maxKArray = 60;                                 //maximum number of samples to store in the drag factor array
+int kArray[maxKArray];                                    // array of k values (so we can get a median when we are done.
+float mPerClick = 0;                                      // meters per click from the flywheel (calculated from drag factor)
 
+//Set boat type - need some c factors for 4, single etc..
 void setBoatType(short BoatType)
 {
   boatType = BoatType;
