@@ -16,6 +16,10 @@ bool AnalogDropping = false;                  // indicates if teh analog value i
 float previousGradient = 0;                   // gradient from the previous two analog samples
 float gradient = 0;                           // current gradient 
 unsigned long lastAnalogReadus = 0;           // the previous measured analog value.
+unsigned long firstGreaterThanZeroTus = 0;    // the first sample that is greater than zero
+unsigned long peakTus = 0;                    // the peak Time
+unsigned long zeroTus = 0;                    // the time we returned to zero
+int peakDecayFactor = 50;                     // peak decay factor - less than 50 = peak first, greater than 50 = decay first.
 
 void doAnalogRead()
 {//simulate a reed switch from the coil
@@ -24,8 +28,29 @@ void doAnalogRead()
     gradient = (analog - lastAnalogSwitchValue)/(uTime-lastAnalogReadus);
     if(!AnalogDropping)
     {
+      if(analog > 0 && lastAnalogSwitchValue ==0)
+      {
+        firstGreaterThanZeroTus = uTime;
+      }
+      else
+      {
+        if(firstGreaterThanZeroTus == lastAnalogReadus)//detect that previous value was the first one above zero
+        {
+          unsigned long usdiffprev = (float)lastAnalogSwitchValue / (gradient);
+          if(usdiffprev < (uTime-lastAnalogReadus))
+          {//numbers are reasonable - calculate the actual time that this happened, and use it.
+           uTime = lastAnalogReadus - usdiffprev;
+           val = LOW;
+          }
+          else
+          {
+            //print out some stats...
+          }
+        }
+      }
       if(analog < lastAnalogSwitchValue && (uTime- lastStateChangeus) >5000)
-      {//we are starting to drop - mark the value as low, and analog as dropping.
+      {//we are starting to drop -and analog as dropping.
+        peakTus = uTime;
         //use this to see if the analog limit has tended to be above 6
         if(analog >= AnalogMinValue)
         {
@@ -45,33 +70,49 @@ void doAnalogRead()
     }
     else
     {//we are dropping
-      if(lastAnalogSwitchValue > 0 && analog ==0 )//we have been dropping and have now hit zero - find when we would have hit it given the previous gradient.
-      {
-        unsigned long usdiffprev = (float)lastAnalogSwitchValue / (-previousGradient);
-        if(previousGradient < 0 && (lastAnalogReadus + usdiffprev) < uTime)
-        {//numbers are reasonable - calculate the actual time that this happened, and use it.
-         uTime = lastAnalogReadus + usdiffprev;
-         val = LOW;
-        }
-        else
+      if(peakDecayFactor >50)//peak towards end of time sample
         {
-          //not enough samples to reliably detect the point of intersection
-              Serial.print("Warning, adjustment too high, something went wrong ");
-              Serial.println(usdiffprev);
-              Serial.print("Analog Value:");
-              Serial.println(analog);
-              Serial.print("Analog Count");
-              Serial.println(AnalogCount);
-              Serial.print("Previous Value");
-              Serial.println(lastAnalogSwitchValue);
-              Serial.print("Current Value");
-              Serial.println(analog);
-              Serial.print("gradient");
-              Serial.println(gradient);
+        if(lastAnalogSwitchValue > 0 && analog ==0 )//we have been dropping and have now hit zero - find when we would have hit it given the previous gradient.
+        {
+          unsigned long usdiffprev = (float)lastAnalogSwitchValue / (-previousGradient);
+          if(previousGradient < 0 && (lastAnalogReadus + usdiffprev) < uTime)
+          {//numbers are reasonable - calculate the actual time that this happened, and use it.
+           uTime = lastAnalogReadus + usdiffprev;
+           val = LOW;
+          }
+          else
+          {
+            //not enough samples to reliably detect the point of intersection
+                Serial.print("Warning, adjustment too high, something went wrong ");
+                Serial.println(usdiffprev);
+                Serial.print("Analog Value:");
+                Serial.println(analog);
+                Serial.print("Analog Count");
+                Serial.println(AnalogCount);
+                Serial.print("Previous Value");
+                Serial.println(lastAnalogSwitchValue);
+                Serial.print("Current Value");
+                Serial.println(analog);
+                Serial.print("gradient");
+                Serial.println(gradient);
+          }
         }
       }
     }
-    if(analog== 0) AnalogDropping = false;//we have reached 0 - reset analog dropping so we can monitor for it once analog starts to drop.
+    if(analog== 0) 
+    {
+      AnalogDropping = false;//we have reached 0 - reset analog dropping so we can monitor for it once analog starts to drop.
+      if((peakTus - firstGreaterThanZeroTus) > (zeroTus - peakTus))
+      {
+        peakDecayFactor ++;;
+        if(peakDecayFactor >100) peakDecayFactor =100;
+      }
+      else
+      {
+        peakDecayFactor --;
+        if(peakDecayFactor <0) peakDecayFactor = 0;
+      }
+    }
     lastAnalogSwitchValue = analog;
     lastAnalogReadus = uTime;
     previousGradient = gradient;
