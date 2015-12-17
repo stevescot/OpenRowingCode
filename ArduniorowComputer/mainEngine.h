@@ -1,3 +1,9 @@
+//-------------------------------------------------------------------
+// Steve Aitken - 2015
+// Main engine header
+// this contains all the varialbes within the engine that we need to be able to access externally.
+//
+//
 #include "Arduino.h"
 //-------------------------------------------------------------------
 //               session(menu) definitions

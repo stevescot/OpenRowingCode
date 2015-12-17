@@ -1,4 +1,7 @@
 //-------------------------------------------------------------------
+// Steve Aitken - 2015 
+// Serial interface for the row computer
+// allows the following commands:
 //               Serial Interface variables
 String SerialStr = "";                      // string to hold next serial command.
 String variable = "";                       // variable to set 

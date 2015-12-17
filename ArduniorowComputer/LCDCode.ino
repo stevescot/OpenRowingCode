@@ -1,7 +1,10 @@
 #ifdef UseLCD
-
-//Code for use with a 1602 display with keypad.
-//
+//-------------------------------------------------------------------
+// Steve Aitken - 2015
+// Code for use with a 1602 display with keypad.
+// This code is everyhting that is required to make a menu and display statistics whilst we row.
+// parts of the display are written each time as to write the entire display would take longer than 
+// it takes for the next click to happen and means we do not detect that click.
 //-------------------------------------------------------------------
 //               reference values for each key on the  keypad:
 static int DEFAULT_KEY_PIN = 0; 
@@ -180,12 +183,6 @@ void writeNextScreen()
    case 6:
    //Serial.print("generatingChars");
       generateGraphChars();
-      lcd.setCursor(6,1);
-      lcd.print((char)(int)LCDGraphOne);
-      lcd.print((char)(int)LCDGraphTwo);
-      lcd.print((char)(int)LCDGraphThree);
-      lcd.print((char)(int)LCDGraphFour);
-      lcd.print((char)(int)LCDGraphFive);
    #ifdef debug
       Serial.print(F("\tDrive angularve: "));
       //Serial.print(driveAngularVelocity);
@@ -198,6 +195,13 @@ void writeNextScreen()
       Serial.print(F("\tpeakRPM:\t"));
       Serial.println(peakRPM);
    #endif 
+   case 7: 
+      lcd.setCursor(6,1);
+      lcd.print((char)(int)LCDGraphOne);
+      lcd.print((char)(int)LCDGraphTwo);
+      lcd.print((char)(int)LCDGraphThree);
+      lcd.print((char)(int)LCDGraphFour);
+      lcd.print((char)(int)LCDGraphFive);
     break;
 
     default:

@@ -1,4 +1,7 @@
+//-------------------------------------------------------------------
+// Steve Aitken - 2015
 /* Arduino row Computer
+ *  This is the code to integrate with an Arduino Uno
  * Uses an UNO + LCD keypad shield like this: http://www.lightinthebox.com/16-x-2-lcd-keypad-shield-for-arduino-uno-mega-duemilanove_p340888.html?currency=GBP&litb_from=paid_adwords_shopping
  * principles behind calculations are here : http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7
  * 13% memory used for LCD / menu
@@ -75,7 +78,7 @@ void loop()
          #endif
       lastStateChangeus=uTime;
     }
-    if((millis()-mTime) >=23)
+    if((millis()-mTime) >=18)
     {
       Serial.print(F("warning - loop took (ms):"));
       Serial.println(millis()-mTime);

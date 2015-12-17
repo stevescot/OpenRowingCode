@@ -1,5 +1,13 @@
 //-------------------------------------------------------------------
+// Steve Aitken - 2015 - with much help in testing from Al Bates - who spent many hours with audio files retesting and retesting the methods until we settled on this one.
 //               C2(analog handling
+// This code uses the analog read from the analog pin as often as possible (100us on Arduino) to detect/predict when a zero crossing happened.
+// 100us is not precise enough to get an accurate reading of power or drag factor, so we have to use the gradient before we hit zero to draw 
+// a line through zero - this gives us a more accurate and precise estimate of the time that the value crossed zero.
+// with this time, we reset the uTime global variable to the actual time in micro seconds that this would have happend, 
+// and we set val to LOW indicating that we have detected a click
+//
+//
 static int AnalogMinValue = 4*5;              // minimum value of pulse to recognise the wheel as spinning
 static byte AnalogCountMin = 8;             // minimum number of values above the min value before we start monitoring
 byte AnalogCount = 0;                        // indicator to show how high the analog limit has been (count up /count down)

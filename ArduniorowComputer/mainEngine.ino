@@ -1,5 +1,12 @@
 //-------------------------------------------------------------------
-//               clicks
+// Steve Aitken - 2015
+// Main Engine
+//
+// This is the part of the row computer that does all the working out- 
+// given a time set as uTime, and a call to registerClick every time a part of the wheel passes, 
+// this will work out the drag factor, power, split, powergraph etc.. from strokes and print them to serial
+//
+
 unsigned long clicks = 0;                   // number of clicks since start
 unsigned long clicksInDistance = 0;         // number of clicks already accounted for in the distance.
 unsigned int diffclicks;                             // clicks from last stroke to this one
@@ -49,6 +56,7 @@ void setBoatType(short BoatType)
   }
 }
 
+//set the Erg type (concept 2 or otehr)
 void setErgType(short newErgType)
 {
   ergType = newErgType;
@@ -79,6 +87,7 @@ void setErgType(short newErgType)
   mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;
 }
 
+//Calculate the amount of power used to accelerate the wheel by the change in rpm for this click
 void calculateInstantaneousPower()
 {
   //= I ( dω / dt ) dθ + k ω2 dθ 
@@ -112,6 +121,7 @@ void calculateInstantaneousPower()
   }
 }
 
+//calculate the drag factor for this part of the recovery and add it to the array
 void addDragFactorToArray()
 {
   float nextk = I * ((1.0/recoveryEndAngularVelocity)-(1.0/recoveryBeginAngularVelocity))/(secondsDecel)*1000000;
@@ -131,6 +141,8 @@ void addDragFactorToArray()
   }
 }
 
+//calculate the median drag factor from all the drag factors that were calculated during the recovery, 
+//and set the number of meters per click from the wheel accordingly
 void getDragFactor()
 {
   if(kIndex > 5)
@@ -148,6 +160,7 @@ void getDragFactor()
   }
 }
 
+//take uTime and mTime and use them to calculate all of the figures we need given a click from the wheel.
 void registerClick()
 {
   currentrot ++;
@@ -289,6 +302,7 @@ void registerClick()
   }
 }
 
+//gets the time to display in the format 00:00 - this is either the time left in a Time session, or the time passed in a normal session.
 String getTime()
 {
   int timemins, timeseconds;
@@ -331,6 +345,7 @@ void showInterval(long numSeconds)
   Serial.println(F("Interval Over"));
 }
 
+//convert the split variable into a string of format 00:00.00
 String getSplitString()
 {
   String splitString = "";
@@ -346,7 +361,7 @@ String getSplitString()
   return splitString;
 }
 
-
+//write all the rpm history that we have to serial
 void dumprpms()
 {
     Serial.println(F("Rpm dump"));
@@ -359,7 +374,7 @@ void dumprpms()
 
 
 
-
+//Calculate the median of an array of numbers with num being how many numbers to consider.
 int median(int new_array[], int num){
      //ARRANGE VALUES
     for(int x=0; x<num; x++){
@@ -383,6 +398,7 @@ int median(int new_array[], int num){
     }
 }
 
+//Get the rpm offset rotations ago ( getRpm(-1) gets the previous rpm)
 int getRpm(short offset)
 {
   if(offset >0) 
