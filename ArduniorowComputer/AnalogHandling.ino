@@ -44,6 +44,14 @@ void doAnalogRead()
               Serial.println(analog);
               Serial.print("Analog Count");
               Serial.println(AnalogCount);
+              Serial.print("Previous Value");
+              Serial.println(lastAnalogSwitchValue);
+              Serial.print("Current Value");
+              Serial.println(analog);
+              Serial.print("gradient");
+              Serial.println(gradient);
+              Serial.print("gradientOfGradient");
+              Serial.println(gradientOfGradient);
             }
             else
             {
