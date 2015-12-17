@@ -39,7 +39,7 @@ void doAnalogRead()
     {//we are dropping
       if(lastAnalogSwitchValue > 0 && analog ==0 )//we have been dropping and have now hit zero - find when we would have hit it given the previous gradient.
       {
-        unsigned long usdiffprev = (float)lastAnalogSwitchValue / (-previousGradient);
+        unsigned long usdiffprev = (float)lastAnalogSwitchValue / (previousGradient);
         if(previousGradient < 0 && (lastAnalogReadus + usdiffprev) < uTime)
         {
          uTime = lastAnalogReadus + usdiffprev;
