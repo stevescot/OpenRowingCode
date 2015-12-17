@@ -14,6 +14,54 @@ void doAnalogRead()
     int analog = analogRead(analogPin);
     val = HIGH;
     gradient = (analog - lastAnalogSwitchValue)/(uTime-lastAnalogReadus);
+    if(!AnalogDropping)
+    {
+      if(analog < lastAnalogSwitchValue && (uTime- lastStateChangeus) >5000)
+      {//we are starting to drop - mark the value as low, and analog as dropping.
+        //use this to see if the analog limit has tended to be above 6
+        if(analog >= AnalogMinValue)
+        {
+          AnalogCount ++;
+        }
+        else
+        {
+          AnalogCount -= 2;
+        }
+        if(AnalogCount > AnalogCountMin*2) AnalogCount = AnalogCountMin*2;
+        if(AnalogCount < 0) AnalogCount = 0;
+        if(AnalogCount > AnalogCountMin)//on average the analog value has been above 6 for the last 10 samples.
+        {
+          AnalogDropping = true;
+        }
+      }
+    }
+    else
+    {//we are dropping
+      if(lastAnalogSwitchValue > 0 && analog ==0 )//we have been dropping and have now hit zero - find when we would have hit it given the previous gradient.
+      {
+        unsigned long usdiffprev = (float)lastAnalogSwitchValue / (-previousGradient);
+        if(previousGradient < 0 && (lastAnalogReadus + usdiffprev) < uTime)
+        {
+         uTime = lastAnalogReadus + usdiffprev;
+         val = LOW;
+        }
+        else
+        {
+          //not enough samples to reliably detect the point of intersection
+        }
+      }
+    }
+    if(analog== 0) AnalogDropping = false;//we have reached 0 - reset analog dropping so we can monitor for it once analog starts to drop.
+    lastAnalogSwitchValue = analog;
+    lastAnalogReadus = uTime;
+    previousGradient = gradient;
+}
+
+void AnalogReadOld()
+{//simulate a reed switch from the coil
+    int analog = analogRead(analogPin);
+    val = HIGH;
+    gradient = (analog - lastAnalogSwitchValue)/(uTime-lastAnalogReadus);
     float gradientOfGradient = (previousGradient-gradient)/(uTime-lastAnalogReadus);
     if(!AnalogDropping)
     {
