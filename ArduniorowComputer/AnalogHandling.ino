@@ -6,10 +6,10 @@
 // a line through zero - this gives us a more accurate and precise estimate of the time that the value crossed zero.
 // with this time, we reset the uTime global variable to the actual time in micro seconds that this would have happend, 
 // and we set val to LOW indicating that we have detected a click
-//
-//
-static int AnalogMinValue = 4*5;              // minimum value of pulse to recognise the wheel as spinning
-static byte AnalogCountMin = 8;               // minimum number of values above the min value before we start monitoring
+//-------------------------------------------------------------------
+
+static const byte AnalogMinValue = 4*5;              // minimum value of pulse to recognise the wheel as spinning
+static const byte AnalogCountMin = 8;               // minimum number of values above the min value before we start monitoring
 byte AnalogCount = 0;                         // indicator to show how high the analog limit has been (count up /count down)
 byte lastAnalogSwitchValue = 0;               // the last value read from the C2
 bool AnalogDropping = false;                  // indicates if teh analog value is now dropping from a peak (wait until it gets to zero).
@@ -19,13 +19,27 @@ unsigned long lastAnalogReadus = 0;           // the previous measured analog va
 unsigned long firstGreaterThanZeroTus = 0;    // the first sample that is greater than zero
 unsigned long peakTus = 0;                    // the peak Time
 unsigned long zeroTus = 0;                    // the time we returned to zero
-int peakDecayFactor = 50;                     // peak decay factor - less than 50 = peak first, greater than 50 = decay first.
+byte peakDecayFactor = 50;                     // peak decay factor - less than 50 = peak first, greater than 50 = decay first.
+
+// Gradient stuff.
+const byte numGradients = 5;                   // number of gradients to take a median of
+float GradientArray[numGradients];            // array of raw gradients
+byte currentGradienti = 0;                      // current gradient index in array
+byte numGradientsInArray = 0;                  // number of gradients we have in the array.
+
+float AddGradientAndGetMedian(float gradient)
+{
+  GradientArray[currentGradienti] = gradient;
+  currentGradienti++; if(currentGradienti >= numGradients) currentGradienti = 0;
+  numGradientsInArray++; if(numGradientsInArray >= numGradients) numGradientsInArray = numGradients-1;
+  return median(GradientArray, numGradientsInArray);
+}
 
 void doAnalogRead()
 {//simulate a reed switch from the coil
     int analog = analogRead(analogPin);
     val = HIGH;
-    gradient = (analog - lastAnalogSwitchValue)/(uTime-lastAnalogReadus);
+    gradient = (float)(analog - lastAnalogSwitchValue)/(uTime-lastAnalogReadus);
     if(!AnalogDropping)
     {
       if(analog > 0 && lastAnalogSwitchValue ==0)
@@ -36,7 +50,7 @@ void doAnalogRead()
       {
         if(firstGreaterThanZeroTus == lastAnalogReadus)//detect that previous value was the first one above zero
         {
-          unsigned long usdiffprev = (float)lastAnalogSwitchValue / (gradient);
+          unsigned long usdiffprev = (float)lastAnalogSwitchValue / AddGradientAndGetMedian(gradient);
           if(usdiffprev < (uTime-lastAnalogReadus))
           {//numbers are reasonable - calculate the actual time that this happened, and use it.
            uTime = lastAnalogReadus - usdiffprev;
@@ -74,7 +88,7 @@ void doAnalogRead()
         {
         if(lastAnalogSwitchValue > 0 && analog ==0 )//we have been dropping and have now hit zero - find when we would have hit it given the previous gradient.
         {
-          unsigned long usdiffprev = (float)lastAnalogSwitchValue / (-previousGradient);
+          unsigned long usdiffprev = (float)lastAnalogSwitchValue / (-AddGradientAndGetMedian(previousGradient));
           if(previousGradient < 0 && (lastAnalogReadus + usdiffprev) < uTime)
           {//numbers are reasonable - calculate the actual time that this happened, and use it.
            uTime = lastAnalogReadus + usdiffprev;
@@ -83,17 +97,17 @@ void doAnalogRead()
           else
           {
             //not enough samples to reliably detect the point of intersection
-                Serial.print("Warning, adjustment too high, something went wrong ");
+                Serial.print(F("Warning, adjustment too high, something went wrong "));
                 Serial.println(usdiffprev);
-                Serial.print("Analog Value:");
+                Serial.print(F("Analog Value:"));
                 Serial.println(analog);
-                Serial.print("Analog Count");
+                Serial.print(F("Analog Count"));
                 Serial.println(AnalogCount);
-                Serial.print("Previous Value");
+                Serial.print(F("Previous Value"));
                 Serial.println(lastAnalogSwitchValue);
-                Serial.print("Current Value");
+                Serial.print(F("Current Value"));
                 Serial.println(analog);
-                Serial.print("gradient");
+                Serial.print(F("gradient"));
                 Serial.println(gradient);
           }
         }
@@ -149,19 +163,19 @@ void AnalogReadOld()
             long timeAdjustment = (float)previousGradient/(-gradientOfGradient);
             if(timeAdjustment > 120 || timeAdjustment < -120) 
             {
-              Serial.print("Warning, adjustment too high, something went wrong ");
+              Serial.print(F("Warning, adjustment too high, something went wrong "));
               Serial.println(timeAdjustment);
-              Serial.print("Analog Value:");
+              Serial.print(F("Analog Value:"));
               Serial.println(analog);
-              Serial.print("Analog Count");
+              Serial.print(F("Analog Count"));
               Serial.println(AnalogCount);
-              Serial.print("Previous Value");
+              Serial.print(F("Previous Value"));
               Serial.println(lastAnalogSwitchValue);
-              Serial.print("Current Value");
+              Serial.print(F("Current Value"));
               Serial.println(analog);
-              Serial.print("gradient");
+              Serial.print(F("gradient"));
               Serial.println(gradient);
-              Serial.print("gradientOfGradient");
+              Serial.print(F("gradientOfGradient"));
               Serial.println(gradientOfGradient);
             }
             else

@@ -3,10 +3,17 @@
 // Serial interface for the row computer
 // allows the following commands:
 //               Serial Interface variables
-String SerialStr = "";                      // string to hold next serial command.
-String variable = "";                       // variable to set 
-String value = "";                          // new value for the variable above.
+String SerialStr = "";                        // string to hold next serial command.
+const char * variable = "";                   // variable to set 
+//const char * value = "";                    // new value for the variable above.
 //-------------------------------------------------------------------
+const char p_Session[] PROGMEM =            "Session";
+const char p_Interval[] PROGMEM =           "Interval";
+const char p_Rest[] PROGMEM =               "Rest";
+const char p_Intervals[] PROGMEM =          "Intervals";
+const char p_TargetDistance[] PROGMEM =     "TargetDistance";
+const char p_TargetTime[] PROGMEM =         "TargetTime";
+const char p_DumpRPM[] PROGMEM =            "DumpRPM";
 
 void processSerial()
 {
@@ -15,48 +22,48 @@ void processSerial()
     //Serial.println(nextChar);
     if(nextChar == '=')
     {
-      variable = SerialStr;
+      variable = SerialStr.c_str();
       SerialStr = "";
     }
     if(nextChar == '\n')
     {
-      if(variable == "Session")
+      if(variable == p_Session)
       {
             sessionType = SerialStr.toInt();
-            Serial.println("Session Set");
+            Serial.println(F("Session Set"));
       }
-      else if(variable == "Interval")
+      else if(variable == p_Interval)
       {
             targetSeconds = SerialStr.toInt();
-            Serial.println("Interval Set");
+            Serial.println(F("Interval Set"));
       }
-      else if(variable == "Rest")
+      else if(variable == p_Rest)
       {
             intervalSeconds = SerialStr.toInt();
-            Serial.println("Rest Set");
+            Serial.println(F("Rest Set"));
       }
-      else if(variable =="Intervals")
+      else if(variable ==p_Intervals)
       {
             numIntervals = SerialStr.toInt();
-            Serial.println("Num Intervals Set");
+            Serial.println(F("Num Intervals Set"));
       }
-      else if(variable =="TargetDistance")
+      else if(variable ==p_TargetDistance)
       {
             numIntervals = SerialStr.toInt();
-            Serial.println("TargetDistance Set");
+            Serial.println(F("TargetDistance Set"));
       }
-      else if(variable == "TargetTime")
+      else if(variable == p_TargetTime)
       {
             targetSeconds = SerialStr.toInt();
-            Serial.println("Target Time Set");
+            Serial.println(F("Target Time Set"));
       }
-      else if(variable == "DumpRPM")
+      else if(variable == p_DumpRPM)
       {
             dumprpms();
       }
       else 
       {
-          Serial.println("Unreckognised");
+          Serial.println(F("Unreckognised"));
           Serial.println(variable);
       }
       SerialStr = "";

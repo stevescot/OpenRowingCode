@@ -7,14 +7,14 @@
 // it takes for the next click to happen and means we do not detect that click.
 //-------------------------------------------------------------------
 //               reference values for each key on the  keypad:
-static int DEFAULT_KEY_PIN = 0; 
-static int UPKEY_ARV = 144; 
-static int DOWNKEY_ARV = 329;
-static int LEFTKEY_ARV = 505;
-static int RIGHTKEY_ARV = 0;
-static int SELKEY_ARV = 721;
-static int NOKEY_ARV = 1023;
-static int _threshold = 50;
+static const int DEFAULT_KEY_PIN = 0; 
+static const int UPKEY_ARV = 144; 
+static const int DOWNKEY_ARV = 329;
+static const int LEFTKEY_ARV = 505;
+static const int RIGHTKEY_ARV = 0;
+static const int SELKEY_ARV = 721;
+static const int NOKEY_ARV = 1023;
+static const int _threshold = 50;
 
 //-------------------------------------------------------------------
 //               custom Character definitions
@@ -34,6 +34,9 @@ static int _threshold = 50;
 #define LEFT_KEY 2
 #define RIGHT_KEY 5
 #define SELECT_KEY 1
+//-------------------------------------------------------------------
+//               Strings (in Flash memory)
+const char p_Intervalsp[] PROGMEM =            "Interval ";
 
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
@@ -48,7 +51,7 @@ void lcdSetup()
 void writeTimeLeft(long totalSeconds)
 {
     lcd.clear();
-    lcd.print(F("Interval "));
+    lcd.print(p_Intervalsp);
     lcd.print(intervals);
     lcd.setCursor(0,1);
     int minutes = totalSeconds/60;
@@ -800,7 +803,7 @@ void generateGraphChars()
   }
   else
   {
-    Serial.println("maxpower less than zero");
+    Serial.println(F("maxpower less than zero"));
   }
 //  static const int powerSamples = 40;
 }

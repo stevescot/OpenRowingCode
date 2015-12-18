@@ -35,9 +35,9 @@ void setup()
   else
   {
     setErgType(ERGTYPEVFIT);
-    Serial.print("No Concept 2 detected on Analog pin ");
+    Serial.print(F("No Concept 2 detected on Analog pin "));
     Serial.println(analogPin);
-    Serial.print("Detecting reed switch on pin ");
+    Serial.print(F("Detecting reed switch on pin "));
     Serial.println(switchPin);
   }
    // set up the LCD's number of columns and rows: 
@@ -47,7 +47,7 @@ void setup()
     graphics();
     startMenu();
   #endif
-  Serial.println("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor");
+  Serial.println(F("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor"));
   //done with LCD sheild - safe to use internal reference now (is there a workaround for this...?)
   analogReference(INTERNAL);
   // Print a message to the LCD.

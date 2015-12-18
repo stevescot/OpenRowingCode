@@ -96,3 +96,62 @@ float recoveryToDriveRatio = 0;             // the ratio of time taken for the w
 static const int powerSamples = 40;         // number of samples in the power graph
 int powerArray[powerSamples];               // array of powers (per rotation/click from the flywheel)
 int nextPower = 0;                          // current index in the powerArray.
+
+//Calculate the median of an array of numbers with num being how many numbers to consider.
+float median(float array[], int num){
+    float new_array[num];
+    for(int x=0; x< num; x++)
+    {
+      new_array[x] = array[x];
+    }
+     //ARRANGE VALUES
+    for(int x=0; x<num; x++){
+         for(int y=0; y<num-1; y++){
+             if(new_array[y]>new_array[y+1]){
+                 int temp = new_array[y+1];
+                 new_array[y+1] = new_array[y];
+                 new_array[y] = temp;
+             }
+         }
+     }
+    //CALCULATE THE MEDIAN (middle number)
+    if(num % 2 != 0){// is the # of elements odd?
+        int temp = ((num+1)/2)-1;
+        //cout << "The median is " << new_array[temp] << endl;
+  return new_array[temp];
+    }
+    else{// then it's even! :)
+        //cout << "The median is "<< new_array[(num/2)-1] << " and " << new_array[num/2] << endl;
+  return ((new_array[(num/2)-1] + new_array[num/2]) / 2); 
+    }
+}
+
+
+//Calculate the median of an array of numbers with num being how many numbers to consider.
+int median(int array[], int num){
+    int new_array[num];
+    for(int x=0; x< num; x++)
+    {
+      new_array[x] = array[x];
+    }
+     //ARRANGE VALUES
+    for(int x=0; x<num; x++){
+         for(int y=0; y<num-1; y++){
+             if(new_array[y]>new_array[y+1]){
+                 int temp = new_array[y+1];
+                 new_array[y+1] = new_array[y];
+                 new_array[y] = temp;
+             }
+         }
+     }
+    //CALCULATE THE MEDIAN (middle number)
+    if(num % 2 != 0){// is the # of elements odd?
+        int temp = ((num+1)/2)-1;
+        //cout << "The median is " << new_array[temp] << endl;
+  return new_array[temp];
+    }
+    else{// then it's even! :)
+        //cout << "The median is "<< new_array[(num/2)-1] << " and " << new_array[num/2] << endl;
+  return ((new_array[(num/2)-1] + new_array[num/2]) / 2); 
+    }
+}

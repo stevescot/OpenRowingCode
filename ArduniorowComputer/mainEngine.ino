@@ -136,7 +136,7 @@ void addDragFactorToArray()
   {//dodgy k - write out to serial if debug.
   #ifdef debug
     Serial.print(F("k:")); Serial.print(nextk); Serial.print(F("recoverybeginrad")); Serial.print(recoveryBeginAngularVelocity); Serial.print(F("recoveryend")); Serial.print(recoveryEndAngularVelocity); Serial.print(F("recoverySeconds")); Serial.print(secondsDecel);
-    Serial.print(" last Recovery time "); Serial.println(previousSecondsDecel);
+    Serial.print(F(" last Recovery time ")); Serial.println(previousSecondsDecel);
 //    Serial.print(F("k:")); Serial.println(nextk); Serial.print(F("recw:")); Serial.println(recoveryBeginAngularVelocity); Serial.print(F("dw")); Serial.println(driveAngularVelocity); 
     Serial.print(F("peakRPM")); Serial.println(peakRPM); Serial.print(F("sdecel")); Serial.println(secondsDecel);
   #endif
@@ -154,7 +154,7 @@ void getDragFactor()
     #ifdef debug
     Serial.println();
     Serial.println();
-    Serial.print("K MEDIAN"); Serial.println(k*1000000); Serial.print("samples "); Serial.println(kIndex);
+    Serial.print(F("K MEDIAN")); Serial.println(k*1000000); Serial.print(F("samples ")); Serial.println(kIndex);
     Serial.println();
     Serial.println();
     #endif
@@ -376,36 +376,14 @@ void dumprpms()
 
 
 
-//Calculate the median of an array of numbers with num being how many numbers to consider.
-int median(int new_array[], int num){
-     //ARRANGE VALUES
-    for(int x=0; x<num; x++){
-         for(int y=0; y<num-1; y++){
-             if(new_array[y]>new_array[y+1]){
-                 int temp = new_array[y+1];
-                 new_array[y+1] = new_array[y];
-                 new_array[y] = temp;
-             }
-         }
-     }
-    //CALCULATE THE MEDIAN (middle number)
-    if(num % 2 != 0){// is the # of elements odd?
-        int temp = ((num+1)/2)-1;
-        //cout << "The median is " << new_array[temp] << endl;
-  return new_array[temp];
-    }
-    else{// then it's even! :)
-        //cout << "The median is "<< new_array[(num/2)-1] << " and " << new_array[num/2] << endl;
-  return ((new_array[(num/2)-1] + new_array[num/2]) / 2); 
-    }
-}
+
 
 //Get the rpm offset rotations ago ( getRpm(-1) gets the previous rpm)
 int getRpm(short offset)
 {
   if(offset >0) 
   {
-    Serial.println("Warning, rpm in the future requested.");
+    Serial.println(F("Warning, rpm in the future requested."));
   }
   int index = nextRPM - 1 + offset;
     while (index >= numRpms)
