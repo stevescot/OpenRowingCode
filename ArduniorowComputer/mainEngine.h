@@ -108,7 +108,7 @@ float median(float array[], int num){
     for(int x=0; x<num; x++){
          for(int y=0; y<num-1; y++){
              if(new_array[y]>new_array[y+1]){
-                 int temp = new_array[y+1];
+                 float temp = new_array[y+1];
                  new_array[y+1] = new_array[y];
                  new_array[y] = temp;
              }

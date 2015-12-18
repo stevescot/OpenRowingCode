@@ -46,20 +46,32 @@ void doAnalogRead()
       {
         firstGreaterThanZeroTus = uTime;
       }
-      else
+      else if(firstGreaterThanZeroTus == lastAnalogReadus && peakDecayFactor <50)//detect that previous value was the first one above zero, and we are peak first, then decay,
       {
-        if(firstGreaterThanZeroTus == lastAnalogReadus)//detect that previous value was the first one above zero
-        {
-          unsigned long usdiffprev = (float)lastAnalogSwitchValue / AddGradientAndGetMedian(gradient);
-          if(usdiffprev < (uTime-lastAnalogReadus))
-          {//numbers are reasonable - calculate the actual time that this happened, and use it.
-           uTime = lastAnalogReadus - usdiffprev;
-           val = LOW;
-          }
-          else
-          {
-            //print out some stats...
-          }
+        float medianGradient = AddGradientAndGetMedian(gradient);
+        unsigned long usdiffprev = (float)lastAnalogSwitchValue / medianGradient ;
+        if(usdiffprev < (uTime-lastAnalogReadus))
+        {//numbers are reasonable - calculate the actual time that this happened, and use it.
+         uTime = lastAnalogReadus - usdiffprev;
+         val = LOW;
+        }
+        else
+        {//leads to before the previous sample, go for the previous sample
+          uTime = firstGreaterThanZeroTus - (uTime - firstGreaterThanZeroTus);
+          val = LOW;
+          //print out some stats...
+              Serial.print(F("Warning, adjustment too high, something went wrong -  "));
+              Serial.println(usdiffprev);
+              Serial.print(F("Analog Value:"));
+              Serial.println(analog);
+              Serial.print(F("Analog Count"));
+              Serial.println(AnalogCount);
+              Serial.print(F("Previous Value"));
+              Serial.println(lastAnalogSwitchValue);
+              Serial.print(F("Current Value"));
+              Serial.println(analog);
+              Serial.print(F("gradient"));
+              Serial.println(medianGradient);
         }
       }
       if(analog < lastAnalogSwitchValue && (uTime- lastStateChangeus) >5000)
