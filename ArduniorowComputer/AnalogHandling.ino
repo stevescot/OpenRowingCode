@@ -71,7 +71,10 @@ void doAnalogRead()
               Serial.print(F("Current Value"));
               Serial.println(analog);
               Serial.print(F("gradient"));
-              Serial.println(medianGradient);
+              Serial.println(gradient);
+              Serial.print(F("prevgradient"));
+              Serial.println(previousGradient);
+              Serial.print(F("mediangradient"));
         }
       }
       if(analog < lastAnalogSwitchValue && (uTime- lastStateChangeus) >5000)
