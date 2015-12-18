@@ -100,7 +100,8 @@ void doAnalogRead()
         {
         if(lastAnalogSwitchValue > 0 && analog ==0 )//we have been dropping and have now hit zero - find when we would have hit it given the previous gradient.
         {
-          unsigned long usdiffprev = (float)lastAnalogSwitchValue / (-AddGradientAndGetMedian(previousGradient));
+          float medianGradient = AddGradientAndGetMedian(previousGradient);
+          unsigned long usdiffprev = (float)lastAnalogSwitchValue / (-medianGradient);
           if(previousGradient < 0 && (lastAnalogReadus + usdiffprev) < uTime)
           {//numbers are reasonable - calculate the actual time that this happened, and use it.
            uTime = lastAnalogReadus + usdiffprev;
@@ -108,7 +109,7 @@ void doAnalogRead()
           }
           else
           {
-            //not enough samples to reliably detect the point of intersection
+            //probalby not enough samples to reliably detect the point of intersection
                 Serial.print(F("Warning, adjustment too high, something went wrong "));
                 Serial.println(usdiffprev);
                 Serial.print(F("Analog Value:"));
@@ -121,6 +122,12 @@ void doAnalogRead()
                 Serial.println(analog);
                 Serial.print(F("gradient"));
                 Serial.println(gradient);
+                Serial.print(F("prevgradient"));
+                Serial.println(previousGradient);
+                Serial.print(F("mediangradient"));
+                Serial.println(medianGradient);
+                //uTime = lastAnalogReadus;
+                val = LOW;
           }
         }
       }
