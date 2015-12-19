@@ -30,6 +30,34 @@ int rowWiFi::connect()
 	}
 }
 
+int rowWiFi::Register(String MAC, String Name)
+{
+  Serial.println(F("register"));
+  if (connect())
+  {
+    Serial.println(F("Sending to Server: ")); Serial.println(_host);
+    String request = "GET /";
+    request += _path;
+    request += "/register.aspx?m=";
+    request += MAC;
+    request += "&Name=";
+    request += Name;
+    request += "\r\nHost: "; 
+    request += _host;
+    request += "\r\nUser-Agent: IPHomeBox/1.0\r\n";
+    request += "Accept: text/html\r\n";
+    request += "Conection: keep-alive\r\n\r\n";
+    _client.print(request);
+    request = "";
+    return true;
+  }
+  else
+  {
+    Serial.println(F("Cannot connect to Server"));
+    return false;
+  }
+}
+
 
 int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int PowerArray[],int PowerSamples)
 {

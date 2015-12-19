@@ -103,7 +103,8 @@ void setupWiFi() {
     //no ssid - setup access point.
     setupAP(); 
   }
-  RowServer.connect();
+  RowServer.Register(MAC, myName);
+  //RowServer.connect();
 }
 
 
