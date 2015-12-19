@@ -104,10 +104,7 @@ void setupWiFi() {
     setupAP(); 
   }
   RowServer.Register(MAC, myName);
-  //RowServer.connect();
 }
-
-
 
 String getMac()
 {
