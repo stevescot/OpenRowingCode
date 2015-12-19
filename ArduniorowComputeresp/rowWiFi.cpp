@@ -14,7 +14,6 @@ rowWiFi::rowWiFi(const char *host, const char *path, WiFiClient &client)
 	_path = path;
 	_client = client;
 	_inRequest = false;
-	//connect();
 }
 
 int rowWiFi::connect()
@@ -68,11 +67,11 @@ int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistan
       request += "\r\nUser-Agent: IPHomeBox/1.0\r\n";
       request += "Accept: text/html\r\n";
       request += "Conection: keep-alive\r\n\r\n";
-      Serial.println("about to send request");
-      delay(400);
+//      Serial.println("about to send request");
+//      delay(400);
       _client.print(request);
-      Serial.println("sent");
-      delay(100);
+//      Serial.println("sent");
+//      delay(100);
       request = "";
 			//_inRequest = true;
 		//}

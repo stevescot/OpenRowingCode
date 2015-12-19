@@ -12,12 +12,12 @@ public:
 	rowWiFi();
 	int sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int PowerArray[],int PowerSamples);
 	int finishSend();
+  int connect();
 private:
 	bool _inRequest;
 	const char * _host;
 	const char * _path;
 	WiFiClient _client;
-	int connect();
 };
 
 

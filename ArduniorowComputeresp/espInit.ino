@@ -103,9 +103,7 @@ void setupWiFi() {
     //no ssid - setup access point.
     setupAP(); 
   }
-  delay(100);
-  Serial.println("exiting");
-  delay(200);
+  RowServer.connect();
 }
 
 
