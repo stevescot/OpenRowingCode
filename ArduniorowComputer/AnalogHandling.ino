@@ -42,7 +42,7 @@ void doAnalogRead()
     gradient = (float)(analog - lastAnalogSwitchValue)/(uTime-lastAnalogReadus);
     if(analog== 0 && AnalogDropping) 
     {
-      firstZeroTus = uTime;
+      zeroTus = uTime;
     }
     if(!AnalogDropping)
     {
@@ -142,7 +142,7 @@ void doAnalogRead()
     }
     if(analog== 0 && AnalogDropping) 
     {
-      firstZeroTus = uTime;
+      zeroTus = uTime;
       AnalogDropping = false;//we have reached 0 - reset analog dropping so we can monitor for it once analog starts to drop.     
       if((peakTus - firstGreaterThanZeroTus) > (zeroTus - peakTus))
       {

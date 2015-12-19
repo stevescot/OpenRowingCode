@@ -1,10 +1,19 @@
 //-------------------------------------------------------------------
-//               clicks
+// Steve Aitken - 2015
+// Main Engine
+//
+// This is the part of the row computer that does all the working out- 
+// given a time set as uTime, and a call to registerClick every time a part of the wheel passes, 
+// this will work out the drag factor, power, split, powergraph etc.. from strokes and print them to serial
+//
+
+//-------------------------------------------------------------------
+//               click based variables
 unsigned long clicks = 0;                   // number of clicks since start
 unsigned long clicksInDistance = 0;         // number of clicks already accounted for in the distance.
-unsigned int diffclicks;                             // clicks from last stroke to this one
+unsigned int diffclicks;                    // clicks from last stroke to this one
 unsigned long driveStartclicks;             // number of clicks at start of drive.
-byte currentrot = 0;                       // current rotation (for number of clicks per calculation)
+byte currentrot = 0;                        // current rotation (for number of clicks per calculation)
 //-------------------------------------------------------------------
 //               global constants
 float c = 2.8;                              //The figure used for c is somewhat arbitrary - selected to indicate a 'realistic' boat speed for a given output power. c/p = (v)^3 where p = power in watts, v = velocity in m/s  so v = (c/p)^1/3 v= (2.8/p)^1/3
@@ -12,26 +21,26 @@ float c = 2.8;                              //The figure used for c is somewhat 
 //-------------------------------------------------------------------
 //               rpm/angular Velocity
 float previousDriveAngularVelocity;         // fastest angular velocity at end of previous drive
-//float driveAngularVelocity;                 // fastest angular velocity at end of drive
-float recoveryBeginAngularVelocity;              // angular velocity at the end of the recovery  (before drive)
-float recoveryEndAngularVelocity;
-float previousRecoveryEndAngularVelocity;
-unsigned long previousRecoveryEndms;
-unsigned long recoveryBeginms; 
+//float driveAngularVelocity;               // fastest angular velocity at end of drive
+float recoveryBeginAngularVelocity;         // angular velocity at the beginning of the recovery  end drive)
+float recoveryEndAngularVelocity;           // angular velocity at the end of the revovery
+float previousRecoveryEndAngularVelocity;   // previous recovery end angular velocity
+unsigned long previousRecoveryEndms;        // time in ms of the end of the previous recovery
+unsigned long recoveryBeginms;              // time in ms of the beginning of the recovery
 //-------------------------------------------------------------------
 //               acceleration/deceleration
-const unsigned int consecutivedecelerations = 2;//number of consecutive decelerations before we are decelerating
-const unsigned int consecutiveaccelerations = 2;// number of consecutive accelerations before detecting that we are accelerating.
-unsigned int decelerations = consecutivedecelerations +1;             // number of decelerations detected.
-unsigned int accelerations = 0;             // number of acceleration rotations;
+const unsigned int consecutivedecelerations = 2;          //number of consecutive decelerations before we are decelerating
+const unsigned int consecutiveaccelerations = 2;          // number of consecutive accelerations before detecting that we are accelerating.
+unsigned int decelerations = consecutivedecelerations +1; // number of decelerations detected.
+unsigned int accelerations = 0;                           // number of acceleration rotations;
 //-------------------------------------------------------------------
-//               drag factor 
-//int k3 = 0, k2 = 0, k1 = 0;                 // previous k values for smoothing   
-int kIndex = 0;     
-const int maxKArray = 60;                   
-int kArray[maxKArray];                                  // array of k values (so we can get a median when we are done.
-float mPerClick = 0;                        // meters per rotation of the flywheel (calculated from drag factor)
+//               drag factor  
+int kIndex = 0;                                           //current position in the drag factor array
+const int maxKArray = 60;                                 //maximum number of samples to store in the drag factor array
+int kArray[maxKArray];                                    // array of k values (so we can get a median when we are done.
+float mPerClick = 0;                                      // meters per click from the flywheel (calculated from drag factor)
 
+//Set boat type - need some c factors for 4, single etc..
 void setBoatType(short BoatType)
 {
   boatType = BoatType;
@@ -49,6 +58,7 @@ void setBoatType(short BoatType)
   }
 }
 
+//set the Erg type (concept 2 or otehr)
 void setErgType(short newErgType)
 {
   ergType = newErgType;
@@ -79,6 +89,7 @@ void setErgType(short newErgType)
   mPerClick = pow((k/c),(0.33333333333333333))*2*PI/clicksPerRotation;
 }
 
+//Calculate the amount of power used to accelerate the wheel by the change in rpm for this click
 void calculateInstantaneousPower()
 {
   //= I ( dω / dt ) dθ + k ω2 dθ 
@@ -112,6 +123,7 @@ void calculateInstantaneousPower()
   }
 }
 
+//calculate the drag factor for this part of the recovery and add it to the array
 void addDragFactorToArray()
 {
   float nextk = I * ((1.0/recoveryEndAngularVelocity)-(1.0/recoveryBeginAngularVelocity))/(secondsDecel)*1000000;
@@ -124,13 +136,15 @@ void addDragFactorToArray()
   {//dodgy k - write out to serial if debug.
   #ifdef debug
     Serial.print(F("k:")); Serial.print(nextk); Serial.print(F("recoverybeginrad")); Serial.print(recoveryBeginAngularVelocity); Serial.print(F("recoveryend")); Serial.print(recoveryEndAngularVelocity); Serial.print(F("recoverySeconds")); Serial.print(secondsDecel);
-    Serial.print(" last Recovery time "); Serial.println(previousSecondsDecel);
+    Serial.print(F(" last Recovery time ")); Serial.println(previousSecondsDecel);
 //    Serial.print(F("k:")); Serial.println(nextk); Serial.print(F("recw:")); Serial.println(recoveryBeginAngularVelocity); Serial.print(F("dw")); Serial.println(driveAngularVelocity); 
     Serial.print(F("peakRPM")); Serial.println(peakRPM); Serial.print(F("sdecel")); Serial.println(secondsDecel);
   #endif
   }
 }
 
+//calculate the median drag factor from all the drag factors that were calculated during the recovery, 
+//and set the number of meters per click from the wheel accordingly
 void getDragFactor()
 {
   if(kIndex > 5)
@@ -140,7 +154,7 @@ void getDragFactor()
     #ifdef debug
     Serial.println();
     Serial.println();
-    Serial.print("K MEDIAN"); Serial.println(k*1000000); Serial.print("samples "); Serial.println(kIndex);
+    Serial.print(F("K MEDIAN")); Serial.println(k*1000000); Serial.print(F("samples ")); Serial.println(kIndex);
     Serial.println();
     Serial.println();
     #endif
@@ -148,6 +162,7 @@ void getDragFactor()
   }
 }
 
+//take uTime and mTime and use them to calculate all of the figures we need given a click from the wheel.
 void registerClick()
 {
   currentrot ++;
@@ -289,6 +304,7 @@ void registerClick()
   }
 }
 
+//gets the time to display in the format 00:00 - this is either the time left in a Time session, or the time passed in a normal session.
 String getTime()
 {
   int timemins, timeseconds;
@@ -331,6 +347,7 @@ void showInterval(long numSeconds)
   Serial.println(F("Interval Over"));
 }
 
+//convert the split variable into a string of format 00:00.00
 String getSplitString()
 {
   String splitString = "";
@@ -346,7 +363,7 @@ String getSplitString()
   return splitString;
 }
 
-
+//write all the rpm history that we have to serial
 void dumprpms()
 {
     Serial.println(F("Rpm dump"));
@@ -360,34 +377,13 @@ void dumprpms()
 
 
 
-int median(int new_array[], int num){
-     //ARRANGE VALUES
-    for(int x=0; x<num; x++){
-         for(int y=0; y<num-1; y++){
-             if(new_array[y]>new_array[y+1]){
-                 int temp = new_array[y+1];
-                 new_array[y+1] = new_array[y];
-                 new_array[y] = temp;
-             }
-         }
-     }
-    //CALCULATE THE MEDIAN (middle number)
-    if(num % 2 != 0){// is the # of elements odd?
-        int temp = ((num+1)/2)-1;
-        //cout << "The median is " << new_array[temp] << endl;
-  return new_array[temp];
-    }
-    else{// then it's even! :)
-        //cout << "The median is "<< new_array[(num/2)-1] << " and " << new_array[num/2] << endl;
-  return ((new_array[(num/2)-1] + new_array[num/2]) / 2); 
-    }
-}
 
+//Get the rpm offset rotations ago ( getRpm(-1) gets the previous rpm)
 int getRpm(short offset)
 {
   if(offset >0) 
   {
-    Serial.println("Warning, rpm in the future requested.");
+    Serial.println(F("Warning, rpm in the future requested."));
   }
   int index = nextRPM - 1 + offset;
     while (index >= numRpms)

@@ -1,8 +1,11 @@
 //-------------------------------------------------------------------
+// Steve Aitken - 2015 
+// Serial interface for the row computer
+// allows the following commands:
 //               Serial Interface variables
-String SerialStr = "";                      // string to hold next serial command.
-String variable = "";                       // variable to set 
-String value = "";                          // new value for the variable above.
+String SerialStr = "";                        // string to hold next serial command.
+String variable = "";                   // variable to set 
+//const char * value = "";                    // new value for the variable above.
 //-------------------------------------------------------------------
 
 void processSerial()
@@ -17,44 +20,45 @@ void processSerial()
     }
     if(nextChar == '\n')
     {
-      if(variable == "Session")
+      Serial.print(variable);
+      Serial.print(" ");
+      if(variable =="Session")
       {
             sessionType = SerialStr.toInt();
-            Serial.println(F("Session Set"));
+            Serial.println(F("Set"));
       }
-      else if(variable == "Interval")
+      else if(variable =="Interval")
       {
             targetSeconds = SerialStr.toInt();
-            Serial.println(F("Interval Set"));
+            Serial.println(F("Set"));
       }
       else if(variable =="Rest")
       {
             intervalSeconds = SerialStr.toInt();
-            Serial.println(F("Rest Set"));
+            Serial.println(F("Set"));
       }
       else if(variable =="Intervals")
       {
             numIntervals = SerialStr.toInt();
-            Serial.println(F("Num Intervals Set"));
+            Serial.println(F("Set"));
       }
       else if(variable =="TargetDistance")
       {
             numIntervals = SerialStr.toInt();
-            Serial.println(F("TargetDistance Set"));
+            Serial.println(F("Set"));
       }
-      else if(variable == "TargetTime")
+      else if(variable =="TargetTime")
       {
             targetSeconds = SerialStr.toInt();
-            Serial.println(F("Target Time Set"));
+            Serial.println(F("Set"));
       }
-      else if(variable == "DumpRPM")
+      else if(variable =="DumpRPM")
       {
             dumprpms();
       }
       else 
       {
-          Serial.println(F("Unrecognised"));
-          Serial.println(variable);
+          Serial.println(F(" Unreckognised"));
       }
       SerialStr = "";
     }

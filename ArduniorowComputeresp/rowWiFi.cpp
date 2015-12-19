@@ -40,34 +40,39 @@ int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistan
 		//if (!_inRequest)
 		//{
 			Serial.println(F("Sending to Server: ")); Serial.println(_host);
-      String request = (F("GET /"));
+      String request = "GET /";
 			request += _path;
-			request += F("/upload.aspx?m=");
+			request += "/upload.aspx?m=";
       request += MAC;
-			request += F("&t=");
+			request += "&t=";
 			request += msfromStart;
-			request += F("&sd=");
+			request += "&sd=";
 			request += strokeDistance;
-			request += F("&d=");
+			request += "&d=";
 			request += totalDistancem;
-      request += F("&msD=");
+      request += "&msD=";
       request += msDrive;
-      request += F("&msR=");
+      request += "&msR=";
       request += msRecovery;
-      request += F("&Dr=");
+      request += "&Dr=";
       int i = 0;
       while(PowerArray[i] != -1 && i < PowerSamples)
       {
         if(i > 0) request +="%2C";
         request+=PowerArray[i];  
+        i++;
       }
       if(i==0) request +=0;
-			request += F("\r\nHost: "); 
+			request += "\r\nHost: "; 
 			request += _host;
-      request += F("\r\nUser-Agent: IPHomeBox/1.0\r\n");
-      request += F("Accept: text/html\r\n");
-      request +=F("Conection: keep-alive\r\n\r\n");
+      request += "\r\nUser-Agent: IPHomeBox/1.0\r\n";
+      request += "Accept: text/html\r\n";
+      request += "Conection: keep-alive\r\n\r\n";
+      Serial.println("about to send request");
+      delay(400);
       _client.print(request);
+      Serial.println("sent");
+      delay(100);
       request = "";
 			//_inRequest = true;
 		//}
