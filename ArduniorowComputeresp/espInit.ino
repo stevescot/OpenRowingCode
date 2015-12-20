@@ -12,7 +12,7 @@ const char * ssid = "IProw";
 //name of this node.
 String myName = "";
 String MAC;                  // the MAC address of your Wifi shield
-rowWiFi RowServer("monitoring.intelligentplant.local","row", client);
+rowWiFi RowServer("row.intelligentplant.com","row", client);
 
 void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int PowerArray[])
 {
