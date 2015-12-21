@@ -40,10 +40,6 @@ void doAnalogRead()
     int analog = analogRead(analogPin);
     val = HIGH;
     gradient = (float)(analog - lastAnalogSwitchValue)/(uTime-lastAnalogReadus);
-    if(analog== 0 && AnalogDropping) 
-    {
-      zeroTus = uTime;
-    }
     if(!AnalogDropping)
     {
       if(analog > 0 && lastAnalogSwitchValue ==0)
@@ -131,9 +127,9 @@ void doAnalogRead()
                 Serial.print(F("gradient"));
                 Serial.println(gradient);
                 Serial.print(F("prevgradient"));
-                Serial.println(previousGradient);
+                Serial.println(previousGradient,4);
                 Serial.print(F("mediangradient"));
-                Serial.println(medianGradient);
+                Serial.println(medianGradient,4);
                 //uTime = lastAnalogReadus;
                 val = LOW;
           }
@@ -148,11 +144,19 @@ void doAnalogRead()
       {
         peakDecayFactor ++;;
         if(peakDecayFactor >100) peakDecayFactor =100;
+        Serial.println("peak appers last");
+        Serial.println(firstGreaterThanZeroTus);
+        Serial.println(peakTus);
+        Serial.println(zeroTus);
       }
       else
       {
         peakDecayFactor --;
         if(peakDecayFactor <0) peakDecayFactor = 0;
+        Serial.println("peak appears first");
+        Serial.println(firstGreaterThanZeroTus);
+        Serial.println(peakTus);
+        Serial.println(zeroTus);
       }
     }
     lastAnalogSwitchValue = analog;
