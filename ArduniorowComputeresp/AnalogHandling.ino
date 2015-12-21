@@ -49,7 +49,7 @@ void doAnalogRead()
       else if(firstGreaterThanZeroTus == lastAnalogReadus && peakDecayFactor <50)//detect that previous value was the first one above zero, and we are peak first, then decay,
       {
         float medianGradient = AddGradientAndGetMedian(gradient);
-        unsigned long usdiffprev = (float)lastAnalogSwitchValue / gradient ;
+        unsigned long usdiffprev = abs((float)lastAnalogSwitchValue / gradient) ;
         if(usdiffprev < (uTime-lastAnalogReadus))
         {//numbers are reasonable - calculate the actual time that this happened, and use it.
          uTime = lastAnalogReadus - usdiffprev;
@@ -60,7 +60,7 @@ void doAnalogRead()
           uTime = firstGreaterThanZeroTus - (uTime - firstGreaterThanZeroTus);
           val = LOW;
           //print out some stats...
-              Serial.print(F("Warning, adjustment too high, something went wrong -  "));
+              Serial.print(F(" peakfirst - Warning, adjustment too high, something went wrong -  "));
               Serial.println(usdiffprev);
               Serial.print(F("Analog Value:"));
               Serial.println(analog);
@@ -105,7 +105,7 @@ void doAnalogRead()
         if(lastAnalogSwitchValue > 0 && analog ==0 )//we have been dropping and have now hit zero - find when we would have hit it given the previous gradient.
         {
           float medianGradient = AddGradientAndGetMedian(previousGradient);
-          unsigned long usdiffprev = (float)lastAnalogSwitchValue / (-previousGradient);
+          unsigned long usdiffprev = abs((float)lastAnalogSwitchValue / (-previousGradient));
           if(previousGradient < 0 && (lastAnalogReadus + usdiffprev) < uTime)
           {//numbers are reasonable - calculate the actual time that this happened, and use it.
            uTime = lastAnalogReadus + usdiffprev;
@@ -114,7 +114,7 @@ void doAnalogRead()
           else
           {
             //probalby not enough samples to reliably detect the point of intersection
-                Serial.print(F("Warning, adjustment too high, something went wrong "));
+                Serial.print(F("peak last - Warning, adjustment too high, something went wrong "));
                 Serial.println(usdiffprev);
                 Serial.print(F("Analog Value:"));
                 Serial.println(analog);
