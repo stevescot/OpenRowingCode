@@ -280,6 +280,7 @@ void registerClick()
         case INTERVAL:
           if(intervals <= numIntervals)
           {
+            intervalDistances[intervals] = distancem -intervalDistances[intervals-1];
             showInterval(intervalSeconds); 
             //then reset the start time for count down to now for the next interval.
             startTimems = millis();
@@ -287,7 +288,9 @@ void registerClick()
           else
           {//stop.
             Serial.println(F("Done"));
-            while(true);
+            #ifdef UseLCD
+            reviewIntervals();
+            #endif
           }
           
           intervals ++;

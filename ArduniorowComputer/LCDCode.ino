@@ -58,6 +58,9 @@ void writeTimeLeft(long totalSeconds)
     if(minutes <10) lcd.print ("0");
     lcd.print(minutes);
     int seconds = totalSeconds - (minutes*60);
+    lcd.print(":");
+    if(seconds < 10) lcd.print("0");
+    lcd.print(seconds);
 }
 
 void writeNextScreen()
@@ -206,12 +209,51 @@ void writeNextScreen()
       lcd.print((char)(int)LCDGraphFour);
       lcd.print((char)(int)LCDGraphFive);
     break;
-
+case 8:
+    if(SESSIONTYPE == INTERVALS)
+    {
+      lcd.setCursor(0,9);
+      lcd.print(intervals);
+    }
     default:
       screenstep = -1;//will clear next time, as 1 is added and if 0 will be cleared.
   }    
 }
 
+void reviewIntervals()
+{
+  int key = NO_KEY;
+  int currentInterval =1;
+  while(c!= SELECT_KEY)
+  {
+      printInterval(currentInterval);
+  }
+}
+
+void printInterval(int Interval)
+{
+  lcd.setCursor(0,0);
+  lcd.print("Interval "); 
+  lcd.print(Interval);
+  lcd.print(intervalDistances[Interval]);
+  lcd.print("m ");
+  int intervalsplittenths = (float)intervalDistances[Interval] / (targetSeconds/10)
+  int intervalsplitmins = intervalsplittenths /10/60;
+  if(intervalsplitmins <10)
+  {
+    lcd.print("0");
+  }
+  lcd.print(intervalsplitmins);
+  lcd.print(":");
+  int intervalsplitseconds = (intervalsplittenths/10) - (intervalsplitmins*60);
+  if(intervalsplitseconds < 10)
+  {
+    lcd.print("0");
+  }
+  lcd.print(intervalsplitseconds)
+  lcd.print(".");
+  lcd.print(intervalsplittenths - intervalsplitseconds*10 - intervalsplitmins *60*10);
+}
 
 //Current selection (Distance, Time)
 void startMenu()
