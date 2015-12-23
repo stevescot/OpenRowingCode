@@ -51,7 +51,8 @@ void lcdSetup()
 void writeTimeLeft(long totalSeconds)
 {
     lcd.clear();
-    lcd.print(p_Intervalsp);
+    lcd.setCursor(0,0);
+    lcd.print("Interval ");
     lcd.print(intervals);
     lcd.setCursor(0,1);
     int minutes = totalSeconds/60;
@@ -210,9 +211,9 @@ void writeNextScreen()
       lcd.print((char)(int)LCDGraphFive);
     break;
 case 8:
-    if(SESSIONTYPE == INTERVALS)
+    if(sessionType == INTERVAL)
     {
-      lcd.setCursor(0,9);
+      lcd.setCursor(9,0);
       lcd.print(intervals);
     }
     default:
@@ -222,22 +223,39 @@ case 8:
 
 void reviewIntervals()
 {
-  int key = NO_KEY;
+  analogReference(DEFAULT);                 //we need default analog reference to work with the LCD shield
+  int c = NO_KEY;
   int currentInterval =1;
+  printInterval(currentInterval);
   while(c!= SELECT_KEY)
   {
+    c = getKey();
+    if(c==DOWN_KEY)
+    {
+      currentInterval++;
       printInterval(currentInterval);
+      delay(1000);
+    }
+    else if (c== UP_KEY)
+    {
+      currentInterval --;
+      printInterval(currentInterval);
+      delay(1000);
+    }
   }
+  setup();
 }
 
 void printInterval(int Interval)
 {
+  lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Interval "); 
   lcd.print(Interval);
+  lcd.setCursor(0,1);
   lcd.print(intervalDistances[Interval]);
   lcd.print("m ");
-  int intervalsplittenths = (float)intervalDistances[Interval] / (targetSeconds/10)
+  int intervalsplittenths = (float)intervalDistances[Interval] / (targetSeconds/10);
   int intervalsplitmins = intervalsplittenths /10/60;
   if(intervalsplitmins <10)
   {
@@ -250,7 +268,7 @@ void printInterval(int Interval)
   {
     lcd.print("0");
   }
-  lcd.print(intervalsplitseconds)
+  lcd.print(intervalsplitseconds);
   lcd.print(".");
   lcd.print(intervalsplittenths - intervalsplitseconds*10 - intervalsplitmins *60*10);
 }
