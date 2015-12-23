@@ -255,7 +255,7 @@ void printInterval(int Interval)
   lcd.setCursor(0,1);
   lcd.print(intervalDistances[Interval]);
   lcd.print("m ");
-  int intervalsplittenths = (float)intervalDistances[Interval] / (targetSeconds/10);
+  int intervalsplittenths = (float)5000/((float)intervalDistances[Interval] / ((float)targetSeconds));
   int intervalsplitmins = intervalsplittenths /10/60;
   if(intervalsplitmins <10)
   {
