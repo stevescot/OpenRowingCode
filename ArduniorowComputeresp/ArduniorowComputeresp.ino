@@ -2,6 +2,15 @@
  *  esp8266 version for wifi
  * principles behind calculations are here : http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7
  */
+ #include "rowWiFi.h"
+#include <Arduino.h>
+
+#include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
+
+#include <ESP8266HTTPClient.h>
+#include <ESP8266httpUpdate.h>
+
 #include "mainEngine.h"   
 //#define debug  // uncomment this to get more verbose serial output
 //ota update : https://github.com/esp8266/Arduino/blob/master/doc/ota_updates/ota_updates.md
@@ -24,6 +33,7 @@ void setup()
   Serial.print(F("Flash Size:"));
   Serial.println(ESP.getFlashChipSize());
   setupWiFi();
+  checkUpdate();
   Serial.println(F("done Wifi"));
   Serial.print(F("MAC:"));
   Serial.println(getMac());
@@ -104,7 +114,35 @@ void writeStrokeRow()
   SendSplit(mTime, splitDistance, distancem, lastDriveTimems, strokems - lastDriveTimems, powerArray);
 }
 
+void checkUpdate()
+{
+  Serial.println("checking for update");
+  Serial.print("Sketch size:");
+  Serial.println(ESP.getSketchSize());
+    String updateURL = "http://row.intelligentplant.com/row/update.aspx?size=";
+    updateURL += ESP.getSketchSize();
+    updateURL += "&Date=";
+    updateURL += __DATE__;
+    updateURL.replace(' ','-');
+    Serial.println("update URL:");
+    Serial.println(updateURL);
+          t_httpUpdate_return ret = ESPhttpUpdate.update(updateURL.c_str());
+        //t_httpUpdate_return  ret = ESPhttpUpdate.update("https://server/file.bin");
 
+        switch(ret) {
+            case HTTP_UPDATE_FAILED:
+                Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+                break;
+
+            case HTTP_UPDATE_NO_UPDATES:
+                Serial.println("HTTP_UPDATE_NO_UPDATES");
+                break;
+
+            case HTTP_UPDATE_OK:
+                Serial.println("HTTP_UPDATE_OK");
+                break;
+        }
+}
 
 
 
