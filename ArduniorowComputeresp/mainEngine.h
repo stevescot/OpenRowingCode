@@ -42,7 +42,7 @@ long targetSeconds = 20*60;                 // target time in seconds also inter
 long intervalSeconds = 60;                  // time for rest in interval mode
 byte numIntervals = 5;                       // number of intervals in interval mode.
 //-------------------------------------------------------------------
-byte intervals = 0;//number of intervals we have done.
+byte intervals = 1;//current interval we are on.
 byte sessionType = JUST_ROW;
 //-------------------------------------------------------------------
 //               Erg Specific Settings
@@ -90,6 +90,8 @@ float power = 0;                            // last stroke power in watts
 byte spm = 0;                               // current strokes per minute.  
 float distancem = 0;                        // distance rowed in meters.
 float recoveryToDriveRatio = 0;             // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
+
+long intervalDistances[30];
 
 //-------------------------------------------------------------------
 //               Power Graph

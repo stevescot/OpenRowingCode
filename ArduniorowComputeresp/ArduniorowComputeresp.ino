@@ -19,7 +19,7 @@
 //-------------------------------------------------------------------
 //               pins
 const byte switchPin = 2;                    // switch is connected to GPIO2
-const byte analogPin = 2;                    // analog pin (Concept2)
+const byte analogPin = A0;                    // analog pin (Concept2)
 //-------------------------------------------------------------------
 //               reed (switch) handling
 int val;                                    // variable for reading the pin status

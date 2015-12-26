@@ -278,16 +278,21 @@ void registerClick()
       switch(sessionType)
       {
         case INTERVAL:
-          if(intervals <= numIntervals)
+          intervalDistances[intervals] = distancem -intervalDistances[intervals-1];
+          if(intervals < numIntervals)
           {
+            lcd.clear();
             showInterval(intervalSeconds); 
             //then reset the start time for count down to now for the next interval.
             startTimems = millis();
+            lcd.clear();
           }
           else
           {//stop.
             Serial.println(F("Done"));
-            while(true);
+            #ifdef UseLCD
+            reviewIntervals();
+            #endif
           }
           
           intervals ++;
@@ -332,7 +337,9 @@ String getTime()
 //take time and display how long remains on the screen.
 void showInterval(long numSeconds)
 {
-  Serial.print(F("Interval "));
+  lcd.clear();
+  lcd.setCursor(0,0);
+  Serial.print("Interval ");
   Serial.println(intervals);
   long startTime = millis()/1000;
   long currentTime = millis()/1000;
