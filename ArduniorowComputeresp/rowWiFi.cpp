@@ -26,6 +26,7 @@ int rowWiFi::connect()
 	}
 	else
 	{
+    _client.flush();//get rid of any returned data - one way connection
 		return true;
 	}
 }
@@ -48,7 +49,8 @@ int rowWiFi::Register(String MAC, String Name)
     request += "Accept: text/html\r\n";
     request += "Conection: keep-alive\r\n\r\n";
     _client.print(request);
-    request = "";
+    _client.stop();
+    connect();
     return true;
   }
   else
@@ -88,8 +90,8 @@ int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistan
         if(i > 0) 
         {
           request +="%2C";
-          request+=PowerArray[i];  
         }
+        request+=PowerArray[i];  
         i++;
       }
       if(i==0) request +=0;
@@ -98,6 +100,9 @@ int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistan
       request += "\r\nUser-Agent: IPHomeBox/1.0\r\n";
       request += "Accept: text/html\r\n";
       request += "Conection: keep-alive\r\n\r\n";
+      Serial.println();
+      Serial.println();
+      Serial.print(request);
       _client.print(request);
 		return true;
 	}

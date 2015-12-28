@@ -64,7 +64,10 @@ void setup()
     Serial.println(switchPin);
   }
   Serial.println(F("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor"));
-  
+  //
+//  Serial.println("sending test row");
+//  writeStrokeRow();
+//  Serial.println("sent");
 }
 
 void loop()
