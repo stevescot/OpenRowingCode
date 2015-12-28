@@ -16,7 +16,7 @@ rowWiFi RowServer("row.intelligentplant.com","row", client);
 
 void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int PowerArray[])
 {
-  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery, PowerArray, powerSamples);
+  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery, PowerArray, nextPower);
 }
 
 void setupWiFi() {
@@ -39,9 +39,11 @@ void setupWiFi() {
   // read eeprom for ssid and pass
   Serial.println(F("Reading EEPROM ssid"));
   char esid[32];
-  for (int i = 0; i < 32; ++i)
+  bool nullfound = false;
+  for (int i = 0; i < 33; ++i)
     {
       esid[i] = EEPROM.read(i);
+      if(esid[i] == 0) nullfound=true;
     }
   Serial.print(F("SSID: "));
   Serial.println(esid);
@@ -83,7 +85,7 @@ void setupWiFi() {
   }
   Serial.print(F("Site: "));
   Serial.println(site);
-  if ( esid != "" ) {
+  if ( esid != "" && nullfound ) {
       // test esid 
       Serial.print(F("connecting to : "));
       Serial.print(esid);
@@ -199,7 +201,7 @@ void setupAP(void) {
     }
   st += F("</select>");
   delay(100);
-
+  WiFi.mode(WIFI_AP);
   WiFi.softAP(ssid);
   Serial.println(F("softap"));
   Serial.println();
@@ -375,6 +377,9 @@ int mdns1(int webtype)
         s += F("Found ");
         s += req;
         s += F("<p> saved to eeprom... reset to boot into new wifi</html>\r\n\r\n");
+        client.print(s);
+        delay(2000);
+        ESP.restart();
       }
       else
       {

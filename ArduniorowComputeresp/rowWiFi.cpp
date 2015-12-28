@@ -85,8 +85,11 @@ int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistan
       int i = 0;
       while(PowerArray[i] != -1 && i < PowerSamples)
       {
-        if(i > 0) request +="%2C";
-        request+=PowerArray[i];  
+        if(i > 0) 
+        {
+          request +="%2C";
+          request+=PowerArray[i];  
+        }
         i++;
       }
       if(i==0) request +=0;
@@ -95,14 +98,7 @@ int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistan
       request += "\r\nUser-Agent: IPHomeBox/1.0\r\n";
       request += "Accept: text/html\r\n";
       request += "Conection: keep-alive\r\n\r\n";
-//      Serial.println("about to send request");
-//      delay(400);
       _client.print(request);
-//      Serial.println("sent");
-//      delay(100);
-      request = "";
-			//_inRequest = true;
-		//}
 		return true;
 	}
 	else

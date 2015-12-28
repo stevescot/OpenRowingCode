@@ -205,7 +205,6 @@ void registerClick()
             if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
               {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                 totalStroke++;
-                writeStrokeRow();
                 getDragFactor();
                 decelerations = 0;
                 driveStartclicks = clicks;
@@ -233,6 +232,13 @@ void registerClick()
               if(decelerations ==0 && accelerations > consecutiveaccelerations)
               {
                 //first deceleration
+                diffclicks = clicks - lastStrokeClicks;
+                strokems = mTime - lastStrokeTimems;
+                spm = 60000 /strokems;
+                lastStrokeClicks = clicks;
+                lastStrokeTimems = mTime;
+                split =  ((float)strokems)/((float)diffclicks*mPerClick*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
+                writeStrokeRow();
                 #ifdef recoverywork
                   doRecoveryWork();
                   unsigned long timeAfter = micros();
@@ -245,12 +251,6 @@ void registerClick()
 //                previousDriveAngularVelocity = driveAngularVelocity;    //store the previous deceleration
                 recoveryBeginms = mTime;
                 recoveryBeginAngularVelocity = radSec;
-                diffclicks = clicks - lastStrokeClicks;
-                strokems = mTime - lastStrokeTimems;
-                spm = 60000 /strokems;
-                lastStrokeClicks = clicks;
-                lastStrokeTimems = mTime;
-                split =  ((float)strokems)/((float)diffclicks*mPerClick*2) ;//time for stroke /1000 for ms *500 for 500m = /(*2)
                 power = 2.8 / pow((split / 500),3.0);//watts = 2.8/(split/500)³ (from concept2 site)
                 //Serial.print(split);
                 //store the drive speed
@@ -281,11 +281,9 @@ void registerClick()
           intervalDistances[intervals] = distancem -intervalDistances[intervals-1];
           if(intervals < numIntervals)
           {
-            lcd.clear();
             showInterval(intervalSeconds); 
             //then reset the start time for count down to now for the next interval.
             startTimems = millis();
-            lcd.clear();
           }
           else
           {//stop.
@@ -337,8 +335,10 @@ String getTime()
 //take time and display how long remains on the screen.
 void showInterval(long numSeconds)
 {
+  #ifdef UseLCD
   lcd.clear();
   lcd.setCursor(0,0);
+  #endif
   Serial.print("Interval ");
   Serial.println(intervals);
   long startTime = millis()/1000;

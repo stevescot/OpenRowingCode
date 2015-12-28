@@ -2,7 +2,8 @@
  *  esp8266 version for wifi
  * principles behind calculations are here : http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7
  */
- #include "rowWiFi.h"
+//#define newAPI  - if we have the new API - which has error codes
+#include "rowWiFi.h"
 #include <Arduino.h>
 
 #include <ESP8266WiFi.h>
@@ -18,22 +19,27 @@
 
 //-------------------------------------------------------------------
 //               pins
-const byte switchPin = 2;                    // switch is connected to GPIO2
+const byte switchPin = 2;                     // switch is connected to GPIO2
+const byte holdPin = 0;                       // pin to hold CH_PD high = GPIO0
 const byte analogPin = A0;                    // analog pin (Concept2)
 //-------------------------------------------------------------------
 //               reed (switch) handling
-int val;                                    // variable for reading the pin status
-int buttonState;                            // variable to hold the button state
+int val;                                      // variable for reading the pin status
+int buttonState;                              // variable to hold the button state
 
 void setup() 
 {
-  
-   Serial.begin(115200);                    // Set up serial communication at 115200bps
+  pinMode(holdPin, OUTPUT);  // sets GPIO 0 to output
+  digitalWrite(holdPin, HIGH);  // sets GPIO 0 to high (this holds CH_PD high even if the PIR output goes low)
+  Serial.begin(115200);                    // Set up serial communication at 115200bps
   Serial.println(F("startup"));
   Serial.print(F("Flash Size:"));
   Serial.println(ESP.getFlashChipSize());
   setupWiFi();
-  checkUpdate();
+  if(ESP.getFlashChipSize() > 700000)
+  {//we have enough space to update automatically
+    checkUpdate();
+  }
   Serial.println(F("done Wifi"));
   Serial.print(F("MAC:"));
   Serial.println(getMac());
@@ -43,20 +49,20 @@ void setup()
   //analogReference(DEFAULT);
   //analogReference(INTERNAL);
   delay(100);
-  /*if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
+  if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
     setErgType(ERGTYPEC2);
     Serial.print("Concept 2 detected on pin ");
     Serial.println(analogPin);
   }
   else
-  {*/
+  {
     setErgType(ERGTYPEVFIT);
     Serial.print(F("No Concept 2 detected on Analog pin "));
     Serial.println(analogPin);
     Serial.print(F("Detecting reed switch on pin "));
     Serial.println(switchPin);
-  /*}*/
+  }
   Serial.println(F("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor"));
   
 }
@@ -77,9 +83,6 @@ void loop()
    if (val != buttonState && val == LOW && (uTime- lastStateChangeus) >5000)            // the button state has changed!
     { 
       registerClick();
-         #ifdef UseLCD
-            writeNextScreen();
-         #endif
       lastStateChangeus=uTime;
     }
     if((millis()-mTime) >=10)
@@ -128,7 +131,7 @@ void checkUpdate()
     Serial.println(updateURL);
           t_httpUpdate_return ret = ESPhttpUpdate.update(updateURL.c_str());
         //t_httpUpdate_return  ret = ESPhttpUpdate.update("https://server/file.bin");
-
+#ifdef newAPI
         switch(ret) {
             case HTTP_UPDATE_FAILED:
                 Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
@@ -142,6 +145,7 @@ void checkUpdate()
                 Serial.println("HTTP_UPDATE_OK");
                 break;
         }
+#endif
 }
 
 
