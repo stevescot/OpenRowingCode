@@ -39,53 +39,58 @@ void setupWiFi() {
   // read eeprom for ssid and pass
   Serial.println(F("Reading EEPROM ssid"));
   char esid[32];
-  bool nullfound = false;
-  for (int i = 0; i < 33; ++i)
-    {
-      esid[i] = EEPROM.read(i);
-      if(esid[i] == 0) nullfound=true;
-    }
-  Serial.print(F("SSID: "));
-  Serial.println(esid);
-  Serial.println(F("Reading EEPROM pass"));
   char epass[64] ;
-  for (int i = 32; i < 96; i++)
+  
+  bool foundFlag = false;
+  if(EEPROM.read(511) == 'r')
     {
-      epass[i-32] = char(EEPROM.read(i));
+      foundFlag = true;
+    for (int i = 0; i < 33; ++i)
+      {
+        esid[i] = EEPROM.read(i);
+      }
+    Serial.print(F("SSID: "));
+    Serial.println(esid);
+    Serial.println(F("Reading EEPROM pass"));
+
+    for (int i = 32; i < 96; i++)
+      {
+        epass[i-32] = char(EEPROM.read(i));
+      }
+    Serial.print(F("PASS: "));
+    Serial.println(epass);  
+    host.reserve(64);
+    for (int i = 96; i < 160; i++)
+    {
+      if(EEPROM.read(i) != 0)
+        {
+          host += char(EEPROM.read(i));
+        }
     }
-  Serial.print(F("PASS: "));
-  Serial.println(epass);  
-  host.reserve(64);
-  for (int i = 96; i < 160; i++)
-  {
-    if(EEPROM.read(i) != 0)
-      {
-        host += char(EEPROM.read(i));
-      }
-  }
-  Serial.print(F("Gestalt: " ));
-  Serial.println(host);
-  myName.reserve(40);
-  for (int i = 160; i < 200; i++)
-  {
-    if(EEPROM.read(i) != 0)
-      {
-        myName += char(EEPROM.read(i));
-      }
-  }
-  Serial.print(F("MyName: " ));
-  Serial.println(myName);
-  site.reserve(20);
-  for(int i = 200; i < 220; i++)
-  {
-    if(EEPROM.read(i) != 0)
-      {
-        site += char(EEPROM.read(i));
-      }
+    Serial.print(F("Gestalt: " ));
+    Serial.println(host);
+    myName.reserve(40);
+    for (int i = 160; i < 300; i++)
+    {
+      if(EEPROM.read(i) != 0)
+        {
+          myName += char(EEPROM.read(i));
+        }
+    }
+    Serial.print(F("MyName: " ));
+    Serial.println(myName);
+    site.reserve(20);
+    for(int i = 300; i < 320; i++)
+    {
+      if(EEPROM.read(i) != 0)
+        {
+          site += char(EEPROM.read(i));
+        }
+    }
   }
   Serial.print(F("Site: "));
   Serial.println(site);
-  if ( esid != "" && nullfound ) {
+  if ( esid != "" && foundFlag ) {
       // test esid 
       Serial.print(F("connecting to : "));
       Serial.print(esid);
@@ -286,17 +291,21 @@ int mdns1(int webtype)
         s += st;
         s += F("<input type = 'submit' value='rescan networks'></td></tr>");
         s += F("<tr><td><label>Password</label></td><td><input name='pass' length=64 size=64/></td></tr>");
-        s += F("<tr><td><label>Server:</label></td><td><input name='g' value='rowing.intelligentplant.com' size=64/></td></tr>");
-        s += F("<tr><td><label>My Name</label></td><td><input name='n' length=40 value='RowComputer1' size=64/></td></tr>");
-        s += F("<tr><td><label>Site</label></td><td><input name='s' length=20 value='Row' size=64/><input type='submit' value='save details'/></td></tr>");
-        s += F("</table></form>");
+        s += F("<tr>><td><label>Server:</label></td><td><input name='g' value='rowing.intelligentplant.com' size=64 readonly/></td></tr>");
+        s += F("<tr><td><label>My e-mail</label></td><td><input name='n' length=40 value='e-mail@domain.com' size=164/></td></tr>");
+        s += F("<tr><td><label>Site</label></td><td><input name='s' length=20 value='Row' size=64 readonly /></td></tr>");
+        s += F("</table><input type='submit' value='save details'/></form>");
         s += F("<form method='get' action='r'>");
         s += F("</html>\r\n\r\n");
         Serial.println(F("Sending 200"));
     }
       else if (req.startsWith("/r"))
       {//rescan - disconnect and scan for wifi networks - then return.
-        client.print(F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> disconnecting and scanning networks, when connected again - click <a href ='/' >here</a>"));
+        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> disconnecting and scanning networks, when connected again - click");
+        s += F("<p> Saved, to test - click <a href=\"http://row.intelligentplant.com/row/Display.html?MAC=");
+        s += MAC;
+        s += F("\">here</a></html>\r\n\r\n");
+        client.print(s);
         client.flush(); 
         delay(100);
         setupAP();
@@ -304,7 +313,7 @@ int mdns1(int webtype)
       else if ( req.startsWith("/a?ssid=") ) {
         // /a?ssid=blahhhh&pass=poooo&g=demo1&s=pnid
         Serial.println(F("clearing eeprom"));
-        for (int i = 0; i < 220; ++i) { EEPROM.write(i, 0); }
+        for (int i = 0; i < 320; ++i) { EEPROM.write(i, 0); }
         String qsid; 
         int currentstart;
         int currentend;
@@ -368,15 +377,21 @@ int mdns1(int webtype)
         Serial.println(F("writing eeprom s:"));
         for(int i = 0; i < qs.length(); ++i)
         {
-          EEPROM.write(200+i, qs[i]);
+          EEPROM.write(300+i, qs[i]);
           Serial.print(F("Wrote: "));
           Serial.println(qs[i]);
         }
+        Serial.println(F("writing flag"));
+        EEPROM.write(511,'r');
+        
         EEPROM.commit();
-        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP8266 ");
-        s += F("Found ");
-        s += req;
-        s += F("<p> saved to eeprom... reset to boot into new wifi</html>\r\n\r\n");
+        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> disconnecting and scanning networks, when connected again - click");
+        s += F("<p> Saved, to test - click <a href=\"http://row.intelligentplant.com/row/Display.html?MAC=");
+        s += MAC;
+        s += F("\">here</a></html>\r\n\r\n");
+//        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP8266 ");
+//        s += F("Found ");
+//        s += req;
         client.print(s);
         delay(2000);
         ESP.restart();
@@ -420,4 +435,23 @@ int mdns1(int webtype)
   client.print(s);
   Serial.println(F("Done with client"));
   return(20);
+}
+
+char specials[] = "$&+,/:;=?@ <>#%{}|\\^~[]`!'*-_"; /* String containing chars you want encoded */
+
+static char hex_digit(unsigned char c)
+{  return "01234567890ABCDEF"[c & 0x0F];
+}
+
+char *urlencode(char *dst,char *src)
+{  char c,*d = dst;
+   while (c = *src++)
+   {  if (strchr(specials,c))
+      {  *d++ = '%';
+         *d++ = hex_digit(c >> 4);
+         *d++ = hex_digit(c);
+      }
+      else *d++ = c;
+   }
+   return dst;
 }
