@@ -301,13 +301,10 @@ int mdns1(int webtype)
     }
       else if (req.startsWith("/r"))
       {//rescan - disconnect and scan for wifi networks - then return.
-        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> disconnecting and scanning networks, when connected again - click");
-        s += F("<p> Saved, to test - click <a href=\"http://row.intelligentplant.com/row/Display.html?MAC=");
-        s += MAC;
-        s += F("\">here</a></html>\r\n\r\n");
+        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> <head><META http-equiv=\"refresh\" content=\"5;URL=192.168.1.4/\"></head><body> disconnecting and scanning networks, </body>");
         client.print(s);
         client.flush(); 
-        delay(100);
+        delay(2000);
         setupAP();
       }
       else if ( req.startsWith("/a?ssid=") ) {
@@ -385,22 +382,17 @@ int mdns1(int webtype)
         EEPROM.write(511,'r');
         
         EEPROM.commit();
-        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> disconnecting and scanning networks, when connected again - click");
+        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> disconnecting and scanning networks,");
         s += F("<p> Saved, to test - click <a href=\"http://row.intelligentplant.com/row/Display.html?MAC=");
         s += MAC;
         s += F("\">here</a></html>\r\n\r\n");
-//        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP8266 ");
-//        s += F("Found ");
-//        s += req;
         client.print(s);
         delay(2000);
         ESP.restart();
       }
       else
       {
-        client.print(F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> click here to setup row machine <a href ='/' >here</a>"));
-        client.flush(); 
-        delay(100);
+        s = (F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html> <head><META http-equiv=\"refresh\" content=\"5;URL=192.168.1.4/\"></head> click here to setup row machine <a href ='/' >here</a>"));
       }
     /*  else
       {
@@ -408,30 +400,6 @@ int mdns1(int webtype)
         Serial.println(F("Sending 404");
       }*/
   } 
-  else
-  {
-      if (req == "/")
-      {
-        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP8266");
-        s += F("<p>");
-        s += F("</html>\r\n\r\n");
-        Serial.println(F("Sending 200"));
-      }
-      else if ( req.startsWith("/cleareeprom") ) {
-        s = F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP8266");
-        s += F("<p>Clearing the EEPROM<p>");
-        s += F("</html>\r\n\r\n");
-        Serial.println(F("Sending 200"));  
-        Serial.println(F("clearing eeprom"));
-        for (int i = 0; i < 96; ++i) { EEPROM.write(i, 0); }
-        EEPROM.commit();
-      }
-      else
-      {
-        s = F("HTTP/1.1 404 Not Found\r\n\r\n");
-        Serial.println(F("Sending 404"));
-      }       
-  }
   client.print(s);
   Serial.println(F("Done with client"));
   return(20);
