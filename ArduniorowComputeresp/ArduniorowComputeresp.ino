@@ -27,6 +27,8 @@ const byte analogPin = A0;                    // analog pin (Concept2)
 int val;                                      // variable for reading the pin status
 int buttonState;                              // variable to hold the button state
 
+unsigned long lastStrokeSentms = 0;
+
 void setup() 
 {
   pinMode(holdPin, OUTPUT);  // sets GPIO 0 to output
@@ -93,12 +95,17 @@ void loop()
       Serial.print(F("warning - loop took (ms):"));
       Serial.println(millis()-mTime);
     }
+    if((mTime - lastStrokeSentms) > 2000)
+    {//update display if we haven't sent an update for two seconds.
+      writeStrokeRow();
+    }
   buttonState = val;                       // save the new state in our variable
 }
 
 
 void writeStrokeRow()
 {
+  lastStrokeSentms = mTime;
   String tab = F("\t");
   Serial.print(totalStroke); Serial.print(tab);
   Serial.print(spm); Serial.print(tab);
