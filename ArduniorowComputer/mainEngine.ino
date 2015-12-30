@@ -67,7 +67,9 @@ void setErgType(short newErgType)
     case ERGTYPEVFIT:
         //V-Fit rower with tach.
         analogSwitch = false;
-        I = 0.03;
+        //experimental method to find moment of inertia.
+        //https://www.youtube.com/watch?v=m9iHEanmNWc
+        I = 0.032;
         clicksPerRotation = 1;
         clicksPerCalc = 1;
         k = 0.000085;  
