@@ -22,6 +22,7 @@
 const byte switchPin = 2;                     // switch is connected to GPIO2
 const byte holdPin = 0;                       // pin to hold CH_PD high = GPIO0
 const byte analogPin = A0;                    // analog pin (Concept2)
+const int msToResendSplit = 1000;
 //-------------------------------------------------------------------
 //               reed (switch) handling
 int val;                                      // variable for reading the pin status
@@ -34,6 +35,7 @@ void setup()
   pinMode(holdPin, OUTPUT);  // sets GPIO 0 to output
   digitalWrite(holdPin, HIGH);  // sets GPIO 0 to high (this holds CH_PD high even if the PIR output goes low)
   Serial.begin(115200);                    // Set up serial communication at 115200bps
+  Serial.setDebugOutput(true);
   Serial.println(F("startup"));
   Serial.print(F("Flash Size:"));
   Serial.println(ESP.getFlashChipSize());
@@ -96,7 +98,7 @@ void loop()
       Serial.print(F("warning - loop took (ms):"));
       Serial.println(millis()-mTime);
     }
-    if((mTime - lastStrokeSentms) > 3000)
+    if((mTime - lastStrokeSentms) > msToResendSplit)
     {//update display if we haven't sent an update for two seconds.
       writeStrokeRow();
     }
@@ -125,7 +127,7 @@ void writeStrokeRow()
   {
     splitDistance = 0.00000001;
   }
-  SendSplit(mTime, splitDistance, distancem, lastDriveTimems, strokems - lastDriveTimems, powerArray);
+  SendSplit(getCurrentTimems(), splitDistance, distancem, lastDriveTimems, strokems - lastDriveTimems, spm, powerArray);
 }
 
 void checkUpdate()

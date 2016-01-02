@@ -88,7 +88,7 @@ float k = 0.000185;                         // drag factor nm/s/s (displayed *10
 //               Stats for display
 float split = 0;                            // split time for last stroke in seconds
 float power = 0;                            // last stroke power in watts
-byte spm = 0;                               // current strokes per minute.  
+int spm = 0;                               // current strokes per minute.  
 float distancem = 0;                        // distance rowed in meters.
 float recoveryToDriveRatio = 0;             // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
 

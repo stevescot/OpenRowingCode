@@ -8,24 +8,27 @@ rowWiFi::rowWiFi()
 {
 	_inRequest = false;
 }
-rowWiFi::rowWiFi(const char *host, const char *path, WiFiClient &client)
+rowWiFi::rowWiFi(const char *host, const char *path)
 {
 	_host = host;
 	_path = path;
-	_client = client;
 	_inRequest = false;
 }
 
 int rowWiFi::connect()
 {
-	if (!_client.connected())
+	if (!wificlient->connected())
 	{
 		Serial.println(F("connecting"));
-		_client.stop();
-		return _client.connect((const char*)_host, 80);
+		wificlient->stop();
+		return wificlient->connect((const char*)_host, 80);
 	}
 	else
 	{
+  while(wificlient->available())
+  {
+    Serial.print((char)wificlient->read());
+  }
     //_client.flush();//get rid of any returned data - one way connection
 		return true;
 	}
@@ -43,14 +46,12 @@ int rowWiFi::Register(String MAC, String Name)
     request += MAC;
     request += "&Name=";
     request += Name;
-    request += "\r\nHost: "; 
+    request += " HTTP/1.1\r\nHost: "; 
     request += _host;
     request += "\r\nUser-Agent: IPHomeBox/1.0\r\n";
     request += "Accept: text/html\r\n";
     request += "Conection: keep-alive\r\n\r\n";
-    _client.print(request);
-    _client.stop();
-    connect();
+    wificlient->print(request);
     return true;
   }
   else
@@ -61,7 +62,7 @@ int rowWiFi::Register(String MAC, String Name)
 }
 
 
-int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int PowerArray[],int PowerSamples)
+int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int spm,  int PowerArray[],int PowerSamples)
 {
 	Serial.println(F("sendSplit"));
 	if (connect())
@@ -94,16 +95,19 @@ int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistan
         request+=PowerArray[i];  
         i++;
       }
+      request += "&spm=";
+      request += spm;
       if(i==0) request +=0;
-			request += "\r\nHost: "; 
+			request += " HTTP/1.1\r\nHost: "; 
 			request += _host;
       request += "\r\nUser-Agent: IPHomeBox/1.0\r\n";
       request += "Accept: text/html\r\n";
       request += "Conection: keep-alive\r\n\r\n";
+      
       Serial.println();
       Serial.println();
       Serial.print(request);
-      _client.print(request);
+      wificlient->print(request);
 		return true;
 	}
 	else

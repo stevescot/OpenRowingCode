@@ -162,6 +162,18 @@ void getDragFactor()
   }
 }
 
+unsigned long getCurrentTimems()
+{
+  if(startTimems!=0)
+  {
+    return mTime - startTimems;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
 //take uTime and mTime and use them to calculate all of the figures we need given a click from the wheel.
 void registerClick()
 {

@@ -1,7 +1,7 @@
 #include "ESP8266WiFi.h"
 #include "rowWifi.h"
 #include <EEPROM.h>
-WiFiClient client;
+WiFiClient thisclient;
 WiFiServer server(80);
 #include "./DNSServer.h"                  // Patched lib
 DNSServer         dnsServer;              // Create the DNS object
@@ -12,11 +12,11 @@ const char * ssid = "IProw";
 //name of this node.
 String myName = "";
 String MAC;                  // the MAC address of your Wifi shield
-rowWiFi RowServer("row.intelligentplant.com","row", client);
+rowWiFi RowServer("row.intelligentplant.com","row");
 
-void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int PowerArray[])
+void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int spm, int PowerArray[])
 {
-  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery, PowerArray, nextPower);
+  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery,spm, PowerArray, nextPower);
 }
 
 void setupWiFi() {
@@ -110,6 +110,7 @@ void setupWiFi() {
     //no ssid - setup access point.
     setupAP(); 
   }
+  RowServer.wificlient = &thisclient;
   RowServer.Register(MAC, myName);
 }
 
@@ -135,12 +136,13 @@ int testWifi(char esid[], char epass[]) {
     // wait 10 seconds for connection:
     //delay(10000);
       if(x == WL_CONNECTED) {
+        Serial.println("my IP");
       Serial.println(WiFi.localIP());
       //delay(1000);
       return(20); 
       } 
     Serial.println(F("rechecking Connection.."));
-    delay(100);
+    delay(500);
     c++;
   }
   Serial.println(F("Connect timed out, opening AP"));
@@ -207,7 +209,8 @@ void setupAP(void) {
   st += F("</select>");
   delay(100);
   WiFi.mode(WIFI_AP);
-  WiFi.softAP(ssid);
+  String ssidwithmac = ssid + MAC;
+  WiFi.softAP(ssidwithmac.c_str());
   Serial.println(F("softap"));
   Serial.println();
   launchWeb(1);
@@ -407,9 +410,10 @@ int mdns1(int webtype)
 
 void processResponse()
 {
-  while (client.available() >0) {
-    char nextChar = client.read();
-    //Serial.println(nextChar);
+  while (thisclient.available()>0) {
+    //Serial.println("Got Char: ");
+    char nextChar = thisclient.read();
+   // Serial.println(nextChar);
     if(nextChar == '=')
     {
       variable = SerialStr;
@@ -452,6 +456,8 @@ void processResponse()
       else if(variable =="StartInTenths")
       {
             distancem = 0;
+            Serial.print( "   = ");
+            Serial.println(SerialStr);
             raceStartTimems = millis() + SerialStr.toInt()*100;
       }
       else if(variable =="DumpRPM")
@@ -471,12 +477,15 @@ void processResponse()
       else 
       {
           Serial.println(F(" Unreckognised"));
+          Serial.println();
+          Serial.println(SerialStr);
       }
       SerialStr = "";
+      variable = "";
     }
     else
     {
-      SerialStr += nextChar;
+      if((char)nextChar != ' ') SerialStr += nextChar;
     }
   }
 }
