@@ -35,6 +35,7 @@
 //               Erg types
 short ergType = ERGTYPEVFIT;                // erg type currently selected.
 short boatType = BOAT4;                     // boat type to simulate
+bool monitorEnabled = true;
 //-------------------------------------------------------------------
 //               Targets
 long targetDistance = 2000;                 // Target distance in meters (2000 = 2k erg)

@@ -434,38 +434,44 @@ void processResponse()
             targetSeconds = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="Rest")
+      else if(variable == "Rest")
       {
             intervalSeconds = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="Intervals")
+      else if(variable == "Intervals")
       {
             numIntervals = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="TargetDistance")
+      else if(variable == "TargetDistance")
       {
-            numIntervals = SerialStr.toInt();
+            targetDistance = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="TargetTime")
+      else if(variable == "TargetTime")
       {
             targetSeconds = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="StartInTenths")
+      else if(variable == "StartInTenths")
       {
             distancem = 0;
             Serial.print( "   = ");
             Serial.println(SerialStr);
             raceStartTimems = millis() + SerialStr.toInt()*100;
       }
-      else if(variable=="Restart")
+      else if(variable == "NewSession")
+      {
+        distancem = 0;
+        raceStartTimems = 0;
+        startTimems = 0;
+      }
+      else if(variable == "Restart")
       {
         ESP.restart();
       }
-      else if(variable =="DumpRPM")
+      else if(variable == "DumpRPM")
       {
         dumprpms();
       }
@@ -478,6 +484,10 @@ void processResponse()
         Serial.println("restarting in 200ms");
         delay(200);
         ESP.restart();
+      }
+      else if(variable == "zerodistance")
+      {
+        distancem = 0;
       }
       else 
       {

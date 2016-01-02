@@ -25,37 +25,38 @@ void processSerial()
     {
       Serial.print(variable);
       Serial.print(" ");
-      if(variable =="Session")
+      if(variable == "Session")
       {
             sessionType = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="Interval")
+      else if(variable == "Interval")
       {
             targetSeconds = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="Rest")
+      else if(variable == "Rest")
       {
             intervalSeconds = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="Intervals")
+      else if(variable == "Intervals")
       {
             numIntervals = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="TargetDistance")
+      else if(variable == "TargetDistance")
       {
-            numIntervals = SerialStr.toInt();
+            targetDistance = SerialStr.toInt();
+            distancem = 0;
             Serial.println(F("Set"));
       }
-      else if(variable =="TargetTime")
+      else if(variable == "TargetTime")
       {
             targetSeconds = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="DumpRPM")
+      else if(variable == "DumpRPM")
       {
             dumprpms();
       }

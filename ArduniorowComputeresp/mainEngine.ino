@@ -289,9 +289,10 @@ void registerClick()
           lastCalcChangeus = uTime;
           if(sessionType== DISTANCE)
           {
-            if(distancem > targetDistance)
+            if(distancem >= targetDistance)
             {
               writeStrokeRow();
+              monitorEnabled = false;
             }
           }
     if((mTime-startTimems)/1000 > targetSeconds)

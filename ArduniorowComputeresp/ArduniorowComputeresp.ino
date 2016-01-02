@@ -85,28 +85,31 @@ void loop()
   {
     statusStr = "Race%20Start%20in%20" + (mTime-raceStartTimems)/1000; + "%20Seconds ";
   }
-  if(analogSwitch)
+  if(monitorEnabled)
   {
-    doAnalogRead();
-  }
-  else
-  {
-    val = digitalRead(switchPin);            // read input value and store it in val                       
-  }
-   if (val != buttonState && val == LOW && (uTime- lastStateChangeus) >5000)            // the button state has changed!
-    { 
-      registerClick();
-      lastStateChangeus=uTime;
-    }
-    if((millis()-mTime) >=10)
+    if(analogSwitch)
     {
-      Serial.print(F("warning - loop took (ms):"));
-      Serial.println(millis()-mTime);
+      doAnalogRead();
     }
-    if((mTime - lastStrokeSentms) > msToResendSplit)
-    {//update display if we haven't sent an update for two seconds.
-      writeStrokeRow();
+    else
+    {
+      val = digitalRead(switchPin);            // read input value and store it in val                       
     }
+     if (val != buttonState && val == LOW && (uTime- lastStateChangeus) >5000)            // the button state has changed!
+      { 
+        registerClick();
+        lastStateChangeus=uTime;
+      }
+      if((millis()-mTime) >=10)
+      {
+        Serial.print(F("warning - loop took (ms):"));
+        Serial.println(millis()-mTime);
+      }
+      if((mTime - lastStrokeSentms) > msToResendSplit)
+      {//update display if we haven't sent an update for two seconds.
+        writeStrokeRow();
+      }
+  }
   buttonState = val;                       // save the new state in our variable
 }
 
