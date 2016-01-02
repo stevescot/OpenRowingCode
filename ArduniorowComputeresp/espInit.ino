@@ -16,7 +16,7 @@ rowWiFi RowServer("row.intelligentplant.com","row");
 
 void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int spm, int PowerArray[])
 {
-  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery,spm, PowerArray, nextPower);
+  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery,spm, PowerArray, nextPower, statusStr);
 }
 
 void setupWiFi() {
@@ -120,6 +120,7 @@ String getMac()
 }
 
 int testWifi(char esid[], char epass[]) {
+  WiFi.mode(WIFI_STA);
   int c = 0;
   int x = 0;
     if(epass != "")
@@ -460,9 +461,13 @@ void processResponse()
             Serial.println(SerialStr);
             raceStartTimems = millis() + SerialStr.toInt()*100;
       }
+      else if(variable=="Restart")
+      {
+        ESP.restart();
+      }
       else if(variable =="DumpRPM")
       {
-            dumprpms();
+        dumprpms();
       }
       else if(variable == "reset")
       {

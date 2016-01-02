@@ -69,6 +69,7 @@ unsigned int lastDriveTimems = 0;           // time that the last drive took in 
 float secondsDecel =  0;                    // number of seconds spent decelerating - this changes as the deceleration happens
 float previousSecondsDecel = 0;             // seconds decelerating from the previous recovery (doesn't change during the recovery)
 unsigned long lastCalcChangeus = 0;         // the time of the last click that caused calculations.
+String statusStr = "";                      //status as shown on website.
 //-------------------------------------------------------------------
 //               strokes
 unsigned int totalStroke = 0;

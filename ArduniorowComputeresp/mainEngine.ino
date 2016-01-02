@@ -372,6 +372,8 @@ void showInterval(long numSeconds)
     #ifdef UseLCD
       writeTimeLeft(startTime+numSeconds-currentTime);
     #endif
+    //this wont work until we pull intervals out of this loop.
+    //statusStr = "Interval%20" + startTime+numSeconds-currentTime + "%20seconds";
   }
   Serial.println(F("Interval Over"));
 }

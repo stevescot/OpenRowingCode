@@ -11,7 +11,7 @@ public:
 	rowWiFi(const char *host, const char *path);
 	rowWiFi();
   int Register(String MAC, String Name);
-	int sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int spm, int PowerArray[],int PowerSamples);
+	int sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int spm, int PowerArray[],int PowerSamples, String statusstr);
 	int finishSend();
   int connect();
   WiFiClient* wificlient;

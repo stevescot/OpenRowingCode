@@ -80,6 +80,11 @@ void loop()
   uTime = micros(); 
   processSerial();
   processResponse();
+  statusStr = "";
+  if(raceStartTimems == 0 || mTime > raceStartTimems)
+  {
+    statusStr = "Race%20Start%20in%20" + (mTime-raceStartTimems)/1000; + "%20Seconds ";
+  }
   if(analogSwitch)
   {
     doAnalogRead();
