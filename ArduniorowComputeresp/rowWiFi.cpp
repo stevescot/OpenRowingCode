@@ -62,7 +62,7 @@ int rowWiFi::Register(String MAC, String Name)
 }
 
 
-int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int spm,  int PowerArray[],int PowerSamples, String statusstr)
+int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int spm,  int PowerArray[],int PowerSamples, String statusstr, int lastCommand)
 {
 	Serial.println(F("sendSplit"));
 	if (connect())
@@ -99,6 +99,8 @@ int rowWiFi::sendSplit(String MAC, unsigned long msfromStart, float strokeDistan
       request += spm;
       request += "&status=";
       request += statusstr;
+      request += "&lc=";
+      request += lastCommand;
       if(i==0) request +=0;
 			request += " HTTP/1.1\r\nHost: "; 
 			request += _host;

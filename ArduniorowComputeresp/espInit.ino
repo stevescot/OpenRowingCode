@@ -7,6 +7,7 @@ WiFiServer server(80);
 DNSServer         dnsServer;              // Create the DNS object
 const byte        DNS_PORT = 53;          // Capture DNS requests on port 53
 String st, host, site;
+int lastCommand = -1;
 //SSID when in unassociated mode.
 const char * ssid = "IProw";
 //name of this node.
@@ -16,7 +17,7 @@ rowWiFi RowServer("row.intelligentplant.com","row");
 
 void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int spm, int PowerArray[])
 {
-  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery,spm, PowerArray, nextPower, statusStr);
+  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery,spm, PowerArray, nextPower, statusStr, lastCommand);
 }
 
 void setupWiFi() {
@@ -463,9 +464,7 @@ void processResponse()
       }
       else if(variable == "NewSession")
       {
-        distancem = 0;
-        raceStartTimems = 0;
-        startTimems = 0;
+        resetSession();
       }
       else if(variable == "Restart")
       {
@@ -484,6 +483,10 @@ void processResponse()
         Serial.println("restarting in 200ms");
         delay(200);
         ESP.restart();
+      }
+      else if(variable == "lastCommand")
+      {
+        lastCommand = SerialStr.toInt();
       }
       else if(variable == "zerodistance")
       {

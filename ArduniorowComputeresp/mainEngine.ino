@@ -428,3 +428,26 @@ int getRpm(short offset)
     }
   return rpmHistory[index];
 }
+
+void resetSession()
+{
+  distancem = 0;
+  raceStartTimems = 0;
+  startTimems = 0;
+  lastStrokeClicks = 0;
+  lastStrokeTimems = 0;
+  driveEndms = 0;
+  recoveryEndms = 0;
+  lastDriveTimems = 0;
+  secondsDecel = 0;
+  previousSecondsDecel = 0;
+  lastCalcChangeus =0;
+  previousSecondsDecel = 0;
+  statusStr = "";
+  totalStroke = 0;
+  split = 0;                            // split time for last stroke in seconds
+  power = 0;                            // last stroke power in watts
+  spm = 0;                               // current strokes per minute.  
+  distancem = 0;                        // distance rowed in meters.
+  recoveryToDriveRatio = 0;
+}

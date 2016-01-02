@@ -160,3 +160,4 @@ int median(int array[], int num){
   return ((new_array[(num/2)-1] + new_array[num/2]) / 2); 
     }
 }
+
