@@ -77,6 +77,7 @@ void loop()
   mTime = millis();
   uTime = micros(); 
   processSerial();
+  processResponse();
   if(analogSwitch)
   {
     doAnalogRead();
@@ -95,7 +96,7 @@ void loop()
       Serial.print(F("warning - loop took (ms):"));
       Serial.println(millis()-mTime);
     }
-    if((mTime - lastStrokeSentms) > 2000)
+    if((mTime - lastStrokeSentms) > 3000)
     {//update display if we haven't sent an update for two seconds.
       writeStrokeRow();
     }
@@ -122,7 +123,7 @@ void writeStrokeRow()
   }
   else 
   {
-    splitDistance = 1;
+    splitDistance = 0.00000001;
   }
   SendSplit(mTime, splitDistance, distancem, lastDriveTimems, strokems - lastDriveTimems, powerArray);
 }

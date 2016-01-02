@@ -165,6 +165,8 @@ void getDragFactor()
 //take uTime and mTime and use them to calculate all of the figures we need given a click from the wheel.
 void registerClick()
 {
+  if(raceStartTimems == 0 || mTime > raceStartTimems)
+  {//we are racing and it's started, or we aren't racing, so register clicks
   currentrot ++;
       clicks++;
       if(currentrot >= clicksPerCalc)
@@ -273,6 +275,13 @@ void registerClick()
           }
           lastRotationus = timeTakenus;
           lastCalcChangeus = uTime;
+          if(sessionType== DISTANCE)
+          {
+            if(distancem > targetDistance)
+            {
+              writeStrokeRow();
+            }
+          }
     if((mTime-startTimems)/1000 > targetSeconds)
     {
       switch(sessionType)
@@ -304,6 +313,7 @@ void registerClick()
         break;
       }
     }
+  }
   }
 }
 

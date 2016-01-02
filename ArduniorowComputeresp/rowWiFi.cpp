@@ -26,7 +26,7 @@ int rowWiFi::connect()
 	}
 	else
 	{
-    _client.flush();//get rid of any returned data - one way connection
+    //_client.flush();//get rid of any returned data - one way connection
 		return true;
 	}
 }

@@ -53,6 +53,7 @@ float I = 0.04;                             // moment of  interia of the wheel -
 float mStrokePerRotation = 0;               // relation from rotation to meters of pull on the handle
 //-------------------------------------------------------------------
 //               timing
+unsigned long raceStartTimems = 0;                    // time to start in race.
 unsigned long uTime;                        // time of tick in microseconds
 unsigned long mTime;                        // time of tick in milliseconds
 unsigned long lastStateChangeus;            // time of last click
