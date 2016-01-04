@@ -138,6 +138,7 @@ void loop()
           //reset lastStateChange (too long ago anyway, and will allow us to wake and test for a bit.
           lastStateChangeus = uTime;
           WiFi.disconnect();
+          WiFi.mode(WIFI_OFF);
           if((raceStartTimems > 0) && (mTime < raceStartTimems))
           {
             if(mTime+20000 > raceStartTimems)
