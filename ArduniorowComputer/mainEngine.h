@@ -35,6 +35,7 @@
 //               Erg types
 short ergType = ERGTYPEVFIT;                // erg type currently selected.
 short boatType = BOAT4;                     // boat type to simulate
+bool monitorEnabled = true;
 //-------------------------------------------------------------------
 //               Targets
 long targetDistance = 2000;                 // Target distance in meters (2000 = 2k erg)
@@ -53,6 +54,7 @@ float I = 0.04;                             // moment of  interia of the wheel -
 float mStrokePerRotation = 0;               // relation from rotation to meters of pull on the handle
 //-------------------------------------------------------------------
 //               timing
+unsigned long raceStartTimems = 0;                    // time to start in race.
 unsigned long uTime;                        // time of tick in microseconds
 unsigned long mTime;                        // time of tick in milliseconds
 unsigned long lastStateChangeus;            // time of last click
@@ -68,6 +70,7 @@ unsigned int lastDriveTimems = 0;           // time that the last drive took in 
 float secondsDecel =  0;                    // number of seconds spent decelerating - this changes as the deceleration happens
 float previousSecondsDecel = 0;             // seconds decelerating from the previous recovery (doesn't change during the recovery)
 unsigned long lastCalcChangeus = 0;         // the time of the last click that caused calculations.
+String statusStr = "";                      //status as shown on website.
 //-------------------------------------------------------------------
 //               strokes
 unsigned int totalStroke = 0;
@@ -87,7 +90,7 @@ float k = 0.000185;                         // drag factor nm/s/s (displayed *10
 //               Stats for display
 float split = 0;                            // split time for last stroke in seconds
 float power = 0;                            // last stroke power in watts
-byte spm = 0;                               // current strokes per minute.  
+int spm = 0;                               // current strokes per minute.  
 float distancem = 0;                        // distance rowed in meters.
 float recoveryToDriveRatio = 0;             // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
 
@@ -157,3 +160,4 @@ int median(int array[], int num){
   return ((new_array[(num/2)-1] + new_array[num/2]) / 2); 
     }
 }
+

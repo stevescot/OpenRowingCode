@@ -3,6 +3,9 @@
 // Serial interface for the row computer
 // allows the following commands:
 //               Serial Interface variables
+
+
+#include <EEPROM.h>
 String SerialStr = "";                        // string to hold next serial command.
 String variable = "";                   // variable to set 
 //const char * value = "";                    // new value for the variable above.
@@ -22,39 +25,50 @@ void processSerial()
     {
       Serial.print(variable);
       Serial.print(" ");
-      if(variable =="Session")
+      if(variable == "Session")
       {
             sessionType = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="Interval")
+      else if(variable == "Interval")
       {
             targetSeconds = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="Rest")
+      else if(variable == "Rest")
       {
             intervalSeconds = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="Intervals")
+      else if(variable == "Intervals")
       {
             numIntervals = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="TargetDistance")
+      else if(variable == "TargetDistance")
       {
-            numIntervals = SerialStr.toInt();
+            targetDistance = SerialStr.toInt();
+            distancem = 0;
             Serial.println(F("Set"));
       }
-      else if(variable =="TargetTime")
+      else if(variable == "TargetTime")
       {
             targetSeconds = SerialStr.toInt();
             Serial.println(F("Set"));
       }
-      else if(variable =="DumpRPM")
+      else if(variable == "DumpRPM")
       {
             dumprpms();
+      }
+      else if(variable == "reset")
+      {
+        Serial.println("resetting");
+        EEPROM.begin(512);
+        EEPROM.write(511,'\0');
+        EEPROM.commit();
+        Serial.println("restarting in 200ms");
+        delay(200);
+        ESP.restart();
       }
       else 
       {

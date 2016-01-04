@@ -67,9 +67,7 @@ void setErgType(short newErgType)
     case ERGTYPEVFIT:
         //V-Fit rower with tach.
         analogSwitch = false;
-        //experimental method to find moment of inertia.
-        //https://www.youtube.com/watch?v=m9iHEanmNWc
-        I = 0.032;
+        I = 0.03;
         clicksPerRotation = 1;
         clicksPerCalc = 1;
         k = 0.000085;  
@@ -164,9 +162,23 @@ void getDragFactor()
   }
 }
 
+unsigned long getCurrentTimems()
+{
+  if(startTimems!=0)
+  {
+    return mTime - startTimems;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
 //take uTime and mTime and use them to calculate all of the figures we need given a click from the wheel.
 void registerClick()
 {
+  if(raceStartTimems == 0 || mTime > raceStartTimems)
+  {//we are racing and it's started, or we aren't racing, so register clicks
   currentrot ++;
       clicks++;
       if(currentrot >= clicksPerCalc)
@@ -275,6 +287,14 @@ void registerClick()
           }
           lastRotationus = timeTakenus;
           lastCalcChangeus = uTime;
+          if(sessionType== DISTANCE)
+          {
+            if(distancem >= targetDistance)
+            {
+              writeStrokeRow();
+              monitorEnabled = false;
+            }
+          }
     if((mTime-startTimems)/1000 > targetSeconds)
     {
       switch(sessionType)
@@ -306,6 +326,7 @@ void registerClick()
         break;
       }
     }
+  }
   }
 }
 
@@ -352,6 +373,8 @@ void showInterval(long numSeconds)
     #ifdef UseLCD
       writeTimeLeft(startTime+numSeconds-currentTime);
     #endif
+    //this wont work until we pull intervals out of this loop.
+    //statusStr = "Interval%20" + startTime+numSeconds-currentTime + "%20seconds";
   }
   Serial.println(F("Interval Over"));
 }
@@ -404,4 +427,27 @@ int getRpm(short offset)
       index += numRpms;
     }
   return rpmHistory[index];
+}
+
+void resetSession()
+{
+  distancem = 0;
+  raceStartTimems = 0;
+  startTimems = 0;
+  lastStrokeClicks = 0;
+  lastStrokeTimems = 0;
+  driveEndms = 0;
+  recoveryEndms = 0;
+  lastDriveTimems = 0;
+  secondsDecel = 0;
+  previousSecondsDecel = 0;
+  lastCalcChangeus =0;
+  previousSecondsDecel = 0;
+  statusStr = "";
+  totalStroke = 0;
+  split = 0;                            // split time for last stroke in seconds
+  power = 0;                            // last stroke power in watts
+  spm = 0;                               // current strokes per minute.  
+  distancem = 0;                        // distance rowed in meters.
+  recoveryToDriveRatio = 0;
 }
