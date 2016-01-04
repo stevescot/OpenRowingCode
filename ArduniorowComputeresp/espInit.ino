@@ -31,6 +31,7 @@ void WiFiEnsureConnected()
 {
   if(WiFi.status() != WL_CONNECTED)
   {
+    wifi_set_sleep_type(MODEM_SLEEP_T);
     WiFi.mode(WIFI_STA);
     WiFi.begin(esid,epass);
     updateStatus("Connected");

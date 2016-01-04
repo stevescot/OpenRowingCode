@@ -150,6 +150,7 @@ void loop()
           {//stop for a couple of seconds to save power, then recheck for maxTimeForPulseus
             delay(2000);
             sleep = true;
+            wifi_set_sleep_type(LIGHT_SLEEP_T);
           }
         }
     //  }
