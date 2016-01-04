@@ -146,16 +146,14 @@ void loop()
           {
             if(mTime+20000 > raceStartTimems)
             {
-              goToSleep();
-              delay(raceStartTimems - mTime - 5000);
+              goToSleep(raceStartTimems - mTime - 5000);
               wakeUp();
             }
             
           }
           else
           {//stop for a couple of seconds to save power, then recheck for maxTimeForPulseus
-            goToSleep();
-            delay(2000);
+            goToSleep(2000);
           }
         }
     //  }
@@ -163,7 +161,7 @@ void loop()
   buttonState = val;                       // save the new state in our variable
   if(sleep) 
   {//we are in sleep mode, so don't read analog more frequently than we need to to realise we are spinning
-    delay(1);
+    goToSleep(1);
   }
 }
 

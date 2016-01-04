@@ -38,7 +38,7 @@ void wakeUp()
   }
 }
 
-void goToSleep()
+void goToSleep(unsigned int ms)
 {
   if(!sleep)
   {
@@ -50,7 +50,10 @@ void goToSleep()
     WiFi.disconnect();
     WiFi.mode(WIFI_OFF);    
   }
-  WiFi.forceSleepBegin(5000000);
+  Serial.println("sleeping for");
+  Serial.println(ms);
+  WiFi.forceSleepBegin(ms*1000);
+  delay(ms);
 }
 
 void setupWiFi() {
