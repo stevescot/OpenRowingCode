@@ -2,16 +2,22 @@
  *  esp8266 version for wifi
  * principles behind calculations are here : http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7
  */
-//#define newAPI  - if we have the new API - which has error codes
-
+ 
+// #define DEBUG
+//#define DEBUG_OUTPUT Serial
+#define newAPI 
+// - if we have the new API - which has error codes
+String MAC ="";                  // the MAC address of your Wifi shield
+int lastCommand = -1;
 extern "C" {
   #include "user_interface.h"
+  #if ndef newAPI
   uint16 readvdd33(void);
-  bool wifi_set_sleep_type(enum sleep_type type);
-  enum sleep_type wifi_get_sleep_type(void);
+  bool wifi_set_sleep_type(enum sleep_type_t type);
+  enum sleep_type_t wifi_get_sleep_type(void);
+ #endif
 }
 
-#include "rowWiFi.h"
 #include <Arduino.h>
 
 #include <ESP8266WiFi.h>
@@ -32,7 +38,7 @@ const byte switchPin = 2;                     // switch is connected to GPIO2
 const byte holdPin = 0;                       // pin to hold CH_PD high = GPIO0
 const byte analogPin = A0;                    // analog pin (Concept2)
 //const int msToResendSplit = 1000;
-const int sleepTimeus = 1000000;                 // how long with no input before going to low power.
+const int sleepTimeus = 10000000;                 // how long with no input before going to low power.
 const int maxTimeForPulseus = 50000;
 //-------------------------------------------------------------------
 //               reed (switch) handling
@@ -48,7 +54,7 @@ void setup()
   pinMode(holdPin, OUTPUT);  // sets GPIO 0 to output
   digitalWrite(holdPin, HIGH);  // sets GPIO 0 to high (this holds CH_PD high even if the PIR output goes low)
   Serial.begin(115200);                    // Set up serial communication at 115200bps
-  Serial.setDebugOutput(true);
+  //Serial.setDebugOutput(true);
   Serial.println(F("startup"));
   Serial.print(F("Flash Size:"));
   Serial.println(ESP.getFlashChipSize());
@@ -110,10 +116,9 @@ void loop()
     }
      if (val != buttonState && val == LOW && (uTime- lastStateChangeus) >5000)            // the button state has changed!
       { 
+        wakeUp();
         registerClick();
         lastStateChangeus=uTime;
-        sleep=false;
-        WiFiEnsureConnected();
       }
       if((millis()-mTime) >=10)
       {
@@ -123,7 +128,7 @@ void loop()
     //  if((mTime - lastStrokeSentms) > msToResendSplit)
     //  {//update display if we haven't sent an update for two seconds.
     //(raceStartTimems == 0 || mTime > raceStartTimems)
-        if((lastStateChangeus > uTime + sleepTimeus) || (lastStateChangeus > uTime + maxTimeForPulseus && sleep))
+        if((lastStateChangeus + sleepTimeus < uTime) || (lastStateChangeus + maxTimeForPulseus < uTime  && sleep))
         {//powersave after 10 seconds of no data.
           updateStatus("Sleeping");
 //          if(!analogSwitch)
@@ -137,20 +142,20 @@ void loop()
 //          }
           //reset lastStateChange (too long ago anyway, and will allow us to wake and test for a bit.
           lastStateChangeus = uTime;
-          WiFi.disconnect();
-          WiFi.mode(WIFI_OFF);
           if((raceStartTimems > 0) && (mTime < raceStartTimems))
           {
             if(mTime+20000 > raceStartTimems)
-            //wait before reconnecting;
-            delay(raceStartTimems - mTime - 5000);
-            WiFiEnsureConnected();
+            {
+              goToSleep();
+              delay(raceStartTimems - mTime - 5000);
+              wakeUp();
+            }
+            
           }
           else
           {//stop for a couple of seconds to save power, then recheck for maxTimeForPulseus
+            goToSleep();
             delay(2000);
-            sleep = true;
-            wifi_set_sleep_type(LIGHT_SLEEP_T);
           }
         }
     //  }
@@ -184,7 +189,7 @@ void writeStrokeRow()
   {
     splitDistance = 0.00000001;
   }
-  SendSplit(getCurrentTimems(), splitDistance, distancem, lastDriveTimems, strokems - lastDriveTimems, spm, powerArray);
+  sendSplit(MAC, getCurrentTimems(), splitDistance, distancem, lastDriveTimems, strokems - lastDriveTimems, spm, powerArray, nextPower, statusStr, lastCommand);
 }
 
 void checkUpdate()

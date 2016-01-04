@@ -1,41 +1,56 @@
 #include "ESP8266WiFi.h"
-#include "rowWifi.h"
 #include <EEPROM.h>
 WiFiClient thisclient;
 WiFiServer server(80);
 #include "./DNSServer.h"                  // Patched lib
 DNSServer         dnsServer;              // Create the DNS object
 const byte        DNS_PORT = 53;          // Capture DNS requests on port 53
-String st, host, site;
-int lastCommand = -1;
+String st;//, host, site;
+
 //SSID when in unassociated mode.
 const char * ssid = "IProw";
 //name of this node.
 String myName = "";
-String MAC;                  // the MAC address of your Wifi shield
 char esid[32];
-char epass[64] ;
-rowWiFi RowServer("row.intelligentplant.com","row");
+char epass[64];
+const char * _host = "row.intelligentplant.com";
+const char * _path = "row";
 
 void updateStatus(String newStatus)
 {
-  RowServer.sendSplit(MAC,0,-1,-1,0,0,0,{0},0,newStatus,0);
+ // RowServer.sendSplit(MAC,0,-1,-1,0,0,0,PowerArray,1,newStatus,0);
 }
 
-void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int spm, int PowerArray[])
+void wakeUp()
 {
-  RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery,spm, PowerArray, nextPower, statusStr, lastCommand);
-}
-
-void WiFiEnsureConnected()
-{
-  if(WiFi.status() != WL_CONNECTED)
+  if(sleep)
   {
+    //Serial.begin(115200);
+    WiFi.forceSleepWake();
     wifi_set_sleep_type(MODEM_SLEEP_T);
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(esid,epass);
-    updateStatus("Connected");
+    if(WiFi.status() != WL_CONNECTED)
+    {
+      WiFi.mode(WIFI_STA);
+      WiFi.begin(esid,epass);
+      updateStatus("Connected");
+    }
+    sleep=false;
   }
+}
+
+void goToSleep()
+{
+  if(!sleep)
+  {
+    //Serial.end();
+    sleep = true;
+    thisclient.stop();
+    delay(1000);
+    wifi_set_sleep_type(LIGHT_SLEEP_T);
+    WiFi.disconnect();
+    WiFi.mode(WIFI_OFF);    
+  }
+  WiFi.forceSleepBegin(5000000);
 }
 
 void setupWiFi() {
@@ -43,22 +58,9 @@ void setupWiFi() {
   st.reserve(0);
   EEPROM.begin(512);
   delay(10);
-  byte mac[6];   
-  WiFi.macAddress(mac);
-  MAC = "";
-  for(int i=0; i<6;i++)
-  {
-    MAC += String(mac[i],16);
-    //if we want http colons:
-    //if(i < 5) MAC +="%3A";
-  }
-  Serial.println();
-  Serial.println();
   Serial.println(F("Startup"));
   // read eeprom for ssid and pass
   Serial.println(F("Reading EEPROM ssid"));
-
-  
   bool foundFlag = false;
   if(EEPROM.read(511) == 'r')
     {
@@ -77,7 +79,7 @@ void setupWiFi() {
       }
     Serial.print(F("PASS: "));
     Serial.println(epass);  
-    host.reserve(64);
+/*    host.reserve(64);
     for (int i = 96; i < 160; i++)
     {
       if(EEPROM.read(i) != 0)
@@ -86,7 +88,7 @@ void setupWiFi() {
         }
     }
     Serial.print(F("Gestalt: " ));
-    Serial.println(host);
+    Serial.println(host);*/
     myName.reserve(40);
     for (int i = 160; i < 300; i++)
     {
@@ -97,6 +99,7 @@ void setupWiFi() {
     }
     Serial.print(F("MyName: " ));
     Serial.println(myName);
+    /*
     site.reserve(20);
     for(int i = 300; i < 320; i++)
     {
@@ -104,10 +107,11 @@ void setupWiFi() {
         {
           site += char(EEPROM.read(i));
         }
-    }
+    }*/
   }
+  /*
   Serial.print(F("Site: "));
-  Serial.println(site);
+  Serial.println(site);*/
   if ( esid != "" && foundFlag ) {
       // test esid 
       Serial.print(F("connecting to : "));
@@ -128,8 +132,19 @@ void setupWiFi() {
     //no ssid - setup access point.
     setupAP(); 
   }
-  RowServer.wificlient = &thisclient;
-  RowServer.Register(MAC, myName);
+    byte mac[6];   
+  WiFi.macAddress(mac);
+  MAC = "";
+  for(int i=0; i<6;i++)
+  {
+    Serial.println("MAC:" + String(mac[i],16));
+    MAC += String(mac[i],16);
+    //if we want http colons:
+    //if(i < 5) MAC +="%3A";
+  }
+  Serial.println(MAC);
+  Serial.println(myName);
+  Register(myName);
 }
 
 String getMac()
@@ -522,6 +537,115 @@ void processResponse()
     {
       if((char)nextChar != ' ') SerialStr += nextChar;
     }
+  }
+}
+
+int connect()
+{
+  if (!thisclient.connected())
+  {
+    Serial.println(F("connecting"));
+    Serial.println(_host);
+    delay(100);
+    thisclient.stop();
+    return thisclient.connect(_host, 80);
+  }
+  else
+  {
+  while(thisclient.available())
+  {
+    Serial.print((char)thisclient.read());
+  }
+    //_client.flush();//get rid of any returned data - one way connection
+    return true;
+  }
+}
+
+int Register(String Name)
+{
+  Serial.println(F("register"));
+  if (connect())
+  {
+    Serial.println(F("Sending to Server: ")); Serial.println(_host);
+    String request = "GET /";
+    request += _path;
+    request += "/register.aspx?m=";
+    request += MAC;
+    request += "&Name=";
+    request += Name;
+    request += " HTTP/1.1\r\nHost: "; 
+    request += _host;
+    request += "\r\nUser-Agent: IPHomeBox/1.0\r\n";
+    request += "Accept: text/html\r\n";
+    request += "Conection: keep-alive\r\n\r\n";
+    thisclient.print(request);
+    Serial.print(request);
+    return true;
+  }
+  else
+  {
+    Serial.println(F("Cannot connect to Server"));
+    return false;
+  }
+}
+
+
+int sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int spm,  int PowerArray[],int PowerSamples, String statusstr, int lastCommand)
+{
+  Serial.println(F("sendSplit"));
+  if (connect())
+  {
+    //if (!_inRequest)
+    //{
+      Serial.println(F("Sending to Server: ")); Serial.println(_host);
+      String request = "GET /";
+      request += _path;
+      request += "/upload.aspx?m=";
+      request += MAC;
+      request += "&t=";
+      request += String(msfromStart);
+      request += "&sd=";
+      request += String(strokeDistance);
+      request += "&d=";
+      request += String(totalDistancem);
+      request += "&msD=";
+      request += String(msDrive);
+      request += "&msR=";
+      request += String(msRecovery);
+      request += "&Dr=";
+      int i = 0;
+      while(PowerArray[i] != -1 && i < PowerSamples)
+      {
+        if(i > 0) 
+        {
+          request +="%2C";
+        }
+        request+=String(PowerArray[i]);  
+        i++;
+      }
+      request += "&spm=";
+      request += String(spm);
+      request += "&status=";
+      request += statusstr;
+      request += "&lc=";
+      request += lastCommand;
+      if(i==0) request +="0";
+      request += " HTTP/1.1\r\nHost: "; 
+      request += _host;
+      request += "\r\nUser-Agent: IPHomeBox/1.0\r\n";
+      request += "Accept: text/html\r\n";
+      request += "Conection: keep-alive\r\n\r\n";
+      
+      Serial.println();
+      Serial.println();
+      Serial.print(request);
+      thisclient.print(request);
+    return true;
+  }
+  else
+  {
+    Serial.println(F("Cannot connect to Server"));
+    return false;
   }
 }
 
