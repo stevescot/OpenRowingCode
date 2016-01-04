@@ -13,11 +13,27 @@ const char * ssid = "IProw";
 //name of this node.
 String myName = "";
 String MAC;                  // the MAC address of your Wifi shield
+char esid[32];
+char epass[64] ;
 rowWiFi RowServer("row.intelligentplant.com","row");
+
+void updateStatus(String newStatus)
+{
+  RowServer.sendSplit(MAC,0,-1,-1,0,0,0,{0},0,newStatus,0);
+}
 
 void SendSplit(unsigned long msfromStart, float strokeDistance,  float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int spm, int PowerArray[])
 {
   RowServer.sendSplit(MAC, msfromStart, strokeDistance, totalDistancem, msDrive, msRecovery,spm, PowerArray, nextPower, statusStr, lastCommand);
+}
+
+void WiFiEnsureConnected()
+{
+  if(WiFi.status() != WL_CONNECTED)
+  {
+    WiFi.begin(esid,epass);
+    updateStatus("Connected");
+  }
 }
 
 void setupWiFi() {
@@ -39,8 +55,7 @@ void setupWiFi() {
   Serial.println(F("Startup"));
   // read eeprom for ssid and pass
   Serial.println(F("Reading EEPROM ssid"));
-  char esid[32];
-  char epass[64] ;
+
   
   bool foundFlag = false;
   if(EEPROM.read(511) == 'r')

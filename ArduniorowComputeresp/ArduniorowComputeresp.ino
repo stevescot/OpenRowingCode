@@ -3,6 +3,14 @@
  * principles behind calculations are here : http://www.atm.ox.ac.uk/rowing/physics/ergometer.html#section7
  */
 //#define newAPI  - if we have the new API - which has error codes
+
+extern "C" {
+  #include "user_interface.h"
+  uint16 readvdd33(void);
+  bool wifi_set_sleep_type(enum sleep_type type);
+  enum sleep_type wifi_get_sleep_type(void);
+}
+
 #include "rowWiFi.h"
 #include <Arduino.h>
 
@@ -11,6 +19,7 @@
 
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
+#include <gpio.h>
 
 #include "mainEngine.h"   
 //#define debug  // uncomment this to get more verbose serial output
@@ -22,11 +31,15 @@
 const byte switchPin = 2;                     // switch is connected to GPIO2
 const byte holdPin = 0;                       // pin to hold CH_PD high = GPIO0
 const byte analogPin = A0;                    // analog pin (Concept2)
-const int msToResendSplit = 1000;
+//const int msToResendSplit = 1000;
+const int sleepTimeus = 1000000;                 // how long with no input before going to low power.
+const int maxTimeForPulseus = 50000;
 //-------------------------------------------------------------------
 //               reed (switch) handling
 int val;                                      // variable for reading the pin status
 int buttonState;                              // variable to hold the button state
+
+bool sleep = false;
 
 unsigned long lastStrokeSentms = 0;
 
@@ -99,18 +112,52 @@ void loop()
       { 
         registerClick();
         lastStateChangeus=uTime;
+        sleep=false;
+        WiFiEnsureConnected();
       }
       if((millis()-mTime) >=10)
       {
         Serial.print(F("warning - loop took (ms):"));
         Serial.println(millis()-mTime);
       }
-      if((mTime - lastStrokeSentms) > msToResendSplit)
-      {//update display if we haven't sent an update for two seconds.
-        writeStrokeRow();
-      }
+    //  if((mTime - lastStrokeSentms) > msToResendSplit)
+    //  {//update display if we haven't sent an update for two seconds.
+    //(raceStartTimems == 0 || mTime > raceStartTimems)
+        if((lastStateChangeus > uTime + sleepTimeus) || (lastStateChangeus > uTime + maxTimeForPulseus && sleep))
+        {//powersave after 10 seconds of no data.
+          updateStatus("Sleeping");
+//          if(!analogSwitch)
+//          {//digital - set wakeup on switch.
+//            //gpio_pin_wakeup_enable(GPIO_ID_PIN(switchPin),GPIO_PIN_INTR_LOLEVEL);
+//            wifi_set_sleep_type(LIGHT_SLEEP_T);
+//          }
+//          else
+//          {//switch off chip with GPIO
+//            digitalWrite(holdPin, LOW);
+//          }
+          //reset lastStateChange (too long ago anyway, and will allow us to wake and test for a bit.
+          lastStateChangeus = uTime;
+          WiFi.disconnect();
+          if((raceStartTimems > 0) && (mTime < raceStartTimems))
+          {
+            if(mTime+20000 > raceStartTimems)
+            //wait before reconnecting;
+            delay(raceStartTimems - mTime - 5000);
+            WiFiEnsureConnected();
+          }
+          else
+          {//stop for a couple of seconds to save power, then recheck for maxTimeForPulseus
+            delay(2000);
+            sleep = true;
+          }
+        }
+    //  }
   }
   buttonState = val;                       // save the new state in our variable
+  if(sleep) 
+  {//we are in sleep mode, so don't read analog more frequently than we need to to realise we are spinning
+    delay(1);
+  }
 }
 
 
@@ -140,6 +187,7 @@ void writeStrokeRow()
 
 void checkUpdate()
 {
+  updateStatus("checking for update");
   Serial.println("checking for update");
   Serial.print("Sketch size:");
   Serial.println(ESP.getSketchSize());
