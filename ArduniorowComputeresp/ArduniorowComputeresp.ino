@@ -143,17 +143,19 @@ void loop()
           //reset lastStateChange (too long ago anyway, and will allow us to wake and test for a bit.
           lastStateChangeus = uTime;
           if((raceStartTimems > 0) && (mTime < raceStartTimems))
-          {
+          {//race is coming up..
             if(mTime+20000 > raceStartTimems)
             {
-              goToSleep(raceStartTimems - mTime - 5000);
+              goToModemSleep();
+              delay(raceStartTimems - mTime - 5000);
               wakeUp();
             }
             
           }
           else
           {//stop for a couple of seconds to save power, then recheck for maxTimeForPulseus
-            goToSleep(2000);
+            goToModemSleep();
+            delay(2000);
           }
         }
     //  }
@@ -161,7 +163,7 @@ void loop()
   buttonState = val;                       // save the new state in our variable
   if(sleep) 
   {//we are in sleep mode, so don't read analog more frequently than we need to to realise we are spinning
-    goToSleep(1);
+    delay(1);
   }
 }
 

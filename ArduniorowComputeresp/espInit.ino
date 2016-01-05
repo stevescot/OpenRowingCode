@@ -27,7 +27,6 @@ void wakeUp()
   {
     //Serial.begin(115200);
     WiFi.forceSleepWake();
-    wifi_set_sleep_type(MODEM_SLEEP_T);
     if(WiFi.status() != WL_CONNECTED)
     {
       WiFi.mode(WIFI_STA);
@@ -38,22 +37,32 @@ void wakeUp()
   }
 }
 
-void goToSleep(unsigned int ms)
+void goToModemSleep()
 {
   if(!sleep)
   {
-    //Serial.end();
-    sleep = true;
+    Serial.println("switching off Wifi Modem");    
     thisclient.stop();
     delay(1000);
-    wifi_set_sleep_type(LIGHT_SLEEP_T);
+    wifi_set_sleep_type(MODEM_SLEEP_T);
     WiFi.disconnect();
     WiFi.mode(WIFI_OFF);    
+    if(WiFi.forceSleepBegin(26843455)) sleep = true;
   }
-  Serial.println("sleeping for");
-  Serial.println(ms);
-  WiFi.forceSleepBegin(ms*1000);
-  delay(ms);
+}
+
+void goToDeepSleep()
+{
+    if(!sleep)
+    {
+      Serial.println("switching off Wifi Modem and CPU");    
+      thisclient.stop();
+      delay(1000);
+      wifi_set_sleep_type(LIGHT_SLEEP_T);
+      WiFi.disconnect();
+      WiFi.mode(WIFI_OFF);    
+      if(WiFi.forceSleepBegin(26843455)) sleep = true;
+    }
 }
 
 void setupWiFi() {
