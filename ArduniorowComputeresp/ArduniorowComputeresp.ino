@@ -6,6 +6,7 @@
 // #define DEBUG
 //#define DEBUG_OUTPUT Serial
 #define newAPI 
+#define debughttp
 // - if we have the new API - which has error codes
 String MAC ="";                  // the MAC address of your Wifi shield
 int lastCommand = -1;
@@ -17,6 +18,8 @@ extern "C" {
   enum sleep_type_t wifi_get_sleep_type(void);
  #endif
 }
+
+const int maxSleep = 20000;
 
 #include <Arduino.h>
 
@@ -52,7 +55,7 @@ unsigned long lastStrokeSentms = 0;
 void setup() 
 {
   pinMode(holdPin, OUTPUT);  // sets GPIO 0 to output
-  digitalWrite(holdPin, HIGH);  // sets GPIO 0 to high (this holds CH_PD high even if the PIR output goes low)
+  digitalWrite(holdPin, HIGH);  // sets GPIO 0 to high (this holds CH_PD high)
   Serial.begin(115200);                    // Set up serial communication at 115200bps
   //Serial.setDebugOutput(true);
   Serial.println(F("startup"));
@@ -87,10 +90,6 @@ void setup()
     Serial.println(switchPin);
   }
   Serial.println(F("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor"));
-  //
-//  Serial.println("sending test row");
-//  writeStrokeRow();
-//  Serial.println("sent");
 }
 
 void loop()
@@ -118,46 +117,19 @@ void loop()
       { 
         wakeUp();
         registerClick();
+        delay(calculateSleepTime(lastStateChangeus, uTime));
         lastStateChangeus=uTime;
       }
       if((millis()-mTime) >=10)
-      {
+      {//loop took a long time, 
         Serial.print(F("warning - loop took (ms):"));
         Serial.println(millis()-mTime);
       }
-    //  if((mTime - lastStrokeSentms) > msToResendSplit)
-    //  {//update display if we haven't sent an update for two seconds.
-    //(raceStartTimems == 0 || mTime > raceStartTimems)
-        if((lastStateChangeus + sleepTimeus < uTime) || (lastStateChangeus + maxTimeForPulseus < uTime  && sleep))
-        {//powersave after 10 seconds of no data.
-          updateStatus("Sleeping");
-//          if(!analogSwitch)
-//          {//digital - set wakeup on switch.
-//            //gpio_pin_wakeup_enable(GPIO_ID_PIN(switchPin),GPIO_PIN_INTR_LOLEVEL);
-//            wifi_set_sleep_type(LIGHT_SLEEP_T);
-//          }
-//          else
-//          {//switch off chip with GPIO
-//            digitalWrite(holdPin, LOW);
-//          }
-          //reset lastStateChange (too long ago anyway, and will allow us to wake and test for a bit.
-          lastStateChangeus = uTime;
-          if((raceStartTimems > 0) && (mTime < raceStartTimems))
-          {//race is coming up..
-            if(mTime+20000 > raceStartTimems)
-            {
-              goToModemSleep();
-              delay(raceStartTimems - mTime - 5000);
-              wakeUp();
-            }
-            
-          }
-          else
-          {//stop for a couple of seconds to save power, then recheck for maxTimeForPulseus
-            goToModemSleep();
-            delay(2000);
-          }
-        }
+      if((lastStateChangeus + sleepTimeus < uTime) || (lastStateChangeus + maxTimeForPulseus < uTime  && sleep))
+      {//powersave after 10 seconds of no data.
+        updateStatus("Sleeping");          
+        sleepUntilRace();
+      }
     //  }
   }
   buttonState = val;                       // save the new state in our variable
@@ -165,6 +137,60 @@ void loop()
   {//we are in sleep mode, so don't read analog more frequently than we need to to realise we are spinning
     delay(1);
   }
+}
+
+//calculate the time to sleep before attempting to read the state of the switches.
+unsigned long calculateSleepTime(unsigned long previousClickus, unsigned long currentClickus)
+{
+    unsigned long currentTime = micros();
+    unsigned long msbetweenClicks = (currentClickus-previousClickus) / 1000 ;
+    unsigned long msAlreadyElapsed = (currentTime - currentClickus) / 1000 + 1;
+    if(msAlreadyElapsed > msbetweenClicks)
+    {
+      return 0;
+    }
+    else
+    {
+      const float fractionalIncrease = 0.5;
+      unsigned long msWithAcceleration = fractionalIncrease * (msbetweenClicks - msAlreadyElapsed);
+      if(msWithAcceleration > maxSleep)
+      {
+        return maxSleep;
+      }
+      else
+      {
+        return msWithAcceleration;
+      }
+    }
+}
+
+void sleepUntilRace()
+{
+  if((raceStartTimems > 0) && (mTime < raceStartTimems))
+  {//race is coming up..
+  if(mTime+20000 > raceStartTimems)
+  {
+    goToModemSleep();
+    delay(raceStartTimems - mTime - 5000);
+    wakeUp();
+  }
+  }
+  else
+  {//stop for a couple of seconds to save power, then recheck for maxTimeForPulseus
+    goToModemSleep();
+    delay(2000);
+    lastStateChangeus = uTime;//reset lastStateChange so that we monitor for a while after our two second delay.
+  }
+  //          if(!analogSwitch)
+//          {//digital - set wakeup on switch.
+//            gpio_pin_wakeup_enable(GPIO_ID_PIN(switchPin),GPIO_PIN_INTR_LOLEVEL);
+//            wifi_set_sleep_type(LIGHT_SLEEP_T);
+//          }
+//          else
+//          {//switch off chip with GPIO
+//            digitalWrite(holdPin, LOW);
+//          }
+          //reset lastStateChange (too long ago anyway, and will allow us to wake and test for a bit.
 }
 
 

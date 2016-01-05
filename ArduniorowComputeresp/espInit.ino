@@ -538,9 +538,11 @@ void processResponse()
       }
       else 
       {
+        #ifdef debughttp
           Serial.println(F(" Unreckognised"));
           Serial.println();
           Serial.println(SerialStr);
+         #endif
       }
       SerialStr = "";
       variable = "";
@@ -556,29 +558,27 @@ int connect()
 {
   if (!thisclient.connected())
   {
+    #ifdef debughttp
     Serial.println(F("connecting"));
     Serial.println(_host);
+    #endif
     delay(100);
     thisclient.stop();
     return thisclient.connect(_host, 80);
   }
-  else
-  {
-  while(thisclient.available())
-  {
-    Serial.print((char)thisclient.read());
-  }
-    //_client.flush();//get rid of any returned data - one way connection
-    return true;
-  }
+  return true;
 }
 
 int Register(String Name)
 {
+  #ifdef debughttp
   Serial.println(F("register"));
+  #endif
   if (connect())
   {
+    #ifdef debughttp
     Serial.println(F("Sending to Server: ")); Serial.println(_host);
+    #endif
     String request = "GET /";
     request += _path;
     request += "/register.aspx?m=";
@@ -596,7 +596,9 @@ int Register(String Name)
   }
   else
   {
+    #ifdef debughttp
     Serial.println(F("Cannot connect to Server"));
+    #endif
     return false;
   }
 }
@@ -607,9 +609,9 @@ int sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float
   Serial.println(F("sendSplit"));
   if (connect())
   {
-    //if (!_inRequest)
-    //{
+    #ifdef debughttp
       Serial.println(F("Sending to Server: ")); Serial.println(_host);
+    #endif
       String request = "GET /";
       request += _path;
       request += "/upload.aspx?m=";
@@ -647,10 +649,9 @@ int sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float
       request += "\r\nUser-Agent: IPHomeBox/1.0\r\n";
       request += "Accept: text/html\r\n";
       request += "Conection: keep-alive\r\n\r\n";
-      
-      Serial.println();
-      Serial.println();
+      #ifdef debughttp
       Serial.print(request);
+      #endif
       thisclient.print(request);
     return true;
   }
