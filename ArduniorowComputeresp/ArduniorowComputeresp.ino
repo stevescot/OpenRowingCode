@@ -38,7 +38,7 @@ const int maxSleep = 20000;
 //-------------------------------------------------------------------
 //               pins
 const byte switchPin = 2;                     // switch is connected to GPIO2
-const byte holdPin = 0;                       // pin to hold CH_PD high = GPIO0
+const byte wakePin   = 0;                      // pin to hold CH_PD high = GPIO0
 const byte analogPin = A0;                    // analog pin (Concept2)
 //const int msToResendSplit = 1000;
 const int sleepTimeus = 10000000;                 // how long with no input before going to low power.
@@ -54,8 +54,7 @@ unsigned long lastStrokeSentms = 0;
 
 void setup() 
 {
-  pinMode(holdPin, OUTPUT);  // sets GPIO 0 to output
-  digitalWrite(holdPin, HIGH);  // sets GPIO 0 to high (this holds CH_PD high)
+  pinMode(wakePin, INPUT);  // sets GPIO 0 to output
   Serial.begin(115200);                    // Set up serial communication at 115200bps
   //Serial.setDebugOutput(true);
   Serial.println(F("startup"));
@@ -72,8 +71,8 @@ void setup()
    pinMode(switchPin, INPUT_PULLUP);        // Set the switch pin as input
    buttonState = digitalRead(switchPin);    // read the initial state
    // set up the LCD's number of columns and rows: 
-  //analogReference(DEFAULT);
-  //analogReference(INTERNAL);
+   //analogReference(DEFAULT);
+   //analogReference(INTERNAL);
   delay(100);
   if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
   {//Concept 2 - set I and flag for analogRead.
@@ -168,12 +167,12 @@ void sleepUntilRace()
 {
   if((raceStartTimems > 0) && (mTime < raceStartTimems))
   {//race is coming up..
-  if(mTime+20000 > raceStartTimems)
-  {
-    goToModemSleep();
-    delay(raceStartTimems - mTime - 5000);
-    wakeUp();
-  }
+    if(mTime+20000 > raceStartTimems)
+    {
+      goToModemSleep();
+      delay(raceStartTimems - mTime - 5000);
+      wakeUp();
+    }
   }
   else
   {//stop for a couple of seconds to save power, then recheck for maxTimeForPulseus
@@ -181,16 +180,6 @@ void sleepUntilRace()
     delay(2000);
     lastStateChangeus = uTime;//reset lastStateChange so that we monitor for a while after our two second delay.
   }
-  //          if(!analogSwitch)
-//          {//digital - set wakeup on switch.
-//            gpio_pin_wakeup_enable(GPIO_ID_PIN(switchPin),GPIO_PIN_INTR_LOLEVEL);
-//            wifi_set_sleep_type(LIGHT_SLEEP_T);
-//          }
-//          else
-//          {//switch off chip with GPIO
-//            digitalWrite(holdPin, LOW);
-//          }
-          //reset lastStateChange (too long ago anyway, and will allow us to wake and test for a bit.
 }
 
 

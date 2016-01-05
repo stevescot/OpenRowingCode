@@ -47,7 +47,7 @@ void goToModemSleep()
     wifi_set_sleep_type(MODEM_SLEEP_T);
     WiFi.disconnect();
     WiFi.mode(WIFI_OFF);    
-    if(WiFi.forceSleepBegin(26843455)) sleep = true;
+    sleep = WiFi.forceSleepBegin();
   }
 }
 
@@ -61,7 +61,11 @@ void goToDeepSleep()
       wifi_set_sleep_type(LIGHT_SLEEP_T);
       WiFi.disconnect();
       WiFi.mode(WIFI_OFF);    
-      if(WiFi.forceSleepBegin(26843455)) sleep = true;
+      //if(!analog
+      gpio_pin_wakeup_enable(GPIO_ID_PIN(wakePin),GPIO_PIN_INTR_NEGEDGE);
+      wifi_fpm_open();
+      sleep = wifi_fpm_do_sleep(26843455);
+      //if(WiFi.forceSleepBegin(26843455)) sleep = true;
     }
 }
 
