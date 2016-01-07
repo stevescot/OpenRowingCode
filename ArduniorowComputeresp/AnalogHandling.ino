@@ -38,6 +38,11 @@ float AddGradientAndGetMedian(float gradient)
 void doAnalogRead()
 {//simulate a reed switch from the coil
     int analog = analogRead(analogPin);
+    #ifdef SimulateRower
+      analog =  getSimValue();
+    #else
+      analog = analogRead(analogPin);
+    #endif
     val = HIGH;
     gradient = (float)(analog - lastAnalogSwitchValue)/(uTime-lastAnalogReadus);
     if(analog== 0 && AnalogDropping) 

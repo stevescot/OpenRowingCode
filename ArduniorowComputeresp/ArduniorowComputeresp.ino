@@ -7,6 +7,8 @@
 //#define DEBUG_OUTPUT Serial
 #define newAPI 
 #define debughttp
+#define SimulateRower
+
 // - if we have the new API - which has error codes
 String MAC ="";                  // the MAC address of your Wifi shield
 int lastCommand = -1;
@@ -32,16 +34,17 @@ const int maxSleep = 20000;
 
 #include "mainEngine.h"   
 //#define debug  // uncomment this to get more verbose serial output
+//http://www.cnx-software.com/2015/10/29/getting-started-with-nodemcu-board-powered-by-esp8266-wisoc/
 //ota update : https://github.com/esp8266/Arduino/blob/master/doc/ota_updates/ota_updates.md
 //test page: http://monitoring/row/Display.html?MAC=18fe34e62748
 
 //-------------------------------------------------------------------
 //               pins
 const byte switchPin = 2;                     // switch is connected to GPIO2
-const byte wakePin   = 0;                      // pin to hold CH_PD high = GPIO0
+//const byte wakePin   = 0;                     // pin to wake with     = GPIO0
 const byte analogPin = A0;                    // analog pin (Concept2)
 //const int msToResendSplit = 1000;
-const int sleepTimeus = 10000000;                 // how long with no input before going to low power.
+const int sleepTimeus = 10000000;             // how long with no input before going to low power.
 const int maxTimeForPulseus = 50000;
 //-------------------------------------------------------------------
 //               reed (switch) handling
@@ -54,41 +57,24 @@ unsigned long lastStrokeSentms = 0;
 
 void setup() 
 {
-  pinMode(wakePin, INPUT);  // sets GPIO 0 to output
   Serial.begin(115200);                    // Set up serial communication at 115200bps
-  //Serial.setDebugOutput(true);
+  #if debug
+  Serial.setDebugOutput(true);
+  #endif
   Serial.println(F("startup"));
   Serial.print(F("Flash Size:"));
   Serial.println(ESP.getFlashChipSize());
   setupWiFi();
-  if(ESP.getFlashChipSize() > 700000)
-  {//we have enough space to update automatically
-    checkUpdate();
-  }
   Serial.println(F("done Wifi"));
   Serial.print(F("MAC:"));
   Serial.println(getMac());
-   pinMode(switchPin, INPUT_PULLUP);        // Set the switch pin as input
-   buttonState = digitalRead(switchPin);    // read the initial state
-   // set up the LCD's number of columns and rows: 
-   //analogReference(DEFAULT);
-   //analogReference(INTERNAL);
+  checkUpdate();
+  pinMode(switchPin, INPUT_PULLUP);        // Set the switch pin as input
+  buttonState = digitalRead(switchPin);    // read the initial state
   delay(100);
-  if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
-  {//Concept 2 - set I and flag for analogRead.
-    setErgType(ERGTYPEC2);
-    Serial.print("Concept 2 detected on pin ");
-    Serial.println(analogPin);
-  }
-  else
-  {
-    setErgType(ERGTYPEVFIT);
-    Serial.print(F("No Concept 2 detected on Analog pin "));
-    Serial.println(analogPin);
-    Serial.print(F("Detecting reed switch on pin "));
-    Serial.println(switchPin);
-  }
+  detectMachine();
   Serial.println(F("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor"));
+  wifi_set_sleep_type(MODEM_SLEEP_T);
 }
 
 void loop()
@@ -129,13 +115,8 @@ void loop()
         updateStatus("Sleeping");          
         sleepUntilRace();
       }
-    //  }
   }
   buttonState = val;                       // save the new state in our variable
-  if(sleep) 
-  {//we are in sleep mode, so don't read analog more frequently than we need to to realise we are spinning
-    delay(1);
-  }
 }
 
 //calculate the time to sleep before attempting to read the state of the switches.
@@ -209,6 +190,8 @@ void writeStrokeRow()
 
 void checkUpdate()
 {
+  if(ESP.getFlashChipSize() > 700000)
+  {//we have enough space to update automatically
   updateStatus("checking for update");
   Serial.println("checking for update");
   Serial.print("Sketch size:");
@@ -237,6 +220,15 @@ void checkUpdate()
                 break;
         }
 #endif
+  }
+  else
+  {
+    Serial.println("not enough room for update");
+    Serial.print("Chip Size: ");
+    Serial.println(ESP.getFlashChipSize());
+    Serial.print("Sketch Size: ");
+    Serial.println(ESP.getSketchSize());
+  }
 }
 
 
