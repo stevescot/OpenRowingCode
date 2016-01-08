@@ -16,6 +16,7 @@ char esid[32];
 char epass[64];
 const char * _host = "row.intelligentplant.com";
 const char * _path = "row";
+const int requestTimeout = 1000;
 
 void wakeUp()
 {
@@ -58,7 +59,7 @@ void goToLightSleep()
       WiFi.disconnect();
       WiFi.mode(WIFI_OFF);    
       //if(!analog
-      gpio_pin_wakeup_enable(GPIO_ID_PIN(wakePin),GPIO_PIN_INTR_NEGEDGE);
+      gpio_pin_wakeup_enable(GPIO_ID_PIN(switchPin),GPIO_PIN_INTR_NEGEDGE);
       wifi_fpm_open();
       wifi_fpm_do_sleep(26843455);
       //if(WiFi.forceSleepBegin(26843455)) sleep = true;
@@ -274,8 +275,10 @@ int mdns1(int webtype)
   Serial.println(F("New client"));
 
   // Wait for data from client to become available
-  while(client.connected() && !client.available()){
+  int i = 0;
+  while(client.connected() && !client.available() && i < requestTimeout){
     delay(1);
+    i++;
    }
   
   // Read the first line of HTTP request
