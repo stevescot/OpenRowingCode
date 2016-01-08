@@ -1,5 +1,6 @@
 #include "ESP8266WiFi.h"
 #include <EEPROM.h>
+#include "user_interface.h"
 WiFiClient thisclient;
 WiFiServer server(80);
 #include "./DNSServer.h"                  // Patched lib
@@ -15,11 +16,6 @@ char esid[32];
 char epass[64];
 const char * _host = "row.intelligentplant.com";
 const char * _path = "row";
-
-void updateStatus(String newStatus)
-{
- // RowServer.sendSplit(MAC,0,-1,-1,0,0,0,PowerArray,1,newStatus,0);
-}
 
 void wakeUp()
 {
@@ -51,7 +47,7 @@ void goToModemSleep()
   }
 }
 
-void goToDeepSleep()
+void goToLightSleep()
 {
     if(!sleep)
     {
@@ -64,7 +60,7 @@ void goToDeepSleep()
       //if(!analog
       gpio_pin_wakeup_enable(GPIO_ID_PIN(wakePin),GPIO_PIN_INTR_NEGEDGE);
       wifi_fpm_open();
-      sleep = wifi_fpm_do_sleep(26843455);
+      wifi_fpm_do_sleep(26843455);
       //if(WiFi.forceSleepBegin(26843455)) sleep = true;
     }
 }
@@ -468,85 +464,92 @@ void processResponse()
     {
       variable = SerialStr;
       SerialStr = "";
-    }
-    if(nextChar == '\n')
+    }else if(nextChar == '\n')
     {
-      Serial.print(variable);
-      Serial.print(" ");
-      if(variable =="Session")
+      if(!variable.equals(""))
       {
-            sessionType = SerialStr.toInt();
-            Serial.println(F("Set"));
-      }
-      else if(variable =="Interval")
-      {
-            targetSeconds = SerialStr.toInt();
-            Serial.println(F("Set"));
-      }
-      else if(variable == "Rest")
-      {
-            intervalSeconds = SerialStr.toInt();
-            Serial.println(F("Set"));
-      }
-      else if(variable == "Intervals")
-      {
-            numIntervals = SerialStr.toInt();
-            Serial.println(F("Set"));
-      }
-      else if(variable == "TargetDistance")
-      {
-            targetDistance = SerialStr.toInt();
-            Serial.println(F("Set"));
-      }
-      else if(variable == "TargetTime")
-      {
-            targetSeconds = SerialStr.toInt();
-            Serial.println(F("Set"));
-      }
-      else if(variable == "StartInTenths")
-      {
-            distancem = 0;
-            Serial.print( "   = ");
+        Serial.print(variable);
+        Serial.print(" ");
+        if(variable.equals("SessionType"))
+        {
+              sessionType = SerialStr.toInt();
+              Serial.println(F("Set"));
+        }
+        else if(variable.equals("Interval"))
+        {
+              targetSeconds = SerialStr.toInt();
+              Serial.println(F("Set"));
+        }
+        else if(variable.equals("Rest"))
+        {
+              intervalSeconds = SerialStr.toInt();
+              Serial.println(F("Set"));
+        }
+        else if(variable.equals("Intervals"))
+        {
+              numIntervals = SerialStr.toInt();
+              Serial.println(F("Set"));
+        }
+        else if(variable.equals("TargetDistance"))
+        {
+              targetDistance = SerialStr.toInt();
+              Serial.println(F("Set"));
+        }
+        else if(variable.equals("TargetTime"))
+        {
+              targetSeconds = SerialStr.toInt();
+              Serial.println(F("Set"));
+        }
+        else if(variable.equals("StartInTenths"))
+        {
+              distancem = 0;
+              Serial.print( "   = ");
+              Serial.println(SerialStr);
+              raceStartTimems = millis() + SerialStr.toInt()*100;
+        }
+        else if(variable.equals("NewSession"))
+        {
+          resetSession();
+        }
+        else if(variable.equals("Restart"))
+        {
+          ESP.restart();
+        }
+        else if(variable.equals("DumpRPM"))
+        {
+          dumprpms();
+        }
+        else if(variable.equals("reset"))
+        {
+          Serial.println("resetting");
+          EEPROM.begin(512);
+          EEPROM.write(511,'\0');
+          EEPROM.commit();
+          Serial.println("restarting in 200ms");
+          delay(200);
+          ESP.restart();
+        }
+        else if(variable.equals("LastCommand"))
+        {
+          lastCommand = SerialStr.toInt();
+          Serial.print("set to ");
+          Serial.println(lastCommand);
+          Serial.print("\"");
+          Serial.print(SerialStr);
+          Serial.print("\"");
+        }
+        else if(variable.equals("zerodistance"))
+        {
+          distancem = 0;
+        }
+        else 
+        {
+          #ifdef debughttp
+            Serial.println(F(" Unreckognised"));
+            Serial.println();
             Serial.println(SerialStr);
-            raceStartTimems = millis() + SerialStr.toInt()*100;
-      }
-      else if(variable == "NewSession")
-      {
-        resetSession();
-      }
-      else if(variable == "Restart")
-      {
-        ESP.restart();
-      }
-      else if(variable == "DumpRPM")
-      {
-        dumprpms();
-      }
-      else if(variable == "reset")
-      {
-        Serial.println("resetting");
-        EEPROM.begin(512);
-        EEPROM.write(511,'\0');
-        EEPROM.commit();
-        Serial.println("restarting in 200ms");
-        delay(200);
-        ESP.restart();
-      }
-      else if(variable == "lastCommand")
-      {
-        lastCommand = SerialStr.toInt();
-      }
-      else if(variable == "zerodistance")
-      {
-        distancem = 0;
-      }
-      else 
-      {
-        #ifdef debughttp
-          Serial.println(F(" Unreckognised"));
-          Serial.println();
-          Serial.println(SerialStr);
-         #endif
+           #endif
+        }
       }
       SerialStr = "";
       variable = "";
@@ -591,7 +594,7 @@ int Register(String Name)
     request += Name;
     request += " HTTP/1.1\r\nHost: "; 
     request += _host;
-    request += "\r\nUser-Agent: IPHomeBox/1.0\r\n";
+    request += "\r\nUser-Agent: IPRow/1.0\r\n";
     request += "Accept: text/html\r\n";
     request += "Conection: keep-alive\r\n\r\n";
     thisclient.print(request);
@@ -610,6 +613,7 @@ int Register(String Name)
 
 int sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float totalDistancem, unsigned long msDrive, unsigned long msRecovery, int spm,  int PowerArray[],int PowerSamples, String statusstr, int lastCommand)
 {
+  char buf[80];
   Serial.println(F("sendSplit"));
   if (connect())
   {
@@ -643,14 +647,49 @@ int sendSplit(String MAC, unsigned long msfromStart, float strokeDistance, float
       }
       request += "&spm=";
       request += String(spm);
-      request += "&status=";
-      request += statusstr;
       request += "&lc=";
-      request += lastCommand;
-      if(i==0) request +="0";
+      request += String(lastCommand);
+      if(!statusstr.equals(""))
+      {
+      request += "&status=";
+      request += urlencode(buf,statusstr);
+      }
       request += " HTTP/1.1\r\nHost: "; 
       request += _host;
-      request += "\r\nUser-Agent: IPHomeBox/1.0\r\n";
+      request += "\r\nUser-Agent: IPRow/1.0\r\n";
+      request += "Accept: text/html\r\n";
+      request += "Conection: keep-alive\r\n\r\n";
+      #ifdef debughttp
+      Serial.print(request);
+      #endif
+      thisclient.print(request);
+    return true;
+  }
+  else
+  {
+    Serial.println(F("Cannot connect to Server"));
+    return false;
+  }
+}
+
+int updateStatus(String statusstr)
+{
+  char buf[80];
+  Serial.println(F("updateStatus"));
+  if (connect())
+  {
+    #ifdef debughttp
+      Serial.println(F("Sending to Server: ")); Serial.println(_host);
+    #endif
+      String request = "GET /";
+      request += _path;
+      request += "/status.aspx?m=";
+      request += MAC;
+      request += "&status=";
+      request += urlencode(buf,statusstr);
+      request += " HTTP/1.1\r\nHost: "; 
+      request += _host;
+      request += "\r\nUser-Agent: IPRow/1.0\r\n";
       request += "Accept: text/html\r\n";
       request += "Conection: keep-alive\r\n\r\n";
       #ifdef debughttp

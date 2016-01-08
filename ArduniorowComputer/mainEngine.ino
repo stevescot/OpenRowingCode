@@ -67,7 +67,7 @@ void setErgType(short newErgType)
     case ERGTYPEVFIT:
         //V-Fit rower with tach.
         analogSwitch = false;
-        I = 0.03;
+        I = 0.048;//experimentally verified
         clicksPerRotation = 1;
         clicksPerCalc = 1;
         k = 0.000085;  

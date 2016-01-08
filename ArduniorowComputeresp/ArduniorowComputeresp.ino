@@ -19,7 +19,7 @@ extern "C" {
  #endif
 }
 
-const int maxSleep = 20000;
+const int maxSleep = 20;
 
 #include <Arduino.h>
 
@@ -41,7 +41,7 @@ const byte switchPin = 2;                     // switch is connected to GPIO2
 const byte wakePin   = 0;                      // pin to hold CH_PD high = GPIO0
 const byte analogPin = A0;                    // analog pin (Concept2)
 //const int msToResendSplit = 1000;
-const int sleepTimeus = 10000000;                 // how long with no input before going to low power.
+const int sleepTimeus = 60000000;                 // how long with no input before going to low power.
 const int maxTimeForPulseus = 50000;
 //-------------------------------------------------------------------
 //               reed (switch) handling
@@ -98,10 +98,6 @@ void loop()
   processSerial();
   processResponse();
   statusStr = "";
-  if(raceStartTimems == 0 || mTime > raceStartTimems)
-  {
-    statusStr = "Race%20Start%20in%20" + (mTime-raceStartTimems)/1000; + "%20Seconds ";
-  }
   if(monitorEnabled)
   {
     if(analogSwitch)
@@ -116,8 +112,8 @@ void loop()
       { 
         wakeUp();
         registerClick();
-        delay(calculateSleepTime(lastStateChangeus, uTime));
         lastStateChangeus=uTime;
+        //delay(calculateSleepTime(lastStateChangeus, uTime));
       }
       if((millis()-mTime) >=10)
       {//loop took a long time, 
@@ -125,16 +121,15 @@ void loop()
         Serial.println(millis()-mTime);
       }
       if((lastStateChangeus + sleepTimeus < uTime) || (lastStateChangeus + maxTimeForPulseus < uTime  && sleep))
-      {//powersave after 10 seconds of no data.
-        updateStatus("Sleeping");          
+      {//powersave after 10 seconds of no data.         
         sleepUntilRace();
       }
     //  }
   }
   buttonState = val;                       // save the new state in our variable
-  if(sleep) 
-  {//we are in sleep mode, so don't read analog more frequently than we need to to realise we are spinning
-    delay(1);
+  if(!sleep) 
+  {
+    
   }
 }
 
@@ -158,6 +153,7 @@ unsigned long calculateSleepTime(unsigned long previousClickus, unsigned long cu
       }
       else
       {
+        Serial.println(msWithAcceleration);
         return msWithAcceleration;
       }
     }
@@ -169,6 +165,7 @@ void sleepUntilRace()
   {//race is coming up..
     if(mTime+20000 > raceStartTimems)
     {
+      updateStatus("Waiting for Race"); 
       goToModemSleep();
       delay(raceStartTimems - mTime - 5000);
       wakeUp();
@@ -176,6 +173,7 @@ void sleepUntilRace()
   }
   else
   {//stop for a couple of seconds to save power, then recheck for maxTimeForPulseus
+    updateStatus("Idle - Sleeping"); 
     goToModemSleep();
     delay(2000);
     lastStateChangeus = uTime;//reset lastStateChange so that we monitor for a while after our two second delay.

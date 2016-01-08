@@ -15,66 +15,86 @@ void processSerial()
 {
   if (Serial.available() >0) {
     char nextChar = Serial.read();
-    //Serial.println(nextChar);
+    Serial.println(nextChar);
     if(nextChar == '=')
     {
       variable = SerialStr;
       SerialStr = "";
+      Serial.println("Variable " + variable);
     }
-    if(nextChar == '\n')
+    else if(nextChar == '\n' || nextChar==';')
     {
+     Serial.println("\\n"); 
       Serial.print(variable);
       Serial.print(" ");
-      if(variable == "Session")
+       if(!variable.equals(""))
       {
-            sessionType = SerialStr.toInt();
-            Serial.println(F("Set"));
-      }
-      else if(variable == "Interval")
-      {
-            targetSeconds = SerialStr.toInt();
-            Serial.println(F("Set"));
-      }
-      else if(variable == "Rest")
-      {
-            intervalSeconds = SerialStr.toInt();
-            Serial.println(F("Set"));
-      }
-      else if(variable == "Intervals")
-      {
-            numIntervals = SerialStr.toInt();
-            Serial.println(F("Set"));
-      }
-      else if(variable == "TargetDistance")
-      {
-            targetDistance = SerialStr.toInt();
-            distancem = 0;
-            Serial.println(F("Set"));
-      }
-      else if(variable == "TargetTime")
-      {
-            targetSeconds = SerialStr.toInt();
-            Serial.println(F("Set"));
-      }
-      else if(variable == "DumpRPM")
-      {
-            dumprpms();
-      }
-      else if(variable == "reset")
-      {
-        Serial.println("resetting");
-        EEPROM.begin(512);
-        EEPROM.write(511,'\0');
-        EEPROM.commit();
-        Serial.println("restarting in 200ms");
-        delay(200);
-        ESP.restart();
-      }
-      else 
-      {
-          Serial.println(F(" Unreckognised"));
+        Serial.print(variable);
+        Serial.print(" ");
+        if(variable.equals("SessionType"))
+        {
+              sessionType = SerialStr.toInt();
+              Serial.println(F("Set"));
+        }
+        else if(variable.equals("Interval"))
+        {
+              targetSeconds = SerialStr.toInt();
+              Serial.println(F("Set"));
+        }
+        else if(variable.equals("Rest"))
+        {
+              intervalSeconds = SerialStr.toInt();
+              Serial.println(F("Set"));
+        }
+        else if(variable.equals("Intervals"))
+        {
+              numIntervals = SerialStr.toInt();
+              Serial.println(F("Set"));
+        }
+        else if(variable.equals("TargetDistance"))
+        {
+              targetDistance = SerialStr.toInt();
+              Serial.println(F("Set"));
+        }
+        else if(variable.equals("TargetTime"))
+        {
+              targetSeconds = SerialStr.toInt();
+              Serial.println(F("Set"));
+        }
+        else if(variable.equals("StartInTenths"))
+        {
+              distancem = 0;
+              Serial.print( "   = ");
+              Serial.println(SerialStr);
+              raceStartTimems = millis() + SerialStr.toInt()*100;
+        }
+        else if(variable.equals("NewSession"))
+        {
+          resetSession();
+        }
+        else if(variable.equals("Restart"))
+        {
+  //        reset();
+        }
+        else if(variable.equals("DumpRPM"))
+        {
+          dumprpms();
+        }
+        else if(variable.equals("zerodistance"))
+        {
+          distancem = 0;
+        }
+        else 
+        {
+          #ifdef debughttp
+            Serial.println(F(" Unreckognised"));
+            Serial.println();
+            Serial.println(SerialStr);
+           #endif
+        }
       }
       SerialStr = "";
+      variable = "";
     }
     else
     {
