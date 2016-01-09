@@ -24,9 +24,9 @@
 
 //-------------------------------------------------------------------
 //               erg type definitions
-#define ERGTYPEVFIT  0   //  V-Fit air rower.
-#define ERGTYPEC2    1   //  Concept 2
-#define ERGTYPEC2GEN 2   //  Concept 2 with generator
+#define ERGTYPEVFIT 0 // V-Fit air rower.
+#define ERGTYPEC2 1   // Concept 2
+#define ERGTYPEC2GEN 2
 //-------------------------------------------------------------------
 //               boat type defintions.
 #define BOAT4 0
@@ -79,7 +79,7 @@ float driveLengthm = 0;                     // last stroke length in meters
 //-------------------------------------------------------------------
 //               rpm/angular Velocity
 static const short numRpms = 100;           // size of the rpm array
-int rpmHistory[numRpms];                    // array of rpm per rotation for debugging
+float rpmHistory[numRpms];                    // array of rpm per rotation for debugging
 //unsigned long microshistory[numRpms];     // array of the amount of time taken in calc/display for debugging.
 short nextRPM = 0;                          // currently measured rpm, to compare to last -index in above array.
 int peakRPM = 0;                            // highest measured rpm

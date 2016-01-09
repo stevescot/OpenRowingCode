@@ -90,7 +90,7 @@ void setErgType(short newErgType)
 }
 
 //Calculate the amount of power used to accelerate the wheel by the change in rpm for this click
-void calculateInstantaneousPower()
+float calculateInstantaneousPower()
 {
   //= I ( dω / dt ) dθ + k ω2 dθ 
   // That is for energy so all above /dt = power
@@ -103,6 +103,11 @@ void calculateInstantaneousPower()
 #ifdef debug
   Serial.print(instantaneouspower); Serial.println("W");
 #endif
+  return instantaneouspower;
+}
+
+void storeInstantaneousPower(float instantaneouspower)
+{
   if(nextPower < powerSamples && instantaneouspower > 0)
   {
     powerArray[nextPower] = instantaneouspower;
@@ -127,19 +132,22 @@ void calculateInstantaneousPower()
 void addDragFactorToArray()
 {
   float nextk = I * ((1.0/recoveryEndAngularVelocity)-(1.0/recoveryBeginAngularVelocity))/(secondsDecel)*1000000;
-  if(nextk >40 && nextk < 300 && kIndex < maxKArray)
+  if(split < 180)// split is less than 3 mins, calculate drag factor
   {
-    kArray[kIndex] = nextk;
-    kIndex ++;
-  }
-  else
-  {//dodgy k - write out to serial if debug.
-  #ifdef debug
-    Serial.print(F("k:")); Serial.print(nextk); Serial.print(F("recoverybeginrad")); Serial.print(recoveryBeginAngularVelocity); Serial.print(F("recoveryend")); Serial.print(recoveryEndAngularVelocity); Serial.print(F("recoverySeconds")); Serial.print(secondsDecel);
-    Serial.print(F(" last Recovery time ")); Serial.println(previousSecondsDecel);
-//    Serial.print(F("k:")); Serial.println(nextk); Serial.print(F("recw:")); Serial.println(recoveryBeginAngularVelocity); Serial.print(F("dw")); Serial.println(driveAngularVelocity); 
-    Serial.print(F("peakRPM")); Serial.println(peakRPM); Serial.print(F("sdecel")); Serial.println(secondsDecel);
-  #endif
+    if(nextk >40 && nextk < 300 && kIndex < maxKArray)
+    {
+      kArray[kIndex] = nextk;
+      kIndex ++;
+    }
+    else
+    {//dodgy k - write out to serial if debug.
+    #ifdef debug
+      Serial.print(F("k:")); Serial.print(nextk); Serial.print(F("recoverybeginrad")); Serial.print(recoveryBeginAngularVelocity); Serial.print(F("recoveryend")); Serial.print(recoveryEndAngularVelocity); Serial.print(F("recoverySeconds")); Serial.print(secondsDecel);
+      Serial.print(F(" last Recovery time ")); Serial.println(previousSecondsDecel);
+  //    Serial.print(F("k:")); Serial.println(nextk); Serial.print(F("recw:")); Serial.println(recoveryBeginAngularVelocity); Serial.print(F("dw")); Serial.println(driveAngularVelocity); 
+      Serial.print(F("peakRPM")); Serial.println(peakRPM); Serial.print(F("sdecel")); Serial.println(secondsDecel);
+    #endif
+    }
   }
 }
 
@@ -193,21 +201,17 @@ void registerClick()
            #endif
         }
         timeTakenus = uTime - lastCalcChangeus;
-        rpmHistory[nextRPM] = (60000000.0*clicksPerCalc/clicksPerRotation)/timeTakenus;
+        rpmHistory[nextRPM] = (float)(60000000.0*clicksPerCalc/clicksPerRotation)/timeTakenus;
         nextRPM ++;
         if(nextRPM >=numRpms) nextRPM = 0;//wrap around to the start again.
         const int rpmarraycount = 3;
-        int rpms[rpmarraycount] = {getRpm(0), getRpm(-1), getRpm(-2)};//,getRpm(-3),getRpm(-4)};
-        int currentmedianrpm = median(rpms,rpmarraycount);
-        int rpms2[rpmarraycount] = {getRpm(-3), getRpm(-4),getRpm(-5)};//,getRpm(-8),getRpm(-9)};
-        int previousmedianrpm = median(rpms2, rpmarraycount);
-        
+        float rpms[rpmarraycount] = {getRpm(0), getRpm(-1), getRpm(-2)};//,getRpm(-3),getRpm(-4)};
+        float currentmedianrpm = median(rpms,rpmarraycount);
         if(currentmedianrpm > peakRPM) peakRPM = currentmedianrpm;
         float radSec = (float)currentmedianrpm/60*2*PI;
-        float prevradSec = (float)previousmedianrpm/60*2*PI;
-        float angulardeceleration = (prevradSec-radSec)/((float)timeTakenus/1000000.0);
+        float instpow = calculateInstantaneousPower();
         //Serial.println(nextinstantaneousrpm);
-        if(radSec > prevradSec || (accelerations > consecutiveaccelerations && radSec == prevradSec))//faster, or previously going faster and the same rpm
+        if(instpow > 10)//at least 10 watts input power
           { //on first acceleration - work out the total time decelerating.
             accelerations ++;
             if(accelerations == 1 && decelerations > consecutivedecelerations) 
@@ -215,7 +219,7 @@ void registerClick()
                 nextPower = 0;
                 previousSecondsDecel = secondsDecel;
               }
-            calculateInstantaneousPower();
+            storeInstantaneousPower(instpow);
             if(accelerations == consecutiveaccelerations && decelerations > consecutivedecelerations)
               {//beginning of drive /end recovery - we have been consistently decelerating and are now consistently accelerating
                 totalStroke++;
