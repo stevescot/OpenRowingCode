@@ -26,20 +26,7 @@ void setup()
   pinMode(switchPin, INPUT_PULLUP);        // Set the switch pin as input
   Serial.begin(115200);                    // Set up serial communication at 115200bps
   buttonState = digitalRead(switchPin);    // read the initial state
-  if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
-  {//Concept 2 - set I and flag for analogRead.
-    setErgType(ERGTYPEC2);
-    Serial.print(F("Concept 2 detected on pin "));
-    Serial.println(analogPin);
-  }
-  else
-  {
-    setErgType(ERGTYPEVFIT);
-    Serial.print(F("No Concept 2 detected on Analog pin "));
-    Serial.println(analogPin);
-    Serial.print(F("Detecting reed switch on pin "));
-    Serial.println(switchPin);
-  }
+  detectMachine();
    // set up the LCD's number of columns and rows: 
   #ifdef UseLCD
     lcdSetup();

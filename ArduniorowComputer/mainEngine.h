@@ -26,6 +26,7 @@
 //               erg type definitions
 #define ERGTYPEVFIT 0 // V-Fit air rower.
 #define ERGTYPEC2 1   // Concept 2
+#define ERGTYPEC2GEN 2
 //-------------------------------------------------------------------
 //               boat type defintions.
 #define BOAT4 0

@@ -455,3 +455,30 @@ void resetSession()
   distancem = 0;                        // distance rowed in meters.
   recoveryToDriveRatio = 0;
 }
+
+void detectMachine()
+{
+  if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  HIGH) 
+  {//Concept 2 - set I and flag for analogRead.
+    setErgType(ERGTYPEC2);
+    Serial.print("Concept 2 detected on pin ");
+    Serial.println(analogPin);
+  }
+  else if(analogRead(analogPin) == 0 & digitalRead(switchPin) ==  LOW) 
+  {
+    setErgType(ERGTYPEC2GEN);
+    Serial.print("Concept 2 with generator detected on pin ");
+    Serial.println(analogPin);
+  }
+  else
+  {
+    setErgType(ERGTYPEVFIT);
+    Serial.print(F("No Concept 2 detected on Analog pin "));
+    Serial.println(analogPin);
+    Serial.print(F("Detecting reed switch on pin "));
+    Serial.println(switchPin);
+  }
+  #ifdef SimulateRower
+    setErgType(ERGTYPEC2);
+  #endif
+}
