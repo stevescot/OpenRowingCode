@@ -70,7 +70,7 @@ void setErgType(short newErgType)
         I = 0.048;//experimentally verified
         clicksPerRotation = 1;
         clicksPerCalc = 1;
-        k = 0.000085;  
+        k = 0.000175;    
         mStrokePerRotation = 0;//meters of stroke per rotation of the flywheel - V-fit.
         break;
     default:
