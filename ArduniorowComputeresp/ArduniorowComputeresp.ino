@@ -7,7 +7,7 @@
 //#define DEBUG_OUTPUT Serial
 #define newAPI 
 #define debughttp
-#define SimulateRower
+//#define SimulateRower
 
 // - if we have the new API - which has error codes
 String MAC ="";                  // the MAC address of your Wifi shield
@@ -63,7 +63,7 @@ void setup()
   #endif
   Serial.println(F("startup"));
   Serial.print(F("Flash Size:"));
-  Serial.println(ESP.getFlashChipSize());
+  Serial.println(ESP.getFlashChipSizeByChipId());
   setupWiFi();
   Serial.println(F("done Wifi"));
   Serial.print(F("MAC:"));
@@ -74,7 +74,7 @@ void setup()
   delay(100);
   detectMachine();
   Serial.println(F("Stroke\tSPM\tSplit\tWatts\tDistance\tTime\tDragFactor"));
-  wifi_set_sleep_type(MODEM_SLEEP_T);
+ // wifi_set_sleep_type(MODEM_SLEEP_T);
 }
 
 void loop()
@@ -108,7 +108,7 @@ void loop()
       }
       if((lastStateChangeus + sleepTimeus < uTime) || (lastStateChangeus + maxTimeForPulseus < uTime  && sleep))
       {//powersave after 10 seconds of no data.         
-        sleepUntilRace();
+       // sleepUntilRace();
       }
   }
   buttonState = val;                       // save the new state in our variable
@@ -188,7 +188,7 @@ void writeStrokeRow()
 
 void checkUpdate()
 {
-  if(ESP.getFlashChipSize() > 700000)
+  if(ESP.getFlashChipSizeByChipId() > 700000)
   {//we have enough space to update automatically
   updateStatus("checking for update");
   Serial.println("checking for update");
@@ -223,7 +223,7 @@ void checkUpdate()
   {
     Serial.println("not enough room for update");
     Serial.print("Chip Size: ");
-    Serial.println(ESP.getFlashChipSize());
+    Serial.println(ESP.getFlashChipSizeByChipId());
     Serial.print("Sketch Size: ");
     Serial.println(ESP.getSketchSize());
   }

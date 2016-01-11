@@ -3,8 +3,6 @@
 // Serial interface for the row computer
 // allows the following commands:
 //               Serial Interface variables
-
-
 #include <EEPROM.h>
 String SerialStr = "";                        // string to hold next serial command.
 String variable = "";                   // variable to set 
@@ -82,4 +80,3 @@ void processSerial()
     }
   }
 }
-
