@@ -196,7 +196,9 @@ void checkUpdate()
   Serial.println(ESP.getSketchSize());
     String updateURL = "http://row.intelligentplant.com/row/update.aspx?size=";
     updateURL += ESP.getSketchSize();
-    updateURL += "&Date=";
+    updateURL += "&m=";
+    updateURL += getMac();
+   // updateURL += "&Date=Jan-09-2016";
     updateURL += __DATE__;
     updateURL.replace(' ','-');
     Serial.println("update URL:");
