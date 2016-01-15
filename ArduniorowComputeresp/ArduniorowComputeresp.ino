@@ -198,9 +198,15 @@ void checkUpdate()
     updateURL += ESP.getSketchSize();
     updateURL += "&m=";
     updateURL += getMac();
-   // updateURL += "&Date=Jan-09-2016";
-    updateURL += __DATE__;
-    updateURL.replace(' ','-');
+    updateURL += "&Date=";
+    String dateStr = __DATE__;
+    dateStr.replace(' ','-');
+    updateURL += dateStr;
+    updateURL += "&Time=";
+    String timeStr = __TIME__;
+    timeStr.replace(':','-');
+    updateURL += timeStr;
+    updateURL += "&file=ArduniorowComputeresp.cpp.generic.bin";
     Serial.println("update URL:");
     Serial.println(updateURL);
           t_httpUpdate_return ret = ESPhttpUpdate.update(updateURL.c_str());
