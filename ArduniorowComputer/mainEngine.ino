@@ -33,6 +33,8 @@ const unsigned int consecutivedecelerations = 2;          //number of consecutiv
 const unsigned int consecutiveaccelerations = 2;          // number of consecutive accelerations before detecting that we are accelerating.
 unsigned int decelerations = consecutivedecelerations +1; // number of decelerations detected.
 unsigned int accelerations = 0;                           // number of acceleration rotations;
+
+
 //-------------------------------------------------------------------
 //               drag factor  
 int kIndex = 0;                                           //current position in the drag factor array
@@ -299,27 +301,19 @@ void registerClick()
               monitorEnabled = false;
             }
           }
+          if(sessionType == INTERVALDISTANCE)
+          {
+            if(distancem >= targetDistance)
+            {
+              nextInterval();
+            }
+          }
     if((mTime-startTimems)/1000 > targetSeconds)
     {
       switch(sessionType)
       {
-        case INTERVAL:
-          intervalDistances[intervals] = distancem -intervalDistances[intervals-1];
-          if(intervals < numIntervals)
-          {
-            showInterval(intervalSeconds); 
-            //then reset the start time for count down to now for the next interval.
-            startTimems = millis();
-          }
-          else
-          {//stop.
-            Serial.println(F("Done"));
-            #ifdef UseLCD
-            reviewIntervals();
-            #endif
-          }
-          
-          intervals ++;
+        case INTERVALTIME:
+            nextInterval();
           break;
         case TIME:
           Serial.println(F("Done"));
@@ -332,6 +326,43 @@ void registerClick()
     }
   }
   }
+}
+
+void nextInterval()
+{
+  intervalDistances[intervals] = distancem;
+  if(sessionType == INTERVALTIME)
+  {
+    summaryTimeTenths[intervals] = targetSeconds *10;
+    summarySplitTenths[intervals] = (float)(targetSeconds*5000)/(float)(distancem);
+    summarySPM[intervals] = (float)totalStroke /((float)targetSeconds/60);
+  }
+  else
+  {
+    
+    summaryTimeTenths[intervals] = getCurrentTimems()/100;
+    summarySplitTenths[intervals] = ((float)getCurrentTimems()*5)/((float)distancem);
+    summarySPM[intervals] = (float)totalStroke /(((float)getCurrentTimems())/1000);
+  }
+  
+  
+  if(intervals < numIntervals)
+  {
+    showInterval(intervalSeconds); 
+    //then reset the start time for count down to now for the next interval.
+    startTimems = millis();
+    totalStroke = 0;
+    distancem = 0;
+  }
+  else
+  {//stop.
+    Serial.println(F("Done"));
+    #ifdef UseLCD
+    reviewIntervals();
+    #endif
+  }
+  
+  intervals ++;
 }
 
 //gets the time to display in the format 00:00 - this is either the time left in a Time session, or the time passed in a normal session.

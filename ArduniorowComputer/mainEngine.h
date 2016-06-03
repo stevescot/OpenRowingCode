@@ -10,17 +10,18 @@
 #define JUST_ROW 0
 #define DISTANCE 1
 #define TIME 2
-#define INTERVAL 3
-#define DRAGFACTOR 4
-#define RPM 5
-#define WATTS 6
-#define SETTINGS 7
-#define BACKLIGHT 8
-#define ERGTYPE 9
-#define BOATTYPE 10
-#define WEIGHT 11
-#define POWEROFF 12
-#define BACK 13
+#define INTERVALTIME 3
+#define INTERVALDISTANCE 4
+#define DRAGFACTOR 5
+#define RPM 6
+#define WATTS 7
+#define SETTINGS 8
+#define BACKLIGHT 9
+#define ERGTYPE 10
+#define BOATTYPE 11
+#define WEIGHT 12
+#define POWEROFF 13
+#define BACK 14
 
 //-------------------------------------------------------------------
 //               erg type definitions
@@ -78,7 +79,7 @@ unsigned int totalStroke = 0;
 float driveLengthm = 0;                     // last stroke length in meters
 //-------------------------------------------------------------------
 //               rpm/angular Velocity
-static const short numRpms = 100;           // size of the rpm array
+static const short numRpms = 20;           // size of the rpm array
 float rpmHistory[numRpms];                    // array of rpm per rotation for debugging
 //unsigned long microshistory[numRpms];     // array of the amount of time taken in calc/display for debugging.
 short nextRPM = 0;                          // currently measured rpm, to compare to last -index in above array.
@@ -96,6 +97,9 @@ float distancem = 0;                        // distance rowed in meters.
 float recoveryToDriveRatio = 0;             // the ratio of time taken for the whole stroke to the drive , should be roughly 3:1
 
 long intervalDistances[30];
+unsigned int summaryTimeTenths[30];
+unsigned int summarySplitTenths[30];
+unsigned int summarySPM[30];
 
 //-------------------------------------------------------------------
 //               Power Graph

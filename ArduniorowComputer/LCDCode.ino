@@ -211,7 +211,7 @@ void writeNextScreen()
       lcd.print((char)(int)LCDGraphFive);
     break;
 case 8:
-    if(sessionType == INTERVAL)
+    if(sessionType == INTERVALTIME || INTERVALDISTANCE)
     {
       lcd.setCursor(9,0);
       lcd.print(intervals);
@@ -246,31 +246,41 @@ void reviewIntervals()
   setup();
 }
 
+void printTimeTenths(unsigned int tenths)
+{
+  unsigned int mins = tenths /10/60;
+  if(mins <10)
+  {
+    lcd.print("0");
+  }
+  lcd.print(mins);
+  lcd.print(":");
+  short seconds = (tenths/10) - (mins*60);
+  if(seconds < 10)
+  {
+    lcd.print("0");
+  }
+  lcd.print(seconds);
+  lcd.print(".");
+  lcd.print(tenths - seconds*10 - mins *60*10);
+}
+
 void printInterval(int Interval)
 {
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Interval "); 
   lcd.print(Interval);
-  lcd.setCursor(0,1);
+  if(Interval <10) lcd.print(" ");
+  lcd.print(": t");
+  //print the time for this interval
+  printTimeTenths(summaryTimeTenths[Interval]);
+  lcd.print(" ");
   lcd.print(intervalDistances[Interval]);
-  lcd.print("m ");
-  int intervalsplittenths = (float)5000/((float)intervalDistances[Interval] / ((float)targetSeconds));
-  int intervalsplitmins = intervalsplittenths /10/60;
-  if(intervalsplitmins <10)
-  {
-    lcd.print("0");
-  }
-  lcd.print(intervalsplitmins);
-  lcd.print(":");
-  int intervalsplitseconds = (intervalsplittenths/10) - (intervalsplitmins*60);
-  if(intervalsplitseconds < 10)
-  {
-    lcd.print("0");
-  }
-  lcd.print(intervalsplitseconds);
-  lcd.print(".");
-  lcd.print(intervalsplittenths - intervalsplitseconds*10 - intervalsplitmins *60*10);
+  lcd.print("m");
+  lcd.setCursor(0,1);
+  printTimeTenths(summarySplitTenths[Interval]);
+  lcd.print("/500 ");
+  lcd.print(summarySPM[Interval]);
 }
 
 //Current selection (Distance, Time)
@@ -314,8 +324,19 @@ void menuType()
     case TIME: 
       targetSeconds = menuSelectTime(targetSeconds);
       break;
-    case INTERVAL:
+    case INTERVALTIME:
      targetSeconds = menuSelectTime(targetSeconds);
+     lcd.clear();
+     lcd.setCursor(0,0);
+     lcd.print(F("Rest"));
+     intervalSeconds = menuSelectTime(intervalSeconds);
+     lcd.clear();
+     lcd.setCursor(0,0);
+     lcd.print(F("Repeats"));
+     numIntervals = menuSelectNumber(numIntervals);
+      break;
+    case INTERVALDISTANCE:
+     menuSelectDistance();
      lcd.clear();
      lcd.setCursor(0,0);
      lcd.print(F("Rest"));
@@ -500,8 +521,11 @@ void writeType()
       case TIME:
         menuDisplay(("Time"));
       break;
-      case INTERVAL:
-        menuDisplay(("Interval"));
+      case INTERVALTIME:
+        menuDisplay(("Interval Time"));
+        break;
+      case INTERVALDISTANCE:
+        menuDisplay(("Interval Distance"));
         break;
       case DRAGFACTOR:
         menuDisplay(("Drag Factor"));
