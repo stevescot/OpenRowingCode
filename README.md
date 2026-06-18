@@ -5,7 +5,7 @@ ArduinoRowComputer - contains a sketch which will run on an Arduino Uno, Or Nano
 
 To work with a concept 2 - connect one side of the sensor to GND and the other to A1 - the sketch on startup should print out:
 
-"Concept 2 detected on pin 1"
+"Concept 2 detected on pin 1" - note thanks to -  "Just add 100k resistance to cable that comes from flyweel to analogRead( 1 ) .
 
 Then Strokes will be printed to serial in tab delimited form.
 
